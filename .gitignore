@@ -1,0 +1,21 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# builds
+frontend/dist/
+
+# secrets
+backend/.env
+.env
+
+# runtime data (don't ship these — they're created on the server)
+backend/db/*.db
+backend/db/*.db-wal
+backend/db/*.db-shm
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# misc
+*.log
+.DS_Store

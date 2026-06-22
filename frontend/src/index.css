@@ -1,0 +1,244 @@
+/* Leaflet must be imported before Tailwind */
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ════════════════════════════════════════════════════════════════
+   KriCar · "Desert Premium" design tokens
+   Warm sand neutrals · clay/terracotta accent · pine trust accent
+   Fraunces (display) · Plus Jakarta Sans (UI) · IBM Plex Arabic (RTL)
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #F7F1E7;          /* page                */
+  --surface: #FFFDF8;     /* cards / raised      */
+  --surface-2: #F1E8D9;   /* sunken / wells      */
+  --border: #E7DCCB;      /* hairlines           */
+  --border-strong: #D6C7AF;
+  --text: #211C16;        /* ink                 */
+  --muted: #6B5F4E;       /* secondary text      */
+  --faint: #9A8D78;       /* tertiary / hints    */
+  --accent: #B5471D;      /* clay                */
+}
+.dark {
+  --bg: #16130D;
+  --surface: #211C14;
+  --surface-2: #2A2418;
+  --border: #342C1E;
+  --border-strong: #443A28;
+  --text: #F3ECE0;
+  --muted: #B3A488;
+  --faint: #8A7C66;
+  --accent: #D9703F;      /* clay brightened for dark surfaces */
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Editorial display face for hero + section headings */
+  .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
+
+  /* Arabic: swap the whole stack, and use Plex (Fraunces has no Arabic) for display too */
+  [dir="rtl"] body,
+  [dir="rtl"] { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+  [dir="rtl"] .font-display,
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] .section-title {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    letter-spacing: 0;
+  }
+}
+
+@layer components {
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+    box-shadow: 0 8px 20px -8px rgba(181,71,29,0.55);
+  }
+  .btn-primary:hover { box-shadow: 0 12px 26px -8px rgba(181,71,29,0.6); }
+  .btn-pine {
+    @apply inline-flex items-center justify-center gap-2 bg-pine-500 hover:bg-pine-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 active:scale-95;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 font-semibold py-2.5 px-5 rounded-xl border transition-all duration-200 active:scale-95;
+    background: var(--surface);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 font-medium py-2 px-3 rounded-lg transition-all duration-200;
+    color: var(--muted);
+  }
+  .btn-ghost:hover { @apply text-primary-600 bg-primary-50; }
+
+  /* ── Inputs ── */
+  .input {
+    @apply w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/60 focus:border-primary-400 transition-all;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+  }
+  .input::placeholder { color: var(--faint); }
+
+  /* ── Cards ── */
+  .card {
+    @apply rounded-2xl overflow-hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 2px rgba(46,33,18,0.05);
+  }
+  .dark .card { box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+
+  /* ── Badges ── */
+  .badge {
+    @apply inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full;
+  }
+  .badge-pine  { @apply badge bg-pine-50 text-pine-700; }
+  .badge-clay  { @apply badge bg-primary-50 text-primary-700; }
+  .badge-honey { @apply badge bg-honey-50 text-honey-700; }
+
+  /* ── Section heading ── */
+  .section-title { @apply font-display text-3xl md:text-4xl font-semibold tracking-tight; color: var(--text); }
+  .eyebrow { @apply inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider; color: var(--accent); }
+
+  /* ── Shimmer skeleton ── */
+  .skeleton { @apply rounded-xl overflow-hidden relative; background: var(--surface-2); }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+    animation: shimmer 1.4s infinite;
+  }
+  .dark .skeleton::after {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+  }
+}
+
+/* ── Keyframe animations ── */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(0.8); opacity: 1; }
+  80%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* ── Utility animation classes ── */
+.animate-slide-up   { animation: slideInUp   0.45s ease both; }
+.animate-slide-right{ animation: slideInRight 0.35s ease both; }
+.animate-fade-in    { animation: fadeIn      0.4s  ease both; }
+.animate-scale-in   { animation: scaleIn     0.35s ease both; }
+
+/* Scroll-reveal base */
+.reveal            { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal.visible    { opacity: 1; transform: translateY(0); }
+.reveal-left       { opacity: 0; transform: translateX(-30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 160ms; }
+.stagger > *:nth-child(4) { animation-delay: 240ms; }
+.stagger > *:nth-child(5) { animation-delay: 320ms; }
+.stagger > *:nth-child(6) { animation-delay: 400ms; }
+.stagger > *:nth-child(7) { animation-delay: 480ms; }
+.stagger > *:nth-child(8) { animation-delay: 560ms; }
+
+/* Page transition wrapper */
+.page-enter { animation: fadeIn 0.3s ease both; }
+
+/* ── Reduced motion: respect the user ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal, .reveal-left { opacity: 1 !important; transform: none !important; }
+}
+
+/* ── Dark-mode remaps for components that hardcode light utilities ──
+   (warm equivalents so the cold-gray Tailwind defaults never appear) */
+.dark .bg-white    { background: var(--surface) !important; }
+.dark .bg-gray-50  { background: var(--bg) !important; }
+.dark .bg-gray-100 { background: var(--surface-2) !important; }
+.dark .bg-gray-900 { background: #100D08 !important; }
+.dark .border-gray-100 { border-color: var(--border) !important; }
+.dark .border-gray-200 { border-color: var(--border) !important; }
+.dark .text-gray-900 { color: var(--text) !important; }
+.dark .text-gray-800 { color: #E7DCCB !important; }
+.dark .text-gray-700 { color: #DBD0BE !important; }
+.dark .text-gray-600 { color: #B3A488 !important; }
+.dark .text-gray-500 { color: #8A7C66 !important; }
+.dark .text-gray-400 { color: #6B5F4E !important; }
+
+/* Lightbox */
+.lightbox-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  background: rgba(20,16,9,0.93);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Price range slider */
+input[type=range] {
+  -webkit-appearance: none;
+  @apply h-1.5 rounded-full cursor-pointer;
+  background: linear-gradient(to right, var(--accent) var(--pct, 50%), var(--border-strong) var(--pct, 50%));
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  @apply w-4 h-4 rounded-full bg-primary-500 border-2 border-white shadow-md;
+}
+
+/* Mobile bottom safe area */
+.pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+/* ── Leaflet dark-mode protection ──
+   Global .dark overrides must not bleed into Leaflet's controls. */
+.leaflet-container, .leaflet-container * { box-sizing: border-box; }
+.dark .leaflet-bar a,
+.dark .leaflet-control-zoom-in,
+.dark .leaflet-control-zoom-out {
+  background-color: #fff !important; color: #333 !important; border-color: #ccc !important;
+}
+.dark .leaflet-control-attribution {
+  background: rgba(255,255,255,0.85) !important; color: #333 !important;
+}
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip { background: #fff !important; color: #1f2937 !important; }
+.leaflet-tile-container img { max-width: none !important; width: 256px !important; height: 256px !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--faint); }

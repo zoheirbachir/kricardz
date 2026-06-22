@@ -32,7 +32,7 @@ function StatItem({ val, label, started }) {
 }
 
 /* Hero now uses a cinematic looping video background — see the Hero section below.
-   Bundled assets live in /public/hero (hero.mp4, demo.mp4, *.webp posters). */
+   Bundled video assets live in /public/hero (hero.mp4, city.mp4, drive.mp4, …). No poster images. */
 
 /* ── Inline feature icons (brand palette, no emoji / no purple) ── */
 const IcVerified = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>;
@@ -124,7 +124,7 @@ export default function Home() {
       {/* ── Hero (cinematic video background + original content) ── */}
       <section className="relative text-white overflow-hidden min-h-screen flex items-center">
         {/* Looping muted video background (plays only while on-screen) */}
-        <BgVideo className="absolute inset-0 w-full h-full object-cover" poster="/hero/exterior.webp" src="/hero/hero.mp4" />
+        <BgVideo className="absolute inset-0 w-full h-full object-cover" src="/hero/hero.mp4" />
         {/* Readability overlays */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/25 pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/40 pointer-events-none" />
@@ -323,7 +323,7 @@ export default function Home() {
 
       {/* ── Popular destinations ── */}
       <section className="relative py-20 overflow-hidden text-white">
-        <BgVideo className="absolute inset-0 w-full h-full object-cover" poster="/hero/exterior.webp" src="/hero/city.mp4" />
+        <BgVideo className="absolute inset-0 w-full h-full object-cover" src="/hero/city.mp4" />
         <div className="absolute inset-0 bg-gray-950/80 pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="mb-10">
@@ -442,7 +442,7 @@ export default function Home() {
 
       {/* ── Cinematic drive band ── */}
       <section className="relative h-[58vh] min-h-[380px] flex items-center justify-center text-white overflow-hidden">
-        <BgVideo className="absolute inset-0 w-full h-full object-cover" poster="/hero/engine.webp" src="/hero/drive.mp4" />
+        <BgVideo className="absolute inset-0 w-full h-full object-cover" src="/hero/drive.mp4" />
         <div className="absolute inset-0 bg-black/45 pointer-events-none" />
         <Reveal className="relative text-center px-6 max-w-2xl">
           <h2 className="font-display text-3xl md:text-5xl font-semibold drop-shadow-lg">Prenez la route en toute confiance</h2>
@@ -454,7 +454,7 @@ export default function Home() {
       <section className="py-20 bg-white dark:bg-[#16130D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl text-white px-8 py-12 md:px-12">
-            <BgVideo className="absolute inset-0 w-full h-full object-cover" poster="/hero/exterior.webp" src="/hero/owner.mp4" />
+            <BgVideo className="absolute inset-0 w-full h-full object-cover" src="/hero/owner.mp4" />
             <div className="absolute inset-0 bg-gradient-to-br from-primary-600/90 via-primary-700/85 to-primary-800/80 pointer-events-none" />
             <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
@@ -482,7 +482,7 @@ export default function Home() {
 
       {/* ── Testimonials ── */}
       <section className="relative py-20 overflow-hidden text-white">
-        <BgVideo className="absolute inset-0 w-full h-full object-cover" poster="/hero/interior.webp" src="/hero/testimonials.mp4" />
+        <BgVideo className="absolute inset-0 w-full h-full object-cover" src="/hero/testimonials.mp4" />
         <div className="absolute inset-0 bg-gray-950/80 pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div ref={testRef} className={`reveal ${testVisible ? 'visible' : ''} text-center mb-12`}>

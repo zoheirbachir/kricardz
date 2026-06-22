@@ -1,8 +1,10 @@
 import { useRef, useEffect } from 'react';
 
 /* Autoplaying, muted, looping background video that only plays while on-screen
-   (IntersectionObserver) — keeps many background videos light on CPU/GPU. */
-export default function BgVideo({ src, poster, className = '' }) {
+   (IntersectionObserver) — keeps many background videos light on CPU/GPU.
+   No poster image: posters were flashing/clashing with the video, so we show
+   the video only (sections sit on dark overlays, so the brief pre-play frame is black). */
+export default function BgVideo({ src, className = '' }) {
   const ref = useRef(null);
   useEffect(() => {
     const v = ref.current;
@@ -25,7 +27,6 @@ export default function BgVideo({ src, poster, className = '' }) {
       loop
       playsInline
       preload="metadata"
-      poster={poster}
       src={src}
     />
   );

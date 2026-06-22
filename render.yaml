@@ -1,0 +1,22 @@
+# Render Blueprint — deploys the whole KriCar app as ONE free web service.
+# The Node backend serves the built React frontend, so everything (site + API +
+# Socket.io) runs on a single URL — no CORS or split config needed.
+#
+# Note (free tier): the disk is temporary, so the start command re-seeds the
+# catalogue on every boot. The 12 cars + their media always appear; user-created
+# data (new sign-ups/bookings) resets when the service sleeps. Upgrade to a VPS
+# for permanent storage.
+services:
+  - type: web
+    name: kricar
+    runtime: node
+    plan: free
+    buildCommand: npm --prefix frontend install && npm --prefix frontend run build && npm --prefix backend install
+    startCommand: cd backend && node seed.js && node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: "24"          # node:sqlite needs Node >= 22.5
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true  # Render generates a secure secret automatically

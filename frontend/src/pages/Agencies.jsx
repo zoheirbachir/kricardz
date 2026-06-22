@@ -22,7 +22,7 @@ export default function Agencies() {
   const [loading, setLoading] = useState(true);
   const [wilayas, setWilayas] = useState([]);
   const [f, setF] = useState({
-    search: '',
+    search: searchParams.get('search') || '',
     wilaya: searchParams.get('wilaya') || '',
     type: searchParams.get('type') || '',
     sort: 'vehicles',

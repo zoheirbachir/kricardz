@@ -45,6 +45,7 @@ const IcSearchSm = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="cu
 const IcKey      = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>;
 const IcLock     = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>;
 const IcCalendar = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
+const IcBuilding = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3m6-14h1m-1 4h1m4-4h1m-1 4h1m-5 6h4" /></svg>;
 /* ── Agency-category icons (for "Parcourir les agences") ── */
 const IcDiamond = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12l3 6-9 12L3 9l3-6z" /><path strokeLinecap="round" strokeLinejoin="round" d="M3 9h18M9 3l3 18M15 3l-3 18" /></svg>;
 const IcHeart   = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>;
@@ -79,6 +80,8 @@ export default function Home() {
   const [featuredCars, setFeaturedCars] = useState([]);
   const [agencies, setAgencies] = useState([]);
   const [search, setSearch] = useState({ wilaya: '', type: '', max_price: '' });
+  const [searchMode, setSearchMode] = useState('car');   // 'car' | 'agency' — hero search tabs
+  const [agencySearch, setAgencySearch] = useState({ search: '', wilaya: '', type: '' });
   const [statsStarted, setStatsStarted] = useState(false);
   const statsRef = useRef(null);
   const [whyRef, whyVisible] = useScrollReveal();
@@ -104,6 +107,15 @@ export default function Home() {
     if (search.type) params.set('type', search.type);
     if (search.max_price) params.set('max_price', search.max_price);
     navigate(`/search?${params.toString()}`);
+  };
+
+  const handleAgencySearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (agencySearch.search) params.set('search', agencySearch.search);
+    if (agencySearch.wilaya) params.set('wilaya', agencySearch.wilaya);
+    if (agencySearch.type) params.set('type', agencySearch.type);
+    navigate(`/agencies?${params.toString()}`);
   };
 
   const agencyCounts = useMemo(() => agencies.reduce((m, a) => {
@@ -164,45 +176,90 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...softSpring, delay: 0.35 }}
             className="bg-white dark:bg-[#211C14] rounded-2xl shadow-xl ring-1 ring-black/5 p-5 max-w-3xl">
-            <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.wilaya_label')}</label>
-                <select className="input text-sm" value={search.wilaya} onChange={e => setSearch({...search, wilaya: e.target.value})}>
-                  <option value="">Toutes les wilayas</option>
-                  {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.type_label')}</label>
-                <select className="input text-sm" value={search.type} onChange={e => setSearch({...search, type: e.target.value})}>
-                  <option value="">{t('types.all')}</option>
-                  {CAR_TYPES.map(tp => <option key={tp} value={tp}>{t(`types.${tp}`)}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.price_label')}</label>
-                <div className="flex gap-2">
-                  <input type="number" className="input text-sm" placeholder="Ex: 10000" value={search.max_price}
-                    onChange={e => setSearch({...search, max_price: e.target.value})} />
-                  <button type="submit" className="btn-primary shrink-0 px-4" aria-label={t('nav.search')}>
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </form>
-
-            {/* Quick type pills */}
-            <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-              {CAR_TYPES.map(tp => (
-                <button key={tp} type="button"
-                  onClick={() => { setSearch(s => ({...s, type: tp})); navigate(`/search?type=${tp}`); }}
-                  className="badge bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-primary-100 hover:text-primary-700 cursor-pointer transition-colors py-1 px-2.5">
-                  {t(`types.${tp}`)}
+            {/* Tabs: search a car / browse agencies (mirrors kricar-dz.com) */}
+            <div className="grid grid-cols-2 gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl mb-4">
+              {[
+                { key: 'car', label: 'Rechercher une voiture', Icon: IcCar },
+                { key: 'agency', label: 'Parcourir les agences', Icon: IcBuilding },
+              ].map(tab => (
+                <button key={tab.key} type="button" onClick={() => setSearchMode(tab.key)}
+                  className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${searchMode === tab.key ? 'bg-white dark:bg-gray-700 shadow text-primary-600 dark:text-primary-300' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
+                  <tab.Icon className="w-4 h-4" /> {tab.label}
                 </button>
               ))}
             </div>
+
+            {searchMode === 'car' ? (
+              <>
+                <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.wilaya_label')}</label>
+                    <select className="input text-sm" value={search.wilaya} onChange={e => setSearch({...search, wilaya: e.target.value})}>
+                      <option value="">Toutes les wilayas</option>
+                      {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.type_label')}</label>
+                    <select className="input text-sm" value={search.type} onChange={e => setSearch({...search, type: e.target.value})}>
+                      <option value="">{t('types.all')}</option>
+                      {CAR_TYPES.map(tp => <option key={tp} value={tp}>{t(`types.${tp}`)}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.price_label')}</label>
+                    <div className="flex gap-2">
+                      <input type="number" className="input text-sm" placeholder="Ex: 10000" value={search.max_price}
+                        onChange={e => setSearch({...search, max_price: e.target.value})} />
+                      <button type="submit" className="btn-primary shrink-0 px-4" aria-label={t('nav.search')}>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+
+                {/* Quick type pills */}
+                <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  {CAR_TYPES.map(tp => (
+                    <button key={tp} type="button"
+                      onClick={() => { setSearch(s => ({...s, type: tp})); navigate(`/search?type=${tp}`); }}
+                      className="badge bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-primary-100 hover:text-primary-700 cursor-pointer transition-colors py-1 px-2.5">
+                      {t(`types.${tp}`)}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <form onSubmit={handleAgencySearch} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Rechercher par nom d'agence</label>
+                    <input type="text" className="input text-sm" placeholder="Nom de l'agence..." value={agencySearch.search}
+                      onChange={e => setAgencySearch({ ...agencySearch, search: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.wilaya_label')}</label>
+                    <select className="input text-sm" value={agencySearch.wilaya} onChange={e => setAgencySearch({ ...agencySearch, wilaya: e.target.value })}>
+                      <option value="">Toutes les wilayas</option>
+                      {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Type d'agence</label>
+                    <select className="input text-sm" value={agencySearch.type} onChange={e => setAgencySearch({ ...agencySearch, type: e.target.value })}>
+                      <option value="">Tous les types d'agence</option>
+                      {AGENCY_CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" className="btn-primary w-full py-3 justify-center text-sm gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  Rechercher maintenant
+                </button>
+              </form>
+            )}
           </motion.div>
         </div>
       </section>
@@ -345,48 +402,6 @@ export default function Home() {
                 </Link>
               </motion.div>
             ))}
-          </StaggerGroup>
-        </div>
-      </section>
-
-      {/* ── Parcourir les agences (browse by category) ── */}
-      <section className="py-20 bg-gray-50 dark:bg-[#120F0A]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Reveal className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
-            <div>
-              <p className="eyebrow mb-2">Agences</p>
-              <h2 className="section-title">Parcourir les agences</h2>
-              <p className="text-gray-500 mt-2 max-w-xl">Trouvez l'agence qu'il vous faut selon votre besoin — du quotidien au luxe, mariage, bus ou camions.</p>
-            </div>
-            <Link to="/agencies" className="text-primary-600 hover:text-primary-700 text-sm font-semibold flex items-center gap-1 shrink-0">
-              Voir toutes les agences
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d={ARROW} /></svg>
-            </Link>
-          </Reveal>
-          <StaggerGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" stagger={0.07}>
-            {AGENCY_CATEGORIES.map((cat, i) => {
-              const Icon = CAT_ICONS[cat.key] || IcCar;
-              const count = agencyCounts[cat.key] || 0;
-              return (
-                <motion.div key={cat.key} variants={fadeUp} whileHover={{ y: -6 }} transition={softSpring}>
-                  <Link to={`/agencies?type=${cat.key}`} className="card group block h-full p-5 hover:shadow-lg">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${CAT_TINTS[i % CAT_TINTS.length]} group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{cat.title}</h3>
-                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">{cat.desc}</p>
-                        <span className="text-xs text-primary-600 font-semibold mt-2.5 inline-flex items-center gap-1">
-                          {count > 0 ? `${count} agence${count > 1 ? 's' : ''}` : 'Découvrir'}
-                          <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d={ARROW} /></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
           </StaggerGroup>
         </div>
       </section>

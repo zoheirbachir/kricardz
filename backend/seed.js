@@ -38,6 +38,15 @@ async function seed() {
   const uid = (email) => users.find((u) => u.email === email).id;
   const reviewer = uid('karim@kricar.dz');
 
+  /* Ensure an administrator account exists (admin@kricar.dz / password123) */
+  const adminEmail = 'admin@kricar.dz';
+  if (!db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail)) {
+    db.prepare(`INSERT INTO users (id, email, password_hash, name, role, is_admin, verified, id_verified, kyc_status)
+      VALUES (?, ?, ?, ?, 'admin', 1, 1, 1, 'approved')`).run(uuidv4(), adminEmail, hash, 'Administrateur');
+  } else {
+    db.prepare("UPDATE users SET is_admin = 1, role = 'admin' WHERE email = ?").run(adminEmail);
+  }
+
   /* Reset all car/agency data so it mirrors the live site exactly (users are kept) */
   db.exec('DELETE FROM reviews');
   db.exec('DELETE FROM favorites');

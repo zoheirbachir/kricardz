@@ -78,7 +78,9 @@
       "mcp__0e2da0e3-52c2-4ee4-89c8-404c63bb1683__select_workspace",
       "mcp__0e2da0e3-52c2-4ee4-89c8-404c63bb1683__list_services",
       "mcp__0e2da0e3-52c2-4ee4-89c8-404c63bb1683__create_web_service",
-      "Bash(node _addkeys3.cjs)"
+      "Bash(node _addkeys3.cjs)",
+      "Bash(node make-admin.js)",
+      "Bash(node -e \"const db=require\\('./db/database'\\); const a=db.prepare\\('SELECT email, role, is_admin FROM users WHERE email=?'\\).get\\('admin@kricar.dz'\\); console.log\\('admin row:', JSON.stringify\\(a\\)\\);\")"
     ]
   }
 }

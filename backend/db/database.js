@@ -116,6 +116,7 @@ try { db.exec(`ALTER TABLE users ADD COLUMN kyc_docs TEXT DEFAULT '{}'`); } catc
 
 /* ── Admin + KYC review columns (idempotent) ── */
 try { db.exec(`ALTER TABLE users ADD COLUMN is_admin INTEGER DEFAULT 0`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN banned INTEGER DEFAULT 0`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN kyc_rejection_reason TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN kyc_reviewed_at TEXT`); } catch {}
 

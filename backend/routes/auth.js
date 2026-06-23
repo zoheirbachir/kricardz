@@ -92,6 +92,7 @@ router.post('/login', async (req, res) => {
 
   const ok = await bcrypt.compare(password, user.password_hash);
   if (!ok) return res.status(401).json({ error: 'Identifiants incorrects' });
+  if (user.banned === 1) return res.status(403).json({ error: 'Ce compte a été bloqué par un administrateur.' });
 
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
   const { password_hash, ...safeUser } = user;

@@ -17,6 +17,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import OwnerDashboard from './pages/OwnerDashboard';
 import AdminKyc from './pages/AdminKyc';
+import Admin from './pages/Admin';
 import ScrollExperience from './pages/ScrollExperience';
 import AddCar from './pages/AddCar';
 import TrackCar from './pages/TrackCar';
@@ -103,6 +104,7 @@ export default function App() {
               <Route path="/dashboard/owner/add" element={<PrivateRoute><Layout><AddCar /></Layout></PrivateRoute>} />
 
               {/* Admin */}
+              <Route path="/admin" element={<AdminRoute><Layout><Admin /></Layout></AdminRoute>} />
               <Route path="/admin/kyc" element={<AdminRoute><Layout><AdminKyc /></Layout></AdminRoute>} />
 
               <Route path="*" element={<Navigate to="/" replace />} />

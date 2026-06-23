@@ -21,11 +21,6 @@ async function seed() {
     { id: uuidv4(), email: 'abdelloui.ahmed@kricar.dz',   name: 'Abdelloui ahmed',    phone: '0555642480', role: 'owner' },
     { id: uuidv4(), email: 'hasni.location@kricar.dz',    name: 'Hasni location',     phone: '0555555555', role: 'owner' },
     { id: uuidv4(), email: 'badidi.islam@kricar.dz',      name: 'Badidi bouda islam', phone: '0673590224', role: 'owner' },
-    /* ── Demo agencies for the categories the real catalogue doesn't cover ── */
-    { id: uuidv4(), email: 'royal.mariage@kricar.dz',     name: 'Royal Mariage',      phone: '0550112233', role: 'owner' },
-    { id: uuidv4(), email: 'transbus@kricar.dz',          name: 'Algé Bus Transport', phone: '0556001122', role: 'owner' },
-    { id: uuidv4(), email: 'btp@kricar.dz',               name: 'BTP Engins',         phone: '0556334455', role: 'owner' },
-    { id: uuidv4(), email: 'cargo@kricar.dz',             name: 'Cargo Express',      phone: '0556667788', role: 'owner' },
   ];
 
   for (const u of users) {
@@ -51,23 +46,11 @@ async function seed() {
   db.exec('DELETE FROM cars');
   db.exec('DELETE FROM agencies');
 
-  /* Each real owner is also their agency (matches the live site, where owners like
-     "Cherfaoui oussama" / "Hasni location" appear in the agencies list). Plus a few
-     demo agencies so every "Parcourir les agences" category stays populated. */
+  /* Only the two real agencies from kricar-dz.com. Every other car owner is an
+     individual (a person renting their own car), not an agency. */
   const agencies = [
-    { owner: uid('cherfaoui.oussama@kricar.dz'), name: 'Cherfaoui Oussama',   type: 'luxury',       wilaya: 'Oran',  city: 'Oran',        desc: 'Sportives et véhicules haut de gamme, entretien à jour.' },
-    { owner: uid('azdine.benouada@kricar.dz'),   name: 'Azdine Benouada',     type: 'classic',      wilaya: 'Oran',  city: 'Oran',        desc: 'Véhicules propres et confortables à la location.' },
-    { owner: uid('elsaidi.auto@kricar.dz'),      name: 'El Saidi Auto',       type: 'classic',      wilaya: 'Alger', city: 'Alger',       desc: 'Location de voitures à Alger.' },
-    { owner: uid('anes.anes@kricar.dz'),         name: 'Anes Auto',           type: 'classic',      wilaya: 'Oran',  city: 'Oran',        desc: 'Citadines et utilitaires à petit prix.' },
-    { owner: uid('amine.arabi@kricar.dz'),       name: 'Amine Arabi',         type: 'classic',      wilaya: 'Oran',  city: 'Oran',        desc: 'Location de voitures fiables et économiques.' },
-    { owner: uid('imad.hadjouti@kricar.dz'),     name: 'Imad Hadjouti',       type: 'classic',      wilaya: 'Oran',  city: 'Oran',        desc: 'Citadines récentes et économiques.' },
-    { owner: uid('abdelloui.ahmed@kricar.dz'),   name: 'Abdelloui Ahmed',     type: 'classic',      wilaya: 'Alger', city: 'Alger',       desc: 'Location de voitures à Alger.' },
-    { owner: uid('hasni.location@kricar.dz'),    name: 'Hasni Location',      type: 'classic',      wilaya: 'Oran',  city: 'Oran',        desc: 'Votre partenaire de confiance pour la location.' },
-    { owner: uid('badidi.islam@kricar.dz'),      name: 'Badidi Location',     type: 'classic',      wilaya: 'Oran',  city: 'Oran',        desc: 'Voitures confortables à la location.' },
-    { owner: uid('royal.mariage@kricar.dz'),     name: 'Royal Mariage',       type: 'wedding',      wilaya: 'Alger', city: 'Alger',       desc: 'Voitures de mariage décorées pour votre grand jour.' },
-    { owner: uid('transbus@kricar.dz'),          name: 'Algé Bus Transport',  type: 'bus',          wilaya: 'Alger', city: 'Bab Ezzouar', desc: 'Minibus et autocars pour groupes, événements et excursions.' },
-    { owner: uid('btp@kricar.dz'),               name: 'BTP Engins',          type: 'construction', wilaya: 'Blida', city: 'Boufarik',    desc: 'Camions bennes, grues et engins pour vos chantiers.' },
-    { owner: uid('cargo@kricar.dz'),             name: 'Cargo Express',       type: 'trucks',       wilaya: 'Oran',  city: 'Bir El Djir', desc: 'Fourgons et poids lourds pour le transport de marchandises.' },
+    { owner: uid('cherfaoui.oussama@kricar.dz'), name: 'Cherfaoui Oussama', type: 'luxury',  wilaya: 'Oran', city: 'Oran', desc: 'Sportives et véhicules haut de gamme, entretien à jour.' },
+    { owner: uid('hasni.location@kricar.dz'),    name: 'Hasni Location',    type: 'classic', wilaya: 'Oran', city: 'Oran', desc: 'Votre partenaire de confiance pour la location de voitures.' },
   ];
 
   for (const a of agencies) {

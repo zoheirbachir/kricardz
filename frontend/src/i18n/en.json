@@ -180,7 +180,51 @@
     "review_title": "Review system",
     "review_desc": "After each rental, both parties can leave a review. This builds a trustworthy and accountable community.",
     "support_title": "Dedicated support",
-    "support_desc": "In case of issues, our team is available 24/7 by phone, email or chat."
+    "support_desc": "In case of issues, our team is available 24/7 by phone, email or chat.",
+    "score_desc": "Our multi-level trust system ensures safe rentals for everyone.",
+    "satisfaction": "Customer satisfaction",
+    "coverage_title": "Insurance coverage details",
+    "col_coverage": "Coverage",
+    "col_standard": "Standard",
+    "col_premium": "Premium",
+    "cov_liability": "Civil liability",
+    "cov_damage": "Vehicle damage",
+    "cov_theft": "Vehicle theft",
+    "cov_assist": "Roadside assistance",
+    "cov_franchise": "Deductible",
+    "franchise_std": "50,000 DA",
+    "franchise_prem": "10,000 DA",
+    "cta_btn": "Create a secure account",
+    "id_steps": [
+      "Upload your ID",
+      "Take a selfie holding your ID",
+      "Our team checks your file within 24h",
+      "\"Verified\" badge shown on your profile"
+    ],
+    "ins_steps": [
+      "Civil liability insurance included",
+      "Material damage coverage",
+      "24/7 assistance in case of accident",
+      "Simplified claim procedure"
+    ],
+    "escrow_steps": [
+      "Secure payment by card or transfer",
+      "Funds held until the end of the rental",
+      "Owner paid after confirmation",
+      "Guaranteed refund for eligible cancellation"
+    ],
+    "review_steps": [
+      "Review left after each rental",
+      "Renters AND owners rate each other",
+      "Suspicious profiles can be reported",
+      "Moderated by our team"
+    ],
+    "support_steps": [
+      "Phone: 0673590224",
+      "Email: Kricar.services@gmail.com",
+      "Live chat in the app",
+      "Average reply time: 15 minutes"
+    ]
   },
   "how": {
     "title": "How it works",
@@ -194,7 +238,35 @@
     "owner_title": "Are you an owner?",
     "owner_step1": "Create your listing for free",
     "owner_step2": "Set your availability and prices",
-    "owner_step3": "Receive bookings and earn money"
+    "owner_step3": "Receive bookings and earn money",
+    "eyebrow": "How-to guide",
+    "renter_heading": "I'm looking to rent",
+    "faq_title": "Frequently asked questions",
+    "cta_title": "Ready to start?",
+    "cta_sub": "Create your free account in under 2 minutes.",
+    "cta_btn": "Sign up for free",
+    "faqs": [
+      {
+        "q": "Is there insurance?",
+        "a": "Yes, every rental is covered by our insurance partner. In case of an accident, our team supports you through every step."
+      },
+      {
+        "q": "How does payment work?",
+        "a": "Payment is secure and held until the end of the rental. The owner is paid only after you confirm receiving the vehicle."
+      },
+      {
+        "q": "How are owners verified?",
+        "a": "Each owner must provide a valid ID, a selfie and proof of address. Our team reviews every file manually."
+      },
+      {
+        "q": "What if there's a problem?",
+        "a": "Our support is available 24/7. Contact us by phone, email or chat directly from the app."
+      },
+      {
+        "q": "Are there fees for owners?",
+        "a": "Posting a listing is 100% free. KriCar takes a small commission on each successful rental."
+      }
+    ]
   },
   "footer": {
     "tagline": "Peer-to-peer car rental in Algeria.",
@@ -255,5 +327,26 @@
     "bus": "Bus & group transport rental",
     "construction": "Construction truck rental",
     "trucks": "Transport truck rental"
+  },
+  "tutorial": {
+    "create_account": "Create account",
+    "full_name": "Full name",
+    "phone": "Phone",
+    "password": "Password",
+    "id_verified": "Identity verified",
+    "id_validated": "ID validated",
+    "create_my_account": "Create my account",
+    "search_ph": "Wilaya · Type · Budget",
+    "per_day": "DA/d",
+    "from": "From",
+    "to": "To",
+    "total": "Total",
+    "booking_confirmed": "Booking confirmed — pick up the keys!",
+    "s1_label": "Create your account",
+    "s1_desc": "Sign up and verify your identity.",
+    "s2_label": "Find a car",
+    "s2_desc": "Filter by city, type and budget.",
+    "s3_label": "Book & drive",
+    "s3_desc": "Confirm, grab the keys, go."
   }
 }

@@ -180,7 +180,51 @@
     "review_title": "Système d'avis",
     "review_desc": "Après chaque location, les deux parties peuvent laisser un avis. Cela crée une communauté de confiance et responsable.",
     "support_title": "Support dédié",
-    "support_desc": "En cas de problème, notre équipe est disponible 24h/24 et 7j/7 par téléphone, email ou chat."
+    "support_desc": "En cas de problème, notre équipe est disponible 24h/24 et 7j/7 par téléphone, email ou chat.",
+    "score_desc": "Notre système de confiance multi-niveaux garantit des locations sécurisées pour tout le monde.",
+    "satisfaction": "Satisfaction client",
+    "coverage_title": "Détails de la couverture assurance",
+    "col_coverage": "Couverture",
+    "col_standard": "Standard",
+    "col_premium": "Premium",
+    "cov_liability": "Responsabilité civile",
+    "cov_damage": "Dommages au véhicule",
+    "cov_theft": "Vol du véhicule",
+    "cov_assist": "Assistance routière",
+    "cov_franchise": "Franchise",
+    "franchise_std": "50 000 DA",
+    "franchise_prem": "10 000 DA",
+    "cta_btn": "Créer un compte sécurisé",
+    "id_steps": [
+      "Téléchargez votre pièce d'identité",
+      "Prenez un selfie avec votre pièce en main",
+      "Notre équipe vérifie votre dossier sous 24h",
+      "Badge « Vérifié » affiché sur votre profil"
+    ],
+    "ins_steps": [
+      "Assurance responsabilité civile incluse",
+      "Couverture dommages matériels",
+      "Assistance 24/7 en cas d'accident",
+      "Procédure de déclaration simplifiée"
+    ],
+    "escrow_steps": [
+      "Paiement sécurisé par carte ou virement",
+      "Fonds retenus jusqu'à la fin de la location",
+      "Propriétaire payé après confirmation",
+      "Remboursement garanti en cas d'annulation éligible"
+    ],
+    "review_steps": [
+      "Avis laissé après chaque location",
+      "Locataires ET propriétaires se notent",
+      "Profils suspects signalables",
+      "Modération par notre équipe"
+    ],
+    "support_steps": [
+      "Téléphone : 0673590224",
+      "Email : Kricar.services@gmail.com",
+      "Chat en direct dans l'application",
+      "Délai de réponse moyen : 15 minutes"
+    ]
   },
   "how": {
     "title": "Comment ça marche",
@@ -194,7 +238,35 @@
     "owner_title": "Vous êtes propriétaire ?",
     "owner_step1": "Créez votre annonce gratuitement",
     "owner_step2": "Définissez vos disponibilités et tarifs",
-    "owner_step3": "Recevez des réservations et gagnez de l'argent"
+    "owner_step3": "Recevez des réservations et gagnez de l'argent",
+    "eyebrow": "Mode d'emploi",
+    "renter_heading": "Je cherche à louer",
+    "faq_title": "Questions fréquentes",
+    "cta_title": "Prêt à commencer ?",
+    "cta_sub": "Créez votre compte gratuit en moins de 2 minutes.",
+    "cta_btn": "S'inscrire gratuitement",
+    "faqs": [
+      {
+        "q": "Y a-t-il une assurance ?",
+        "a": "Oui, chaque location est couverte par notre partenaire assurance. En cas d'accident, notre équipe vous accompagne dans toutes les démarches."
+      },
+      {
+        "q": "Comment fonctionne le paiement ?",
+        "a": "Le paiement est sécurisé et retenu jusqu'à la fin de la location. Le propriétaire est payé uniquement après votre confirmation de réception du véhicule."
+      },
+      {
+        "q": "Comment les propriétaires sont-ils vérifiés ?",
+        "a": "Chaque propriétaire doit fournir une pièce d'identité valide, un selfie et un justificatif de domicile. Notre équipe vérifie chaque dossier manuellement."
+      },
+      {
+        "q": "Que faire en cas de problème ?",
+        "a": "Notre support est disponible 24h/24 et 7j/7. Contactez-nous par téléphone, email ou chat directement depuis l'application."
+      },
+      {
+        "q": "Y a-t-il des frais pour les propriétaires ?",
+        "a": "La publication d'une annonce est 100% gratuite. KriCar prend une petite commission sur chaque location réussie."
+      }
+    ]
   },
   "footer": {
     "tagline": "La location de voitures entre particuliers en Algérie.",
@@ -255,5 +327,26 @@
     "bus": "Location de bus et transport collectif",
     "construction": "Location de camions de chantier",
     "trucks": "Location de camions de transport"
+  },
+  "tutorial": {
+    "create_account": "Créer un compte",
+    "full_name": "Nom complet",
+    "phone": "Téléphone",
+    "password": "Mot de passe",
+    "id_verified": "Identité vérifiée",
+    "id_validated": "Pièce d'identité validée",
+    "create_my_account": "Créer mon compte",
+    "search_ph": "Wilaya · Type · Budget",
+    "per_day": "DA/j",
+    "from": "Du",
+    "to": "Au",
+    "total": "Total",
+    "booking_confirmed": "Réservation confirmée — récupérez les clés !",
+    "s1_label": "Créez votre compte",
+    "s1_desc": "Inscrivez-vous et faites vérifier votre identité.",
+    "s2_label": "Trouvez une voiture",
+    "s2_desc": "Filtrez par ville, type et budget.",
+    "s3_label": "Réservez & roulez",
+    "s3_desc": "Confirmez, récupérez les clés, partez."
   }
 }

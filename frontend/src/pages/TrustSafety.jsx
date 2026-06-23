@@ -14,25 +14,25 @@ export default function TrustSafety() {
 
   const items = [
     { p: PATHS.id,     title: t('trust.id_verify_title'), desc: t('trust.id_verify_desc'), color: 'bg-primary-50 dark:bg-primary-500/15 text-primary-600 dark:text-primary-300',
-      steps: ['Téléchargez votre pièce d\'identité', 'Prenez un selfie avec votre pièce en main', 'Notre équipe vérifie votre dossier sous 24h', 'Badge "Vérifié" affiché sur votre profil'] },
+      steps: t('trust.id_steps', { returnObjects: true }) },
     { p: PATHS.shield, title: t('trust.insurance_title'), desc: t('trust.insurance_desc'), color: 'bg-pine-50 dark:bg-pine-500/15 text-pine-600 dark:text-pine-300',
-      steps: ['Assurance responsabilité civile incluse', 'Couverture dommages matériels', 'Assistance 24/7 en cas d\'accident', 'Procédure de déclaration simplifiée'] },
+      steps: t('trust.ins_steps', { returnObjects: true }) },
     { p: PATHS.lock,   title: t('trust.escrow_title'), desc: t('trust.escrow_desc'), color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200',
-      steps: ['Paiement sécurisé par carte ou virement', 'Fonds retenus jusqu\'à la fin de la location', 'Propriétaire payé après confirmation', 'Remboursement garanti en cas d\'annulation éligible'] },
+      steps: t('trust.escrow_steps', { returnObjects: true }) },
     { p: PATHS.star,   title: t('trust.review_title'), desc: t('trust.review_desc'), color: 'bg-honey-50 dark:bg-honey-500/15 text-honey-600 dark:text-honey-400',
-      steps: ['Avis laissé après chaque location', 'Locataires ET propriétaires se notent', 'Profils suspects signalables', 'Modération par notre équipe'] },
+      steps: t('trust.review_steps', { returnObjects: true }) },
     { p: PATHS.phone,  title: t('trust.support_title'), desc: t('trust.support_desc'), color: 'bg-primary-50 dark:bg-primary-500/15 text-primary-600 dark:text-primary-300',
-      steps: ['Téléphone : 0673590224', 'Email : Kricar.services@gmail.com', 'Chat en direct dans l\'application', 'Délai de réponse moyen : 15 minutes'] },
+      steps: t('trust.support_steps', { returnObjects: true }) },
   ];
 
   const Check = () => <svg className="w-4 h-4 text-pine-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>;
 
   const coverage = [
-    ['Responsabilité civile', true, true],
-    ['Dommages au véhicule', true, true],
-    ['Vol du véhicule', false, true],
-    ['Assistance routière', true, true],
-    ['Franchise', '50 000 DA', '10 000 DA'],
+    [t('trust.cov_liability'), true, true],
+    [t('trust.cov_damage'), true, true],
+    [t('trust.cov_theft'), false, true],
+    [t('trust.cov_assist'), true, true],
+    [t('trust.cov_franchise'), t('trust.franchise_std'), t('trust.franchise_prem')],
   ];
   const cell = (v) => v === true
     ? <svg className="w-4 h-4 text-pine-500 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -57,11 +57,11 @@ export default function TrustSafety() {
           </div>
           <div>
             <h2 className="font-display font-semibold text-xl text-pine-800 dark:text-pine-200">KriCar Trust Score</h2>
-            <p className="text-pine-700 dark:text-pine-300/80 text-sm">Notre système de confiance multi-niveaux garantit des locations sécurisées pour tout le monde.</p>
+            <p className="text-pine-700 dark:text-pine-300/80 text-sm">{t('trust.score_desc')}</p>
           </div>
           <div className="ml-auto text-right shrink-0">
             <div className="font-display text-4xl font-semibold text-pine-600 dark:text-pine-300">4.9/5</div>
-            <div className="text-xs text-pine-600 dark:text-pine-400">Satisfaction client</div>
+            <div className="text-xs text-pine-600 dark:text-pine-400">{t('trust.satisfaction')}</div>
           </div>
         </div>
       </div>
@@ -94,15 +94,15 @@ export default function TrustSafety() {
       <div className="mt-10 card p-6">
         <h2 className="font-display font-semibold text-xl text-gray-900 mb-4 flex items-center gap-2">
           <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
-          Détails de la couverture assurance
+          {t('trust.coverage_title')}
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-2.5 text-gray-900 font-semibold">Couverture</th>
-                <th className="text-center py-2.5 text-gray-900 font-semibold">Standard</th>
-                <th className="text-center py-2.5 text-primary-700 font-semibold">Premium</th>
+                <th className="text-left py-2.5 text-gray-900 font-semibold">{t('trust.col_coverage')}</th>
+                <th className="text-center py-2.5 text-gray-900 font-semibold">{t('trust.col_standard')}</th>
+                <th className="text-center py-2.5 text-primary-700 font-semibold">{t('trust.col_premium')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-gray-600">
@@ -121,7 +121,7 @@ export default function TrustSafety() {
       {/* CTA */}
       <div className="text-center mt-10">
         <Link to="/register" className="btn-primary text-base px-8 py-3">
-          Créer un compte sécurisé
+          {t('trust.cta_btn')}
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
         </Link>
       </div>

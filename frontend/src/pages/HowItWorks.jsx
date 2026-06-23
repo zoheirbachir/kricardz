@@ -25,18 +25,12 @@ export default function HowItWorks() {
     { step: '02', text: t('how.owner_step2'), d: Ic.calendar },
     { step: '03', text: t('how.owner_step3'), d: Ic.cash },
   ];
-  const faqs = [
-    { q: "Y a-t-il une assurance ?", a: "Oui, chaque location est couverte par notre partenaire assurance. En cas d'accident, notre équipe vous accompagne dans toutes les démarches." },
-    { q: "Comment fonctionne le paiement ?", a: "Le paiement est sécurisé et retenu jusqu'à la fin de la location. Le propriétaire est payé uniquement après votre confirmation de réception du véhicule." },
-    { q: "Comment les propriétaires sont-ils vérifiés ?", a: "Chaque propriétaire doit fournir une pièce d'identité valide, un selfie et un justificatif de domicile. Notre équipe vérifie chaque dossier manuellement." },
-    { q: "Que faire en cas de problème ?", a: "Notre support est disponible 24h/24 et 7j/7. Contactez-nous par téléphone, email ou chat directement depuis l'application." },
-    { q: "Y a-t-il des frais pour les propriétaires ?", a: "La publication d'une annonce est 100% gratuite. KriCar prend une petite commission sur chaque location réussie." },
-  ];
+  const faqs = t('how.faqs', { returnObjects: true });
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-14">
-        <p className="eyebrow justify-center mb-3">Mode d'emploi</p>
+        <p className="eyebrow justify-center mb-3">{t('how.eyebrow')}</p>
         <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-gray-900 mb-3">{t('how.title')}</h1>
         <p className="text-xl text-gray-500">{t('how.subtitle')}</p>
       </div>
@@ -52,7 +46,7 @@ export default function HowItWorks() {
           <span className="w-11 h-11 rounded-2xl bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d={Ic.key} /></svg>
           </span>
-          Je cherche à louer
+          {t('how.renter_heading')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {renterSteps.map((s, i) => (
@@ -98,7 +92,7 @@ export default function HowItWorks() {
 
       {/* FAQ */}
       <div className="mb-12">
-        <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900 mb-8">Questions fréquentes</h2>
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900 mb-8">{t('how.faq_title')}</h2>
         <div className="space-y-3">
           {faqs.map((faq, i) => (
             <details key={i} className="card group">
@@ -118,10 +112,10 @@ export default function HowItWorks() {
       <div className="relative overflow-hidden text-center bg-gradient-to-br from-primary-500 to-primary-700 rounded-3xl p-10 text-white">
         <div className="absolute -top-10 -right-10 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
         <div className="relative">
-          <h2 className="font-display text-2xl md:text-3xl font-semibold mb-2">Prêt à commencer ?</h2>
-          <p className="text-primary-50/90 mb-6">Créez votre compte gratuit en moins de 2 minutes.</p>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold mb-2">{t('how.cta_title')}</h2>
+          <p className="text-primary-50/90 mb-6">{t('how.cta_sub')}</p>
           <Link to="/register" className="bg-white text-primary-700 hover:bg-primary-50 font-semibold px-8 py-3 rounded-xl transition-colors inline-block">
-            S'inscrire gratuitement
+            {t('how.cta_btn')}
           </Link>
         </div>
       </div>

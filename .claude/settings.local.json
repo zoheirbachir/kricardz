@@ -77,7 +77,8 @@
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);if\\(!Array.isArray\\(j\\)\\){console.log\\('ERR/missing'\\);return}j.forEach\\(x=>console.log\\(\\(x.type==='dir'?'[d] ':'    '\\)+x.name\\)\\)}\")",
       "mcp__0e2da0e3-52c2-4ee4-89c8-404c63bb1683__select_workspace",
       "mcp__0e2da0e3-52c2-4ee4-89c8-404c63bb1683__list_services",
-      "mcp__0e2da0e3-52c2-4ee4-89c8-404c63bb1683__create_web_service"
+      "mcp__0e2da0e3-52c2-4ee4-89c8-404c63bb1683__create_web_service",
+      "Bash(node _addkeys3.cjs)"
     ]
   }
 }

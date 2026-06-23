@@ -16,7 +16,7 @@ function FiltersPanel({ t, filters, wilayas, update, reset }) {
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('home.wilaya_label')}</label>
         <select className="input text-sm" value={filters.wilaya} onChange={e => update('wilaya', e.target.value)}>
-          <option value="">Toutes</option>
+          <option value="">{t('types.all')}</option>
           {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
         </select>
       </div>
@@ -32,13 +32,13 @@ function FiltersPanel({ t, filters, wilayas, update, reset }) {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Prix max (DA/jour)</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('search.max_price')}</label>
         <PriceSlider
           value={Number(filters.max_price) || 30000}
           onChange={val => update('max_price', val === 30000 ? '' : String(val))}
         />
       </div>
-      <button onClick={reset} className="w-full btn-secondary text-sm">Réinitialiser les filtres</button>
+      <button onClick={reset} className="w-full btn-secondary text-sm">{t('search.reset')}</button>
     </div>
   );
 }
@@ -91,8 +91,8 @@ export default function Search() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
-        <p className="eyebrow mb-1.5">Catalogue</p>
-        <h1 className="section-title">Trouvez votre véhicule</h1>
+        <p className="eyebrow mb-1.5">{t('search.catalog')}</p>
+        <h1 className="section-title">{t('search.title')}</h1>
       </div>
       {/* Search bar + controls */}
       <div className="mb-6 flex gap-3">
@@ -103,17 +103,17 @@ export default function Search() {
           <button onClick={() => setViewMode('grid')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white' : 'text-gray-500'}`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-            Grille
+            {t('search.grid')}
           </button>
           <button onClick={switchToMap}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewMode === 'map' ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white' : 'text-gray-500'}`}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-            Carte
+            {t('search.map')}
           </button>
         </div>
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden btn-secondary flex items-center gap-2 shrink-0">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" /></svg>
-          Filtres
+          {t('search.filters')}
         </button>
       </div>
 
@@ -121,7 +121,7 @@ export default function Search() {
         {/* Sidebar */}
         <aside className={`${sidebarOpen ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0`}>
           <div className="card p-5 sticky top-20">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Filtres</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">{t('search.filters')}</h3>
             <FiltersPanel t={t} filters={filters} wilayas={wilayas} update={update} reset={reset} />
           </div>
         </aside>
@@ -129,7 +129,7 @@ export default function Search() {
         {/* Results */}
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-500 mb-5">
-            {loading ? t('common.loading') : `${total} véhicule${total !== 1 ? 's' : ''} trouvé${total !== 1 ? 's' : ''}`}
+            {loading ? t('common.loading') : t('search.results', { count: total })}
           </p>
 
           {/* MAP VIEW */}
@@ -152,7 +152,7 @@ export default function Search() {
               {mapCars.length === 0 && (
                 <p className="flex items-center justify-center gap-2 text-center text-gray-400 text-sm py-6">
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
-                  Aucun véhicule avec GPS actif pour l'instant. Les voitures apparaîtront ici dès que leur traceur GPS enverra une position.
+                  {t('search.map_empty')}
                 </p>
               )}
             </Suspense>
@@ -179,7 +179,7 @@ export default function Search() {
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
                 <p className="text-gray-500 text-lg">{t('common.no_results')}</p>
-                <button onClick={reset} className="mt-4 btn-primary">Effacer les filtres</button>
+                <button onClick={reset} className="mt-4 btn-primary">{t('search.clear')}</button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">

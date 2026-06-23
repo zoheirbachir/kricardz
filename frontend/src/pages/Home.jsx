@@ -145,7 +145,7 @@ export default function Home() {
           <motion.div className="max-w-2xl" initial="hidden" animate="show" variants={staggerContainer(0.12, 0.05)}>
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 text-xs font-semibold mb-6 px-3.5 py-1.5 rounded-full bg-primary-500/20 text-primary-200 ring-1 ring-primary-400/30 backdrop-blur-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse" />
-              Plateforme 100% Algérienne
+              {t('home.badge')}
             </motion.span>
             <AnimatedHeading
               text={t('home.hero_title')}
@@ -179,8 +179,8 @@ export default function Home() {
             {/* Tabs: search a car / browse agencies (mirrors kricar-dz.com) */}
             <div className="grid grid-cols-2 gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl mb-4">
               {[
-                { key: 'car', label: 'Rechercher une voiture', Icon: IcCar },
-                { key: 'agency', label: 'Parcourir les agences', Icon: IcBuilding },
+                { key: 'car', label: t('home.tab_car'), Icon: IcCar },
+                { key: 'agency', label: t('home.tab_agency'), Icon: IcBuilding },
               ].map(tab => (
                 <button key={tab.key} type="button" onClick={() => setSearchMode(tab.key)}
                   className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${searchMode === tab.key ? 'bg-white dark:bg-gray-700 shadow text-primary-600 dark:text-primary-300' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}>
@@ -195,7 +195,7 @@ export default function Home() {
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.wilaya_label')}</label>
                     <select className="input text-sm" value={search.wilaya} onChange={e => setSearch({...search, wilaya: e.target.value})}>
-                      <option value="">Toutes les wilayas</option>
+                      <option value="">{t('home.all_wilayas')}</option>
                       {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
                     </select>
                   </div>
@@ -235,28 +235,28 @@ export default function Home() {
               <form onSubmit={handleAgencySearch} className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Rechercher par nom d'agence</label>
-                    <input type="text" className="input text-sm" placeholder="Nom de l'agence..." value={agencySearch.search}
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.agency_name_label')}</label>
+                    <input type="text" className="input text-sm" placeholder={t('home.agency_name_ph')} value={agencySearch.search}
                       onChange={e => setAgencySearch({ ...agencySearch, search: e.target.value })} />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.wilaya_label')}</label>
                     <select className="input text-sm" value={agencySearch.wilaya} onChange={e => setAgencySearch({ ...agencySearch, wilaya: e.target.value })}>
-                      <option value="">Toutes les wilayas</option>
+                      <option value="">{t('home.all_wilayas')}</option>
                       {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">Type d'agence</label>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.agency_type_label')}</label>
                     <select className="input text-sm" value={agencySearch.type} onChange={e => setAgencySearch({ ...agencySearch, type: e.target.value })}>
-                      <option value="">Tous les types d'agence</option>
-                      {AGENCY_CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                      <option value="">{t('home.all_agency_types')}</option>
+                      {AGENCY_CATEGORIES.map(c => <option key={c.key} value={c.key}>{t(`agency_types.${c.key}`)}</option>)}
                     </select>
                   </div>
                 </div>
                 <button type="submit" className="btn-primary w-full py-3 justify-center text-sm gap-2">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                  Rechercher maintenant
+                  {t('home.search_now')}
                 </button>
               </form>
             )}
@@ -269,10 +269,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <StaggerGroup className="grid grid-cols-2 lg:grid-cols-4 gap-5" stagger={0.08} amount={0.3}>
             {[
-              { Icon: IcShield,   title: 'Assurance incluse', sub: 'Sur chaque location', tint: 'bg-pine-50 dark:bg-pine-500/15 text-pine-600 dark:text-pine-300' },
-              { Icon: IcVerified, title: 'Profils vérifiés', sub: 'Identité contrôlée (KYC)', tint: 'bg-primary-50 dark:bg-primary-500/15 text-primary-600 dark:text-primary-300' },
-              { Icon: IcClock,    title: 'Support 24/7', sub: 'Réponse en ~15 min', tint: 'bg-honey-50 dark:bg-honey-500/15 text-honey-600 dark:text-honey-400' },
-              { Icon: IcLock,     title: 'Paiement sécurisé', sub: 'Fonds protégés', tint: 'bg-pine-50 dark:bg-pine-500/15 text-pine-600 dark:text-pine-300' },
+              { Icon: IcShield,   title: t('home.trust_insurance'), sub: t('home.trust_insurance_sub'), tint: 'bg-pine-50 dark:bg-pine-500/15 text-pine-600 dark:text-pine-300' },
+              { Icon: IcVerified, title: t('home.trust_verified'), sub: t('home.trust_verified_sub'), tint: 'bg-primary-50 dark:bg-primary-500/15 text-primary-600 dark:text-primary-300' },
+              { Icon: IcClock,    title: t('home.trust_support'), sub: t('home.trust_support_sub'), tint: 'bg-honey-50 dark:bg-honey-500/15 text-honey-600 dark:text-honey-400' },
+              { Icon: IcLock,     title: t('home.trust_payment'), sub: t('home.trust_payment_sub'), tint: 'bg-pine-50 dark:bg-pine-500/15 text-pine-600 dark:text-pine-300' },
             ].map(it => (
               <motion.div key={it.title} variants={fadeUp} className="flex items-center gap-3">
                 <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${it.tint}`}><it.Icon className="w-5 h-5" /></div>
@@ -290,9 +290,9 @@ export default function Home() {
       <section className="py-20 bg-gray-50 dark:bg-[#120F0A]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center mb-12">
-            <p className="eyebrow justify-center mb-3">Catégories</p>
-            <h2 className="section-title mb-3">Trouvez le véhicule qu'il vous faut</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Citadines, SUV, utilitaires ou voitures de sport — choisissez selon vos besoins.</p>
+            <p className="eyebrow justify-center mb-3">{t('home.categories_eyebrow')}</p>
+            <h2 className="section-title mb-3">{t('home.categories_title')}</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">{t('home.categories_sub')}</p>
           </Reveal>
           <StaggerGroup className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" stagger={0.07}>
             {CAR_TYPES.map((tp) => (
@@ -310,7 +310,7 @@ export default function Home() {
                   </div>
                   <div className="px-4 py-3 text-center">
                     <span className="text-xs text-primary-600 font-semibold inline-flex items-center gap-1">
-                      Voir <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d={ARROW} /></svg>
+                      {t('home.see')} <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d={ARROW} /></svg>
                     </span>
                   </div>
                 </Link>
@@ -325,8 +325,8 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div ref={whyRef} className={`reveal ${whyVisible ? 'visible' : ''} text-center mb-12`}>
             <p className="eyebrow justify-center mb-3">{t('home.why_title')}</p>
-            <h2 className="section-title mb-3">Pensé pour louer en confiance</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">Des fonctionnalités pensées pour une expérience de location sécurisée et simple.</p>
+            <h2 className="section-title mb-3">{t('home.why_subtitle')}</h2>
+            <p className="text-gray-500 max-w-xl mx-auto">{t('home.why_sub2')}</p>
           </div>
           <StaggerGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" stagger={0.09}>
             {whyItems.map((item) => (
@@ -350,7 +350,7 @@ export default function Home() {
           <div className="flex items-end justify-between mb-10">
             <div>
               <p className="eyebrow mb-2">{t('home.featured_title')}</p>
-              <h2 className="section-title">Véhicules en vedette</h2>
+              <h2 className="section-title">{t('home.featured_subtitle')}</h2>
             </div>
             <Link to="/search" className="text-primary-600 hover:text-primary-700 text-sm font-semibold flex items-center gap-1 transition-colors shrink-0">
               {t('common.see_all')}
@@ -384,9 +384,9 @@ export default function Home() {
         <div className="absolute inset-0 bg-gray-950/80 pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="mb-10">
-            <p className="eyebrow mb-2">Destinations</p>
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-white">Louez près de chez vous</h2>
-            <p className="text-white/70 mt-2">Des voitures disponibles dans les plus grandes villes d'Algérie.</p>
+            <p className="eyebrow mb-2">{t('home.destinations_eyebrow')}</p>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-white">{t('home.destinations_title')}</h2>
+            <p className="text-white/70 mt-2">{t('home.destinations_sub')}</p>
           </Reveal>
           <StaggerGroup className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" stagger={0.05}>
             {(wilayas.length ? wilayas : DEFAULT_WILAYAS).slice(0, 8).map(w => (
@@ -397,7 +397,7 @@ export default function Home() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{w}</p>
-                    <p className="text-xs text-gray-500">Voir les voitures</p>
+                    <p className="text-xs text-gray-500">{t('home.see_cars')}</p>
                   </div>
                 </Link>
               </motion.div>
@@ -414,7 +414,7 @@ export default function Home() {
               <div className="flex items-end justify-between mb-10">
                 <div>
                   <p className="eyebrow mb-2">{t('home.agencies_title')}</p>
-                  <h2 className="section-title">Agences partenaires</h2>
+                  <h2 className="section-title">{t('home.agencies_partners')}</h2>
                 </div>
                 <Link to="/agencies" className="text-primary-600 hover:text-primary-700 text-sm font-semibold flex items-center gap-1 shrink-0">
                   {t('common.see_all')}
@@ -431,7 +431,7 @@ export default function Home() {
                   </div>
                   <h3 className="font-semibold text-sm mb-1 truncate">{agency.name}</h3>
                   <p className="text-xs text-gray-500 mb-2">{agency.wilaya}</p>
-                  <span className="badge-clay">{agency.vehicle_count} véhicules</span>
+                  <span className="badge-clay">{t('agency.vehicles', { count: agency.vehicle_count })}</span>
                 </Link>
               ))}
             </div>
@@ -443,14 +443,14 @@ export default function Home() {
       <section className="py-20 bg-gray-50 dark:bg-[#120F0A]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center mb-12">
-            <p className="eyebrow justify-center mb-3">Simple &amp; rapide</p>
-            <h2 className="section-title mb-3">Louez en 3 étapes</h2>
+            <p className="eyebrow justify-center mb-3">{t('home.how_eyebrow')}</p>
+            <h2 className="section-title mb-3">{t('home.how_title')}</h2>
           </Reveal>
           <Reveal className="mb-6">
             <HowItWorksTutorial />
           </Reveal>
           <div className="text-center mt-8">
-            <Link to="/how-it-works" className="btn-secondary text-sm">En savoir plus</Link>
+            <Link to="/how-it-works" className="btn-secondary text-sm">{t('home.learn_more')}</Link>
           </div>
         </div>
       </section>
@@ -460,8 +460,8 @@ export default function Home() {
         <BgVideo className="absolute inset-0 w-full h-full object-cover" src="/hero/drive.mp4" />
         <div className="absolute inset-0 bg-black/45 pointer-events-none" />
         <Reveal className="relative text-center px-6 max-w-2xl">
-          <h2 className="font-display text-3xl md:text-5xl font-semibold drop-shadow-lg">Prenez la route en toute confiance</h2>
-          <p className="mt-4 text-lg text-white/85 drop-shadow">Des milliers de trajets partout en Algérie, en toute sérénité.</p>
+          <h2 className="font-display text-3xl md:text-5xl font-semibold drop-shadow-lg">{t('home.drive_title')}</h2>
+          <p className="mt-4 text-lg text-white/85 drop-shadow">{t('home.drive_sub')}</p>
         </Reveal>
       </section>
 
@@ -477,7 +477,7 @@ export default function Home() {
                 <h2 className="font-display text-3xl md:text-4xl font-semibold mb-3">{t('home.cta_owner')}</h2>
                 <p className="text-primary-50/90 leading-relaxed">{t('home.cta_owner_desc')}</p>
                 <ul className="mt-5 space-y-2.5 text-sm text-primary-50">
-                  {['Publiez votre annonce gratuitement','Définissez vos tarifs et disponibilités','Paiement sécurisé après chaque location'].map(li => (
+                  {[t('home.cta_li1'), t('home.cta_li2'), t('home.cta_li3')].map(li => (
                     <li key={li} className="flex items-center gap-2">
                       <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                       {li}
@@ -487,7 +487,7 @@ export default function Home() {
               </div>
               <Link to="/register?role=owner"
                 className="bg-white text-primary-700 hover:bg-primary-50 font-semibold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 shrink-0 animate-scale-in inline-flex items-center gap-2">
-                Commencer maintenant
+                {t('home.cta_start')}
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
               </Link>
             </div>
@@ -501,14 +501,14 @@ export default function Home() {
         <div className="absolute inset-0 bg-gray-950/80 pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div ref={testRef} className={`reveal ${testVisible ? 'visible' : ''} text-center mb-12`}>
-            <p className="eyebrow justify-center mb-3">Témoignages</p>
-            <h2 className="font-display text-3xl md:text-4xl font-semibold text-white">Ce que disent nos utilisateurs</h2>
+            <p className="eyebrow justify-center mb-3">{t('home.testimonials_eyebrow')}</p>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-white">{t('home.testimonials_title')}</h2>
           </div>
           <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 stagger ${testVisible ? 'animate-slide-up' : 'opacity-0'}`}>
             {[
-              { name: 'Yacine B.', role: 'Locataire', text: 'Très facile à utiliser, j\'ai trouvé une voiture en 10 minutes. Le propriétaire était très professionnel.', rating: 5, wilaya: 'Alger' },
-              { name: 'Fatima A.', role: 'Propriétaire', text: 'Je loue ma voiture les weekends et je génère un revenu supplémentaire. KriCar rend ça simple et sécurisé.', rating: 5, wilaya: 'Oran' },
-              { name: 'Riadh M.', role: 'Locataire', text: 'Les prix sont beaucoup moins chers qu\'en agence. Et le système de vérification me rassure vraiment.', rating: 4, wilaya: 'Constantine' },
+              { name: 'Yacine B.', role: t('home.role_renter'), text: t('home.testi1'), rating: 5, wilaya: 'Alger' },
+              { name: 'Fatima A.', role: t('home.role_owner'), text: t('home.testi2'), rating: 5, wilaya: 'Oran' },
+              { name: 'Riadh M.', role: t('home.role_renter'), text: t('home.testi3'), rating: 4, wilaya: 'Constantine' },
             ].map((t2, i) => (
               <div key={i} className="card p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
                 <div className="flex items-center gap-0.5 text-honey-500 mb-3">

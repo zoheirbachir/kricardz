@@ -7,6 +7,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import FloatingButtons from './components/FloatingButtons';
 import { ScrollProgress } from './lib/motion';
+import { useNetwork } from './hooks/useNetwork';
 
 import Home from './pages/Home';
 import Search from './pages/Search';
@@ -71,6 +72,16 @@ function AuthLayout({ children }) {
   return <div className="min-h-screen">{children}</div>;
 }
 
+function OfflineBanner() {
+  const online = useNetwork();
+  if (online) return null;
+  return (
+    <div className="fixed bottom-0 inset-x-0 z-[9999] bg-red-600 text-white text-sm text-center py-2 px-4 shadow-lg">
+      Pas de connexion internet — vérifiez votre réseau.
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
@@ -78,6 +89,7 @@ export default function App() {
       <ToastProvider>
         <AuthProvider>
           <BrowserRouter>
+            <OfflineBanner />
             <Routes>
               {/* Auth pages (no navbar/footer) */}
               <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />

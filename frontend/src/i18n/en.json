@@ -166,7 +166,8 @@
     "register_btn": "Create account",
     "no_account": "Don't have an account?",
     "have_account": "Already have an account?",
-    "forgot_password": "Forgot password?"
+    "forgot_password": "Forgot password?",
+    "email_or_phone": "Email or phone"
   },
   "trust": {
     "title": "Trust & Safety",

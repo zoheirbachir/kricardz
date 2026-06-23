@@ -80,7 +80,17 @@
       "mcp__0e2da0e3-52c2-4ee4-89c8-404c63bb1683__create_web_service",
       "Bash(node _addkeys3.cjs)",
       "Bash(node make-admin.js)",
-      "Bash(node -e \"const db=require\\('./db/database'\\); const a=db.prepare\\('SELECT email, role, is_admin FROM users WHERE email=?'\\).get\\('admin@kricar.dz'\\); console.log\\('admin row:', JSON.stringify\\(a\\)\\);\")"
+      "Bash(node -e \"const db=require\\('./db/database'\\); const a=db.prepare\\('SELECT email, role, is_admin FROM users WHERE email=?'\\).get\\('admin@kricar.dz'\\); console.log\\('admin row:', JSON.stringify\\(a\\)\\);\")",
+      "Bash(node _addkey.cjs)",
+      "Bash(node -e \"const db=require\\('./db/database'\\); const a=db.prepare\\('SELECT email, phone, role, is_admin FROM users WHERE phone=?'\\).get\\('0553636834'\\); console.log\\('admin:', JSON.stringify\\(a\\)\\);\")",
+      "Bash(curl -s -o /dev/null \"http://localhost:5000/api/health\")",
+      "Bash(break)",
+      "Bash(curl -s -X POST \"http://localhost:5000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"email\":\"0553636834\",\"password\":\"0553636834\"}')",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\); if\\(j.user\\){console.log\\('OK -> name:',j.user.name,'| role:',j.user.role,'| is_admin:',j.user.is_admin,'| token:',!!j.token\\)} else {console.log\\('FAIL:',j.error\\)}}\\);\")",
+      "Bash(curl -s -X POST \"http://localhost:5000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"email\":\"0553636834\",\"password\":\"wrong\"}')",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{console.log\\(JSON.parse\\(d\\).error||'unexpected success'\\)}\\);\")",
+      "Bash(curl -s -X POST \"http://localhost:5000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"email\":\"cherfaoui.oussama@kricar.dz\",\"password\":\"password123\"}')",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.user?\\('OK -> '+j.user.name\\):\\('FAIL: '+j.error\\)\\)}\\);\")"
     ]
   }
 }

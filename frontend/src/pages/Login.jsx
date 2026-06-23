@@ -42,8 +42,8 @@ export default function Login() {
         <div className="card p-6 shadow-sm">
           <form onSubmit={handle} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('auth.email')}</label>
-              <input type="email" className="input" required placeholder="vous@exemple.com"
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('auth.email_or_phone')}</label>
+              <input type="text" className="input" required placeholder="vous@exemple.com / 05XX XXX XXX" dir="ltr"
                 value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} />
             </div>
             <div>
@@ -71,8 +71,9 @@ export default function Login() {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             Comptes de démonstration :
           </p>
-          <p>Owner: cherfaoui.oussama@kricar.dz / password123</p>
-          <p>Renter: karim@kricar.dz / password123</p>
+          <p>Admin : 0553636834 / 0553636834</p>
+          <p>Owner : cherfaoui.oussama@kricar.dz / password123</p>
+          <p>Renter : karim@kricar.dz / password123</p>
         </div>
       </div>
     </div>

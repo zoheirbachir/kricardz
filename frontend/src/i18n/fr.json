@@ -166,7 +166,8 @@
     "register_btn": "Créer mon compte",
     "no_account": "Pas encore de compte ?",
     "have_account": "Déjà un compte ?",
-    "forgot_password": "Mot de passe oublié ?"
+    "forgot_password": "Mot de passe oublié ?",
+    "email_or_phone": "Email ou téléphone"
   },
   "trust": {
     "title": "Confiance & Sécurité",

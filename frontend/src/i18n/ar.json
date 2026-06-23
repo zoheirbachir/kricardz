@@ -166,7 +166,8 @@
     "register_btn": "إنشاء حساب",
     "no_account": "ليس لديك حساب؟",
     "have_account": "لديك حساب بالفعل؟",
-    "forgot_password": "نسيت كلمة المرور؟"
+    "forgot_password": "نسيت كلمة المرور؟",
+    "email_or_phone": "البريد الإلكتروني أو الهاتف"
   },
   "trust": {
     "title": "الثقة والأمان",

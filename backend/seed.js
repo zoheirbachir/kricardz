@@ -38,13 +38,17 @@ async function seed() {
   const uid = (email) => users.find((u) => u.email === email).id;
   const reviewer = uid('karim@kricar.dz');
 
-  /* Ensure an administrator account exists (admin@kricar.dz / password123) */
+  /* Ensure an administrator account exists — logs in with phone 0553636834 / 0553636834 */
   const adminEmail = 'admin@kricar.dz';
-  if (!db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail)) {
-    db.prepare(`INSERT INTO users (id, email, password_hash, name, role, is_admin, verified, id_verified, kyc_status)
-      VALUES (?, ?, ?, ?, 'admin', 1, 1, 1, 'approved')`).run(uuidv4(), adminEmail, hash, 'Administrateur');
+  const adminPhone = '0553636834';
+  const adminHash = await bcrypt.hash('0553636834', 10);
+  const existingAdmin = db.prepare('SELECT id FROM users WHERE email = ? OR phone = ?').get(adminEmail, adminPhone);
+  if (!existingAdmin) {
+    db.prepare(`INSERT INTO users (id, email, password_hash, name, phone, role, is_admin, verified, id_verified, kyc_status)
+      VALUES (?, ?, ?, ?, ?, 'admin', 1, 1, 1, 'approved')`).run(uuidv4(), adminEmail, adminHash, 'Administrateur', adminPhone);
   } else {
-    db.prepare("UPDATE users SET is_admin = 1, role = 'admin' WHERE email = ?").run(adminEmail);
+    db.prepare("UPDATE users SET phone = ?, password_hash = ?, is_admin = 1, role = 'admin', verified = 1, id_verified = 1, kyc_status = 'approved' WHERE id = ?")
+      .run(adminPhone, adminHash, existingAdmin.id);
   }
 
   /* Reset all car/agency data so it mirrors the live site exactly (users are kept) */

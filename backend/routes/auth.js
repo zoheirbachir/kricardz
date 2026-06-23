@@ -85,9 +85,11 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Email et mot de passe requis' });
+  const identifier = (email || '').trim();
+  if (!identifier || !password) return res.status(400).json({ error: 'Email/téléphone et mot de passe requis' });
 
-  const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  /* The login field accepts either an email or a phone number */
+  const user = db.prepare('SELECT * FROM users WHERE email = ? OR phone = ?').get(identifier, identifier);
   if (!user) return res.status(401).json({ error: 'Identifiants incorrects' });
 
   const ok = await bcrypt.compare(password, user.password_hash);

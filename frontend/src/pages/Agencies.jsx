@@ -22,6 +22,7 @@ export default function Agencies() {
   const [searchParams] = useSearchParams();
   const [agencies, setAgencies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [wilayas, setWilayas] = useState([]);
   const [f, setF] = useState({
     search: searchParams.get('search') || '',
@@ -31,7 +32,10 @@ export default function Agencies() {
   });
 
   useEffect(() => {
-    api.get('/agencies').then(r => setAgencies(r.data)).finally(() => setLoading(false));
+    api.get('/agencies')
+      .then(r => setAgencies(r.data))
+      .catch(() => setError('Impossible de contacter le serveur. Vérifiez votre connexion.'))
+      .finally(() => setLoading(false));
     api.get('/wilayas').then(r => setWilayas(r.data));
   }, []);
 
@@ -104,6 +108,15 @@ export default function Agencies() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => <div key={i} className="card h-64 animate-pulse bg-gray-100 dark:bg-gray-800" />)}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-50 flex items-center justify-center text-red-400">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <p className="text-gray-600 font-medium mb-1">Serveur inaccessible</p>
+          <p className="text-gray-400 text-sm mb-4">{error}</p>
+          <button onClick={() => { setLoading(true); api.get('/agencies').then(r => setAgencies(r.data)).catch(() => setError('Impossible de contacter le serveur.')).finally(() => setLoading(false)); }} className="btn-primary">Réessayer</button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">

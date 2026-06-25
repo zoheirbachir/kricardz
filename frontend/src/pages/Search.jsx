@@ -49,6 +49,7 @@ export default function Search() {
   const [cars, setCars] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [wilayas, setWilayas] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
   const [mapKey, setMapKey] = useState(0);   // increment to force Leaflet remount
@@ -69,8 +70,10 @@ export default function Search() {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
     params.set('include_unavailable', '1');   // show unavailable cars too, like the live catalog
+    setError('');
     api.get(`/cars?${params.toString()}`)
       .then(r => { setCars(r.data.cars); setTotal(r.data.total); })
+      .catch(() => setError('Impossible de contacter le serveur. Vérifiez votre connexion ou réessayez dans quelques secondes.'))
       .finally(() => setLoading(false));
   }, [filters]);
 
@@ -172,6 +175,15 @@ export default function Search() {
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-20">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-red-50 flex items-center justify-center text-red-400">
+                  <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.6}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <p className="text-gray-600 text-base font-medium mb-1">Serveur inaccessible</p>
+                <p className="text-gray-400 text-sm mb-4">{error}</p>
+                <button onClick={() => setFilters(f => ({...f}))} className="btn-primary">Réessayer</button>
               </div>
             ) : cars.length === 0 ? (
               <div className="text-center py-20">

@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: '/api' });
+/* Web (same-origin) leaves VITE_API_URL empty → relative "/api".
+   Mobile (Capacitor) builds with VITE_API_URL set to the hosted backend,
+   e.g. VITE_API_URL=https://kricardz.onrender.com → "https://kricardz.onrender.com/api". */
+export const API_ORIGIN = import.meta.env.VITE_API_URL || '';
+const api = axios.create({ baseURL: `${API_ORIGIN}/api` });
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');

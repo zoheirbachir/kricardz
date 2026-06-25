@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import api from '../api';
+import api, { API_ORIGIN } from '../api';
 import MapView from '../components/MapView';
 
-// Use the same origin so the Vite proxy handles WS upgrades in dev,
-// and the real server handles it in production.
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
+// Web/same-origin: Vite proxy (dev) / same server (prod) handle WS.
+// Mobile (Capacitor): must hit the hosted backend (API_ORIGIN), not capacitor://.
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || API_ORIGIN || window.location.origin;
 
 export default function TrackCar() {
   const { id } = useParams();

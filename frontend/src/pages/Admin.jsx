@@ -9,6 +9,7 @@ const TABS = [
   { key: 'cars', label: 'Véhicules' },
   { key: 'users', label: 'Utilisateurs' },
   { key: 'bookings', label: 'Réservations' },
+  { key: 'contracts', label: 'Contrats' },
 ];
 
 const fmtDate = (d) => d ? new Date(d.includes('T') ? d : d.replace(' ', 'T') + 'Z').toLocaleDateString('fr-DZ', { dateStyle: 'medium' }) : '—';
@@ -35,6 +36,7 @@ export default function Admin() {
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [q, setQ] = useState('');
 
@@ -42,7 +44,7 @@ export default function Admin() {
 
   const load = useCallback((which) => {
     if (which === 'overview') { setLoading(true); loadStats().finally(() => setLoading(false)); return; }
-    const map = { agencies: setAgencies, cars: setCars, users: setUsers, bookings: setBookings };
+    const map = { agencies: setAgencies, cars: setCars, users: setUsers, bookings: setBookings, contracts: setContracts };
     setLoading(true);
     api.get(`/admin/${which}`).then(r => map[which](r.data))
       .catch(() => toast({ type: 'error', message: 'Échec du chargement.' }))
@@ -66,6 +68,7 @@ export default function Admin() {
   const fAgencies = useMemo(() => filt(agencies, ['name', 'owner_name', 'wilaya', 'owner_email']), [agencies, q]);
   const fCars = useMemo(() => filt(cars, ['title', 'brand', 'owner_name', 'wilaya']), [cars, q]);
   const fUsers = useMemo(() => filt(users, ['name', 'email', 'phone']), [users, q]);
+  const fContracts = useMemo(() => filt(contracts, ['contract_number', 'agency_owner_name', 'renter_name', 'type']), [contracts, q]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -97,6 +100,7 @@ export default function Admin() {
           <Stat label="Véhicules" value={stats?.cars} />
           <Stat label="Véhicules disponibles" value={stats?.available_cars} tint="text-pine-600 dark:text-pine-300" />
           <Stat label="Réservations" value={stats?.bookings} />
+          <Stat label="Contrats émis" value={stats?.contracts} tint="text-primary-600 dark:text-primary-300" />
           <Stat label="Avis" value={stats?.reviews} />
           <Stat label="KYC en attente" value={stats?.kyc?.pending} tint="text-honey-600 dark:text-honey-400" />
           <Stat label="KYC approuvés" value={stats?.kyc?.approved} tint="text-pine-600 dark:text-pine-300" />
@@ -236,6 +240,37 @@ export default function Admin() {
                 </tr>
               ))}
               {bookings.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Aucune réservation.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Contracts */}
+      {tab === 'contracts' && !loading && (
+        <div className="card overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-left text-gray-500 border-b border-gray-100 dark:border-gray-800">
+              <tr>{['N° de contrat', 'Type', 'Agence', 'Client', 'Émis le', 'Statut', ''].map(h => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+              {fContracts.map(ct => (
+                <tr key={ct.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                  <td className="px-4 py-3 font-mono font-medium text-gray-900 dark:text-white">{ct.contract_number}</td>
+                  <td className="px-4 py-3">
+                    <span className={ct.type === 'partnership' ? 'badge bg-primary-100 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300' : 'badge bg-pine-50 text-pine-700 dark:bg-pine-500/15 dark:text-pine-300'}>
+                      {ct.type === 'partnership' ? 'Partenariat' : 'Location'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-500">{ct.agency_owner_name || '—'}</td>
+                  <td className="px-4 py-3 text-gray-500">{ct.renter_name || '—'}</td>
+                  <td className="px-4 py-3 text-gray-500">{fmtDate(ct.created_at)}</td>
+                  <td className="px-4 py-3"><span className="badge-pine">{ct.status}</span></td>
+                  <td className="px-4 py-3">
+                    <Link to={`/contracts/${ct.id}`} className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">Voir</Link>
+                  </td>
+                </tr>
+              ))}
+              {fContracts.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Aucun contrat émis.</td></tr>}
             </tbody>
           </table>
         </div>

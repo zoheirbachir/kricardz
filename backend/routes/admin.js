@@ -83,6 +83,7 @@ router.get('/stats', adminAuth, (req, res) => {
     available_cars: c('SELECT COUNT(*) c FROM cars WHERE available=1'),
     bookings: c('SELECT COUNT(*) c FROM bookings'),
     reviews: c('SELECT COUNT(*) c FROM reviews'),
+    contracts: c('SELECT COUNT(*) c FROM contracts'),
     kyc: kycCounts(),
   });
 });
@@ -193,6 +194,26 @@ router.get('/bookings', adminAuth, (req, res) => {
     c.title AS car_title, u.name AS renter_name
     FROM bookings b JOIN cars c ON b.car_id = c.id JOIN users u ON b.renter_id = u.id
     ORDER BY b.created_at DESC LIMIT 200`).all());
+});
+
+/* ── Contracts oversight (read-only) ── */
+router.get('/contracts', adminAuth, (req, res) => {
+  const { type = '' } = req.query;
+  let q = `SELECT ct.id, ct.contract_number, ct.type, ct.status, ct.created_at,
+      ag.name AS agency_owner_name, rn.name AS renter_name
+    FROM contracts ct
+    LEFT JOIN users ag ON ct.agency_owner_id = ag.id
+    LEFT JOIN users rn ON ct.renter_id = rn.id WHERE 1=1`;
+  const p = [];
+  if (type === 'partnership' || type === 'rental') { q += ' AND ct.type = ?'; p.push(type); }
+  q += ' ORDER BY ct.created_at DESC LIMIT 300';
+  res.json(db.prepare(q).all(...p));
+});
+
+/* ── Security audit log (email verification + password reset events) ── */
+router.get('/auth-events', adminAuth, (req, res) => {
+  res.json(db.prepare(`SELECT id, user_id, email, type, ip, created_at
+    FROM auth_events ORDER BY created_at DESC LIMIT 200`).all());
 });
 
 module.exports = router;

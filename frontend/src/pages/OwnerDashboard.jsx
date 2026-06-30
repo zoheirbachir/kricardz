@@ -100,6 +100,24 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
+      {/* Founding-partner offer (CRICAR 2.0 — lock in agency perks before e-payment launches) */}
+      <div className="mb-8 rounded-2xl border border-primary-200 dark:border-primary-500/30 bg-gradient-to-br from-primary-50 to-honey-50 dark:from-primary-500/10 dark:to-honey-500/10 p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary-500 text-white flex items-center justify-center shrink-0">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-display font-semibold text-gray-900 dark:text-white">Offre partenaire fondateur</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
+              <span className="font-semibold text-primary-700 dark:text-primary-300">3 mois 100% gratuits</span> + une <span className="font-semibold text-primary-700 dark:text-primary-300">réduction permanente de 30%</span> à l'ouverture du paiement électronique. Générez votre contrat de partenariat pour activer ces avantages.
+            </p>
+          </div>
+          <button onClick={openPartnershipContract} disabled={contractBusy} className="btn-primary text-sm shrink-0">
+            {contractBusy ? '…' : 'Activer mon partenariat'}
+          </button>
+        </div>
+      </div>
+
       {/* Stats */}
       <StaggerGroup className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8" stagger={0.08}>
         {[

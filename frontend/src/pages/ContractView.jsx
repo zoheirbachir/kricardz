@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../api';
+import api, { API_ORIGIN } from '../api';
 import EStamp from '../components/EStamp';
+
+/* On the web API_ORIGIN is empty → use the current site. On mobile (Capacitor) it's
+   the hosted backend URL, so QR codes point at the real site, not capacitor://. */
+const VERIFY_BASE = API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : '');
 
 const Row = ({ label, value }) => (
   <div className="flex justify-between gap-3 py-1 border-b border-dashed border-gray-200 text-sm">
@@ -38,7 +42,7 @@ export default function ContractView() {
 
   const d = c.data;
   const isRental = c.type === 'rental';
-  const verifyUrl = `${window.location.origin}/verify/${c.qr_token}`;
+  const verifyUrl = `${VERIFY_BASE}/verify/${c.qr_token}`;
   const issued = new Date(d.issued_at).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (

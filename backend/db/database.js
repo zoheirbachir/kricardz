@@ -147,4 +147,26 @@ try { db.exec(`ALTER TABLE agencies ADD COLUMN agency_type TEXT DEFAULT 'classic
 try { db.exec(`ALTER TABLE agencies ADD COLUMN cover TEXT`); } catch {}                          // banner image url
 try { db.exec(`UPDATE agencies SET agency_type = 'classic' WHERE agency_type IS NULL`); } catch {}
 
+/* Car registration plate — printed on rental contracts (idempotent) */
+try { db.exec(`ALTER TABLE cars ADD COLUMN registration_number TEXT`); } catch {}
+
+/* ── Electronic contracts (CRICAR 2.0) ──
+   type:   'partnership' (KriCar ↔ agency) | 'rental' (client ↔ agency)
+   data:   JSON snapshot of every party/vehicle field at issue time (immutable)
+   qr_token: opaque token embedded in the QR code for public verification */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS contracts (
+    id TEXT PRIMARY KEY,
+    contract_number TEXT UNIQUE NOT NULL,
+    type TEXT NOT NULL,
+    booking_id TEXT REFERENCES bookings(id),
+    agency_owner_id TEXT REFERENCES users(id),
+    renter_id TEXT REFERENCES users(id),
+    data TEXT NOT NULL,
+    qr_token TEXT UNIQUE NOT NULL,
+    status TEXT DEFAULT 'active',
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+`);
+
 module.exports = db;

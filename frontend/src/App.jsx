@@ -27,6 +27,8 @@ import TrustSafety from './pages/TrustSafety';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import AgencyDetail from './pages/AgencyDetail';
+import ContractView from './pages/ContractView';
+import VerifyContract from './pages/VerifyContract';
 
 function Spinner() {
   return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>;
@@ -109,6 +111,12 @@ export default function App() {
 
               {/* GPS tracking — accessible to anyone with the link (renter receives it) */}
               <Route path="/track/:id" element={<Layout><TrackCar /></Layout>} />
+
+              {/* Public contract verification (opened by scanning a stamp QR) */}
+              <Route path="/verify/:token" element={<Layout><VerifyContract /></Layout>} />
+
+              {/* Contract document — only the parties / admin can open it */}
+              <Route path="/contracts/:id" element={<PrivateRoute><Layout><ContractView /></Layout></PrivateRoute>} />
 
               {/* Protected */}
               <Route path="/dashboard" element={<PrivateRoute><Layout><Dashboard /></Layout></PrivateRoute>} />

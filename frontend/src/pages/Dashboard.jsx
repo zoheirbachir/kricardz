@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -18,9 +18,19 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const toast = useToast();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cancelConfirm, setCancelConfirm] = useState(null);
+
+  const openRentalContract = async (bookingId) => {
+    try {
+      const res = await api.post(`/contracts/rental/${bookingId}`);
+      navigate(`/contracts/${res.data.id}`);
+    } catch (e) {
+      toast({ type: 'error', message: e.response?.data?.error || 'Impossible de générer le contrat.' });
+    }
+  };
 
   useEffect(() => {
     api.get('/bookings/my').then(r => setBookings(r.data)).finally(() => setLoading(false));
@@ -159,6 +169,13 @@ export default function Dashboard() {
                     <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse inline-block" />
                     Suivre en direct
                   </Link>
+                )}
+                {(b.status === 'confirmed' || b.status === 'completed') && (
+                  <button onClick={() => openRentalContract(b.id)}
+                    className="text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 py-1 px-3 rounded-lg flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Mon contrat
+                  </button>
                 )}
                 {b.status === 'pending' && (
                   cancelConfirm === b.id ? (

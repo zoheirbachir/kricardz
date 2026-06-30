@@ -61,6 +61,25 @@ export default function OwnerDashboard() {
     toast({ type: status === 'confirmed' ? 'success' : status === 'cancelled' ? 'error' : 'info', message: msgs[status] });
   };
 
+  const [contractBusy, setContractBusy] = useState(false);
+  const openPartnershipContract = async () => {
+    setContractBusy(true);
+    try {
+      const res = await api.post('/contracts/partnership');
+      navigate(`/contracts/${res.data.id}`);
+    } catch (e) {
+      toast({ type: 'error', message: e.response?.data?.error || 'Impossible de générer le contrat.' });
+    } finally { setContractBusy(false); }
+  };
+  const openRentalContract = async (bookingId) => {
+    try {
+      const res = await api.post(`/contracts/rental/${bookingId}`);
+      navigate(`/contracts/${res.data.id}`);
+    } catch (e) {
+      toast({ type: 'error', message: e.response?.data?.error || 'Impossible de générer le contrat.' });
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-8">
@@ -69,6 +88,10 @@ export default function OwnerDashboard() {
           <p className="text-gray-500 text-sm mt-1">Gérez vos annonces et réservations</p>
         </div>
         <div className="flex gap-2">
+          <button onClick={openPartnershipContract} disabled={contractBusy} className="btn-secondary text-sm">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            {contractBusy ? '…' : 'Contrat de partenariat'}
+          </button>
           <Link to="/dashboard" className="btn-secondary text-sm">Mes réservations</Link>
           <Link to="/dashboard/owner/add" className="btn-primary text-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
@@ -205,6 +228,12 @@ export default function OwnerDashboard() {
                   )}
                   {b.status === 'confirmed' && (
                     <button onClick={() => updateBooking(b.id, 'completed')} className="btn-secondary text-xs py-1.5 px-3">Marquer terminée</button>
+                  )}
+                  {(b.status === 'confirmed' || b.status === 'completed') && (
+                    <button onClick={() => openRentalContract(b.id)} className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 py-1.5 px-3 border border-primary-200 rounded-lg">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      Contrat de location
+                    </button>
                   )}
                 </div>
               </div>

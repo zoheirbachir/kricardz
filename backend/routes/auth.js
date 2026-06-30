@@ -33,8 +33,8 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
     const {
       email, password, name, phone, role,
       document_type, document_number, secondary_document_type,
-      driving_license_issued_date, driving_license_expiry_date, lessor_type,
-      agency_legal_name, agency_commercial_reg_number,
+      driving_license_number, driving_license_issued_date, driving_license_expiry_date, lessor_type,
+      agency_legal_name, agency_commercial_reg_number, agency_address, national_id_number,
     } = req.body;
 
     if (!email || !password || !name) {
@@ -59,18 +59,22 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
       INSERT INTO users
         (id, email, password_hash, name, phone, role,
          kyc_status, lessor_type, document_type, document_number,
-         driving_license_issued_date, driving_license_expiry_date, agency_legal_name, agency_commercial_reg_number, kyc_docs)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         driving_license_number, driving_license_issued_date, driving_license_expiry_date,
+         agency_legal_name, agency_commercial_reg_number, agency_address, national_id_number, kyc_docs)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, email, hash, name, phone || null, safeRole,
       submittedKyc ? 'pending' : 'none',
       lessor_type || null,
       secondary_document_type || document_type || null,
       document_number || null,
+      driving_license_number || null,
       driving_license_issued_date || null,
       driving_license_expiry_date || null,
       agency_legal_name || null,
       agency_commercial_reg_number || null,
+      agency_address || null,
+      national_id_number || null,
       JSON.stringify(docs)
     );
 

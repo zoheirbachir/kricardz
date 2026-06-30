@@ -107,8 +107,12 @@ try { db.exec(`ALTER TABLE users ADD COLUMN kyc_status TEXT DEFAULT 'none'`); } 
 try { db.exec(`ALTER TABLE users ADD COLUMN lessor_type TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN document_type TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN document_number TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN driving_license_number TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN driving_license_issued_date TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN driving_license_expiry_date TEXT`); } catch {}
+/* ── Expanded agency / manager identity columns (CRICAR 2.0 contracts) ── */
+try { db.exec(`ALTER TABLE users ADD COLUMN agency_address TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN national_id_number TEXT`); } catch {}   // NIN (18 digits) of the manager
 try { db.exec(`ALTER TABLE users ADD COLUMN agency_legal_name TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN agency_commercial_reg_number TEXT`); } catch {}
 /* JSON map of uploaded KYC document file paths */

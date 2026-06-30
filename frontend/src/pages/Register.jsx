@@ -66,8 +66,9 @@ export default function Register() {
 
   const [form, setForm] = useState({
     email: '', password: '', name: '', phone: '', role: defaultRole,
-    document_number: '', driving_license_issued_date: '', driving_license_expiry_date: '',
-    agency_legal_name: '', agency_commercial_reg_number: '',
+    document_number: '', driving_license_number: '',
+    driving_license_issued_date: '', driving_license_expiry_date: '',
+    agency_legal_name: '', agency_commercial_reg_number: '', agency_address: '', national_id_number: '',
   });
   const [lessorType, setLessorType] = useState('individual');
   const [documentType, setDocumentType] = useState('id_card');
@@ -98,11 +99,12 @@ export default function Register() {
     e.preventDefault();
     setError('');
 
-    // Renter: driving-license validity period (issue → expiry)
+    // Renter: driving-license number + validity period (issue → expiry)
     if (isRenter) {
       const from = form.driving_license_issued_date;
       const to = form.driving_license_expiry_date;
       const todayStr = new Date().toISOString().split('T')[0];
+      if (!form.driving_license_number.trim()) { setError('Veuillez indiquer le numéro de votre permis de conduire.'); return; }
       if (!from || !to) { setError("Veuillez indiquer les dates de début et d'expiration de votre permis de conduire."); return; }
       if (to <= from) { setError("La date d'expiration du permis doit être postérieure à la date d'obtention."); return; }
       if (to < todayStr) { setError('Votre permis de conduire est expiré. Une licence valide est requise.'); return; }
@@ -126,6 +128,7 @@ export default function Register() {
       fd.append('document_number', form.document_number || '');
 
       if (isRenter) {
+        fd.append('driving_license_number', form.driving_license_number || '');
         fd.append('driving_license_issued_date', form.driving_license_issued_date || '');
         fd.append('driving_license_expiry_date', form.driving_license_expiry_date || '');
         fd.append('secondary_document_type', secondaryDocType);
@@ -135,6 +138,8 @@ export default function Register() {
         if (isAgency) {
           fd.append('agency_legal_name', form.agency_legal_name || '');
           fd.append('agency_commercial_reg_number', form.agency_commercial_reg_number || '');
+          fd.append('agency_address', form.agency_address || '');
+          fd.append('national_id_number', form.national_id_number || '');
         }
       }
       Object.entries(files).forEach(([k, file]) => { if (file) fd.append(k, file); });
@@ -235,6 +240,17 @@ export default function Register() {
                             value={form.agency_legal_name} onChange={(e) => set('agency_legal_name', e.target.value)} />
                           <p className="text-xs text-gray-500 mt-1">Utilisé dans les contrats électroniques au nom de l'agence.</p>
                         </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Adresse de l'agence</label>
+                          <input type="text" className="input" placeholder="Rue, ville, wilaya"
+                            value={form.agency_address} onChange={(e) => set('agency_address', e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">N° d'identité nationale du gérant (NIN)</label>
+                          <input type="text" inputMode="numeric" maxLength={18} placeholder="18 chiffres" dir="ltr" className="input"
+                            value={form.national_id_number} onChange={(e) => set('national_id_number', e.target.value.replace(/\D/g, ''))} />
+                          <p className="text-xs text-gray-500 mt-1">Doit contenir exactement 18 chiffres.</p>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -280,6 +296,12 @@ export default function Register() {
                   {/* Driving license */}
                   <div className="p-4 rounded-xl border-2 border-primary-200 dark:border-primary-500/30 bg-primary-50/40 dark:bg-primary-500/5 space-y-3">
                     <h4 className="font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2 text-sm"><IcCar className="w-5 h-5 text-primary-500" /> Permis de conduire</h4>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">N° du permis de conduire <span className="text-red-500">*</span></label>
+                      <input type="text" placeholder="Ex: 1234567890" dir="ltr" className="input"
+                        value={form.driving_license_number} onChange={(e) => set('driving_license_number', e.target.value)} />
+                      <p className="text-xs text-gray-500 mt-1">Figurant sur votre permis — requis pour les contrats de location.</p>
+                    </div>
                     <FileDrop label="Photo recto" required onFile={(f) => setFile('driving_license_front', f)} />
                     <FileDrop label="Photo verso" required onFile={(f) => setFile('driving_license_back', f)} />
                     <div>

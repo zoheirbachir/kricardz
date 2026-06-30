@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../api';
 import { Reveal, StaggerGroup, fadeUp } from '../lib/motion';
+import EmailVerifyBanner from '../components/EmailVerifyBanner';
 
 const statusColors = {
   pending: 'bg-honey-50 text-honey-700',
@@ -56,6 +57,9 @@ export default function Dashboard() {
           </Link>
         )}
       </div>
+
+      {/* Email confirmation reminder */}
+      <EmailVerifyBanner />
 
       {/* KYC verification status banner */}
       {user?.kyc_status === 'pending' && (

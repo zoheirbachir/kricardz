@@ -47,7 +47,10 @@ export default function Login() {
                 value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('auth.password')}</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-gray-700">{t('auth.password')}</label>
+                <Link to="/forgot-password" className="text-xs text-primary-600 font-medium hover:underline">{t('auth.forgot_password')}</Link>
+              </div>
               <input type="password" className="input" required placeholder="••••••••"
                 value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} />
             </div>

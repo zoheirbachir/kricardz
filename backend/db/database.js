@@ -124,6 +124,26 @@ try { db.exec(`ALTER TABLE users ADD COLUMN banned INTEGER DEFAULT 0`); } catch 
 try { db.exec(`ALTER TABLE users ADD COLUMN kyc_rejection_reason TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN kyc_reviewed_at TEXT`); } catch {}
 
+/* ── Email verification + password recovery (Feature 11, idempotent) ──
+   Tokens are stored as SHA-256 hashes; the raw token only travels in the email link. */
+try { db.exec(`ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN email_verify_token TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN email_verify_expires TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN password_reset_token TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN password_reset_expires TEXT`); } catch {}
+
+/* Security audit log: every verify/reset event is recorded (the doc requires it). */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS auth_events (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    email TEXT,
+    type TEXT NOT NULL,
+    ip TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+`);
+
 /* ── Rental-terms columns on cars (idempotent) ── */
 try { db.exec(`ALTER TABLE cars ADD COLUMN caution INTEGER`); } catch {}           // security deposit (DA), refunded if no damage
 try { db.exec(`ALTER TABLE cars ADD COLUMN km_per_day INTEGER`); } catch {}        // mileage allowance per day

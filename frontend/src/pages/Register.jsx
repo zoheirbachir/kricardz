@@ -144,7 +144,9 @@ export default function Register() {
       }
       Object.entries(files).forEach(([k, file]) => { if (file) fd.append(k, file); });
 
-      await register(fd);
+      const data = await register(fd);
+      /* Dev mode (no SMTP configured) returns the confirmation link so we can show it. */
+      if (data?.dev_verify_link) sessionStorage.setItem('kc_dev_verify_link', data.dev_verify_link);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || t('common.error'));

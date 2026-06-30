@@ -34,7 +34,17 @@ export function AuthProvider({ children }) {
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
-    return data.user;
+    return data; // includes user + email_verification_required + dev_verify_link
+  };
+
+  /* Re-pull the current user (e.g. after confirming email) so banners update. */
+  const refreshUser = async () => {
+    try {
+      const r = await api.get('/auth/me');
+      setUser(r.data);
+      localStorage.setItem('user', JSON.stringify(r.data));
+      return r.data;
+    } catch { return null; }
   };
 
   const logout = () => {
@@ -44,7 +54,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

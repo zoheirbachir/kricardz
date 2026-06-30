@@ -29,6 +29,9 @@ import Contact from './pages/Contact';
 import AgencyDetail from './pages/AgencyDetail';
 import ContractView from './pages/ContractView';
 import VerifyContract from './pages/VerifyContract';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function Spinner() {
   return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>;
@@ -96,6 +99,8 @@ export default function App() {
               {/* Auth pages (no navbar/footer) */}
               <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />
               <Route path="/register" element={<AuthLayout><Register /></AuthLayout>} />
+              <Route path="/forgot-password" element={<AuthLayout><ForgotPassword /></AuthLayout>} />
+              <Route path="/reset-password" element={<AuthLayout><ResetPassword /></AuthLayout>} />
 
               {/* Main pages */}
               <Route path="/" element={<Layout><Home /></Layout>} />
@@ -111,6 +116,9 @@ export default function App() {
 
               {/* GPS tracking — accessible to anyone with the link (renter receives it) */}
               <Route path="/track/:id" element={<Layout><TrackCar /></Layout>} />
+
+              {/* Email confirmation (opened from the verification email) */}
+              <Route path="/verify-email" element={<Layout><VerifyEmail /></Layout>} />
 
               {/* Public contract verification (opened by scanning a stamp QR) */}
               <Route path="/verify/:token" element={<Layout><VerifyContract /></Layout>} />

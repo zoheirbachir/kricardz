@@ -26,7 +26,7 @@ async function seed() {
   for (const u of users) {
     const exists = db.prepare('SELECT id FROM users WHERE email = ?').get(u.email);
     if (!exists) {
-      db.prepare('INSERT INTO users (id, email, password_hash, name, phone, role, verified, id_verified) VALUES (?, ?, ?, ?, ?, ?, 1, 1)').run(
+      db.prepare('INSERT INTO users (id, email, password_hash, name, phone, role, verified, id_verified, email_verified) VALUES (?, ?, ?, ?, ?, ?, 1, 1, 1)').run(
         u.id, u.email, hash, u.name, u.phone, u.role
       );
     }
@@ -44,10 +44,10 @@ async function seed() {
   const adminHash = await bcrypt.hash('0553636834', 10);
   const existingAdmin = db.prepare('SELECT id FROM users WHERE email = ? OR phone = ?').get(adminEmail, adminPhone);
   if (!existingAdmin) {
-    db.prepare(`INSERT INTO users (id, email, password_hash, name, phone, role, is_admin, verified, id_verified, kyc_status)
-      VALUES (?, ?, ?, ?, ?, 'admin', 1, 1, 1, 'approved')`).run(uuidv4(), adminEmail, adminHash, 'Administrateur', adminPhone);
+    db.prepare(`INSERT INTO users (id, email, password_hash, name, phone, role, is_admin, verified, id_verified, email_verified, kyc_status)
+      VALUES (?, ?, ?, ?, ?, 'admin', 1, 1, 1, 1, 'approved')`).run(uuidv4(), adminEmail, adminHash, 'Administrateur', adminPhone);
   } else {
-    db.prepare("UPDATE users SET phone = ?, password_hash = ?, is_admin = 1, role = 'admin', verified = 1, id_verified = 1, kyc_status = 'approved' WHERE id = ?")
+    db.prepare("UPDATE users SET phone = ?, password_hash = ?, is_admin = 1, role = 'admin', verified = 1, id_verified = 1, email_verified = 1, kyc_status = 'approved' WHERE id = ?")
       .run(adminPhone, adminHash, existingAdmin.id);
   }
 

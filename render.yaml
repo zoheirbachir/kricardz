@@ -13,7 +13,8 @@ services:
     plan: free
     # --include=dev forces Vite & build tools to install even though NODE_ENV=production
     buildCommand: npm --prefix frontend install --include=dev && npm --prefix frontend run build && npm --prefix backend install
-    startCommand: cd backend && node seed.js && node server.js
+    # `;` (not `&&`) so a seed failure can never stop the API from starting
+    startCommand: cd backend && (node seed.js || true) && node server.js
     envVars:
       - key: NODE_VERSION
         value: "24"          # node:sqlite needs Node >= 22.5

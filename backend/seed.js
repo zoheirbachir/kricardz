@@ -134,4 +134,9 @@ async function seed() {
   process.exit(0);
 }
 
-seed().catch(console.error);
+/* Seeding must never block the API from starting. On any failure we log it and
+   exit 0 so the `node seed.js && node server.js` boot chain still launches the server. */
+seed().catch((e) => {
+  console.error('Seed failed (continuing to start server anyway):', e);
+  process.exit(0);
+});

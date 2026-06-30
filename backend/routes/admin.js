@@ -1,6 +1,8 @@
 const express = require('express');
+const path = require('path');
 const db = require('../db/database');
 const { adminAuth } = require('../middleware/auth');
+const backup = require('../lib/backup');
 
 const router = express.Router();
 
@@ -214,6 +216,41 @@ router.get('/contracts', adminAuth, (req, res) => {
 router.get('/auth-events', adminAuth, (req, res) => {
   res.json(db.prepare(`SELECT id, user_id, email, type, ip, created_at
     FROM auth_events ORDER BY created_at DESC LIMIT 200`).all());
+});
+
+/* ════════════ Database backups ════════════ */
+
+/* List on-server snapshots */
+router.get('/backups', adminAuth, (req, res) => {
+  res.json(backup.listBackups());
+});
+
+/* Create a snapshot on demand */
+router.post('/backups', adminAuth, (req, res) => {
+  try {
+    const file = backup.backupNow('manual');
+    res.status(201).json({ ok: true, name: path.basename(file) });
+  } catch (e) {
+    res.status(500).json({ error: 'Échec de la sauvegarde : ' + e.message });
+  }
+});
+
+/* Download a specific snapshot by name */
+router.get('/backups/:name', adminAuth, (req, res) => {
+  const p = backup.backupPath(req.params.name);
+  if (!p) return res.status(404).json({ error: 'Sauvegarde introuvable' });
+  res.download(p);
+});
+
+/* Download a FRESH snapshot of the live database (the durable, off-server copy).
+   Creates a new consistent snapshot, then streams it to the admin's browser. */
+router.get('/database/download', adminAuth, (req, res) => {
+  try {
+    const file = backup.backupNow('download');
+    res.download(file, `kricar-${new Date().toISOString().slice(0, 10)}.db`);
+  } catch (e) {
+    res.status(500).json({ error: 'Échec de la sauvegarde : ' + e.message });
+  }
 });
 
 module.exports = router;

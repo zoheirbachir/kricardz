@@ -13,6 +13,7 @@ backend/.env
 backend/db/*.db
 backend/db/*.db-wal
 backend/db/*.db-shm
+backend/backups/
 backend/uploads/*
 !backend/uploads/.gitkeep
 

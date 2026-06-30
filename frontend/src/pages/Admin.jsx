@@ -10,7 +10,11 @@ const TABS = [
   { key: 'users', label: 'Utilisateurs' },
   { key: 'bookings', label: 'Réservations' },
   { key: 'contracts', label: 'Contrats' },
+  { key: 'backups', label: 'Sauvegardes' },
 ];
+
+const fmtSize = (b) => b > 1048576 ? (b / 1048576).toFixed(1) + ' Mo' : (b / 1024).toFixed(0) + ' Ko';
+const fmtDateTime = (d) => d ? new Date(d).toLocaleString('fr-DZ', { dateStyle: 'short', timeStyle: 'short' }) : '—';
 
 const fmtDate = (d) => d ? new Date(d.includes('T') ? d : d.replace(' ', 'T') + 'Z').toLocaleDateString('fr-DZ', { dateStyle: 'medium' }) : '—';
 const KYC = {
@@ -37,6 +41,8 @@ export default function Admin() {
   const [users, setUsers] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [contracts, setContracts] = useState([]);
+  const [backups, setBackups] = useState([]);
+  const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [q, setQ] = useState('');
 
@@ -44,7 +50,7 @@ export default function Admin() {
 
   const load = useCallback((which) => {
     if (which === 'overview') { setLoading(true); loadStats().finally(() => setLoading(false)); return; }
-    const map = { agencies: setAgencies, cars: setCars, users: setUsers, bookings: setBookings, contracts: setContracts };
+    const map = { agencies: setAgencies, cars: setCars, users: setUsers, bookings: setBookings, contracts: setContracts, backups: setBackups };
     setLoading(true);
     api.get(`/admin/${which}`).then(r => map[which](r.data))
       .catch(() => toast({ type: 'error', message: 'Échec du chargement.' }))
@@ -58,6 +64,33 @@ export default function Admin() {
     if (!window.confirm(msg)) return;
     try { await fn(); toast({ type: 'success', message: okMsg }); load(tab); loadStats(); }
     catch (e) { toast({ type: 'error', message: e.response?.data?.error || "Échec de l'opération." }); }
+  };
+
+  /* Authenticated file download (the admin endpoints need the Bearer token,
+     so a plain <a href> won't work — fetch as a blob and trigger a save). */
+  const downloadAuthed = async (url, filename) => {
+    setBusy(true);
+    try {
+      const res = await api.get(url, { responseType: 'blob' });
+      const blobUrl = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = blobUrl; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      toast({ type: 'error', message: 'Échec du téléchargement.' });
+    } finally { setBusy(false); }
+  };
+
+  const createBackup = async () => {
+    setBusy(true);
+    try {
+      await api.post('/admin/backups');
+      toast({ type: 'success', message: 'Sauvegarde créée.' });
+      load('backups'); loadStats();
+    } catch (e) {
+      toast({ type: 'error', message: e.response?.data?.error || 'Échec de la sauvegarde.' });
+    } finally { setBusy(false); }
   };
 
   const filt = (rows, fields) => {
@@ -110,7 +143,7 @@ export default function Admin() {
       )}
 
       {/* Search bar for list tabs */}
-      {tab !== 'overview' && tab !== 'bookings' && (
+      {!['overview', 'bookings', 'backups'].includes(tab) && (
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher…"
           className="input max-w-sm mb-4 text-sm" />
       )}
@@ -273,6 +306,59 @@ export default function Admin() {
               {fContracts.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Aucun contrat émis.</td></tr>}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Backups */}
+      {tab === 'backups' && !loading && (
+        <div className="space-y-5">
+          {/* Primary action — durable off-server copy */}
+          <div className="card p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-pine-50 dark:bg-pine-500/15 text-pine-600 dark:text-pine-300 flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-gray-900 dark:text-white">Télécharger la base de données</p>
+                <p className="text-sm text-gray-500 mt-0.5">Enregistre une copie complète (.db) sur votre ordinateur — la sauvegarde la plus sûre.</p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button onClick={() => downloadAuthed('/admin/database/download', `kricar-${new Date().toISOString().slice(0,10)}.db`)} disabled={busy} className="btn-primary text-sm">
+                  {busy ? '…' : 'Télécharger (.db)'}
+                </button>
+                <button onClick={createBackup} disabled={busy} className="btn-secondary text-sm">Créer une sauvegarde</button>
+              </div>
+            </div>
+          </div>
+
+          {/* Ephemeral-disk warning */}
+          <div className="rounded-xl border border-honey-200 bg-honey-50 dark:bg-honey-500/10 dark:border-honey-500/30 p-4 text-sm text-honey-800 dark:text-honey-200">
+            <p className="font-semibold mb-0.5">À savoir (hébergement gratuit)</p>
+            <p className="text-honey-700/90 dark:text-honey-200/80">Sur l'offre gratuite Render, le disque est temporaire : les sauvegardes ci-dessous sont effacées à chaque redémarrage du serveur. Téléchargez régulièrement le fichier .db pour conserver une copie durable hors-serveur.</p>
+          </div>
+
+          {/* Snapshot list */}
+          <div className="card overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-gray-500 border-b border-gray-100 dark:border-gray-800">
+                <tr>{['Sauvegarde', 'Taille', 'Créée le', ''].map(h => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                {backups.map(b => (
+                  <tr key={b.name} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                    <td className="px-4 py-3 font-mono text-xs text-gray-700 dark:text-gray-300 break-all">{b.name}</td>
+                    <td className="px-4 py-3 text-gray-500">{fmtSize(b.size)}</td>
+                    <td className="px-4 py-3 text-gray-500">{fmtDateTime(b.created_at)}</td>
+                    <td className="px-4 py-3">
+                      <button onClick={() => downloadAuthed(`/admin/backups/${b.name}`, b.name)} disabled={busy}
+                        className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">Télécharger</button>
+                    </td>
+                  </tr>
+                ))}
+                {backups.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-400">Aucune sauvegarde sur le serveur pour l'instant.</td></tr>}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

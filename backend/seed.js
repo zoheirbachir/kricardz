@@ -130,6 +130,9 @@ async function seed() {
     );
   });
 
+  /* Merge the original CRICAR (v1) database export on top of the showcase seed. */
+  try { require('./db/v1data').seedV1(db); } catch (e) { console.error('v1 merge failed:', e.message); }
+
   console.log('Seed complete!');
   process.exit(0);
 }

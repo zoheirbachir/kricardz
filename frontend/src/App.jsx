@@ -32,6 +32,8 @@ import VerifyContract from './pages/VerifyContract';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 
 function Spinner() {
   return <div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>;
@@ -112,6 +114,8 @@ export default function App() {
               <Route path="/trust" element={<Layout><TrustSafety /></Layout>} />
               <Route path="/about" element={<Layout><About /></Layout>} />
               <Route path="/contact" element={<Layout><Contact /></Layout>} />
+              <Route path="/privacy" element={<Layout><Privacy /></Layout>} />
+              <Route path="/terms" element={<Layout><Terms /></Layout>} />
               <Route path="/experience" element={<Layout><ScrollExperience /></Layout>} />
 
               {/* GPS tracking — accessible to anyone with the link (renter receives it) */}

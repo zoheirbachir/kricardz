@@ -8,14 +8,17 @@ const path = require('path');
 const db = require('../db/database');
 const { auth } = require('../middleware/auth');
 const { sendMail, isDevMail } = require('../lib/mailer');
+const { sendSms } = require('../lib/sms');
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'kricar_secret_2024';
 
 /* ── Token + audit helpers (email verification & password reset) ── */
 const rawToken = () => crypto.randomBytes(32).toString('hex');
-const hashToken = (raw) => crypto.createHash('sha256').update(raw).digest('hex');
+const rawOtp = () => String(crypto.randomInt(100000, 1000000)); // 6-digit code
+const hashToken = (raw) => crypto.createHash('sha256').update(String(raw)).digest('hex');
 const inHours = (h) => new Date(Date.now() + h * 3600000).toISOString();
+const inMinutes = (m) => new Date(Date.now() + m * 60000).toISOString();
 
 /* Where the SPA lives, for building email links. APP_URL wins; else the browser's
    origin (request that triggered it); else localhost dev frontend. */
@@ -236,6 +239,62 @@ router.post('/reset-password', async (req, res) => {
   const hash = await bcrypt.hash(password, 10);
   db.prepare('UPDATE users SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?').run(hash, user.id);
   logEvent(user.id, user.email, 'password_reset_done', req);
+  res.json({ success: true });
+});
+
+/* ── Password reset by SMS (for phone-registered users) ──
+   Step 1: request a 6-digit code sent to the phone. */
+router.post('/forgot-password-sms', async (req, res) => {
+  const phone = (req.body.phone || '').trim();
+  if (!phone) return res.status(400).json({ error: 'Numéro de téléphone requis' });
+  if (tooManyRecent(phone, 'sms_reset_requested', 3, 60)) {
+    return res.status(429).json({ error: 'Trop de demandes. Réessayez dans une heure.' });
+  }
+
+  const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+  let dev_code = null;
+  if (user) {
+    const code = rawOtp();
+    db.prepare('UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?')
+      .run(hashToken(code), inMinutes(10), user.id);
+    const result = await sendSms({
+      to: phone,
+      body: `KriCar : votre code de réinitialisation est ${code}. Il expire dans 10 minutes. Ne le partagez avec personne.`,
+    });
+    logEvent(user.id, phone, 'sms_reset_requested', req);
+    if (result.dev) dev_code = code; // dev mode surfaces the code on screen
+  } else {
+    logEvent(null, phone, 'sms_reset_requested', req); // count even unknown numbers
+  }
+  /* Generic response so we never reveal whether a number is registered. */
+  res.json({ success: true, dev_code });
+});
+
+/* Step 2: verify the code + set the new password. */
+router.post('/reset-password-sms', async (req, res) => {
+  const phone = (req.body.phone || '').trim();
+  const { code, password } = req.body;
+  if (!phone || !code || !password) return res.status(400).json({ error: 'Numéro, code et mot de passe requis' });
+  if (password.length < 8) return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères.' });
+
+  const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+  if (!user || !user.password_reset_token) return res.status(400).json({ error: 'Code invalide ou expiré. Refaites une demande.' });
+  if (user.password_reset_expires && user.password_reset_expires < new Date().toISOString()) {
+    return res.status(400).json({ error: 'Code expiré. Refaites une demande.' });
+  }
+  /* Brute-force guard: after 5 wrong tries in 15 min, invalidate the code. */
+  if (tooManyRecent(phone, 'sms_reset_failed', 5, 15)) {
+    db.prepare('UPDATE users SET password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?').run(user.id);
+    return res.status(429).json({ error: 'Trop de tentatives. Refaites une demande de code.' });
+  }
+  if (hashToken(code) !== user.password_reset_token) {
+    logEvent(user.id, phone, 'sms_reset_failed', req);
+    return res.status(400).json({ error: 'Code incorrect.' });
+  }
+
+  const hash = await bcrypt.hash(password, 10);
+  db.prepare('UPDATE users SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?').run(hash, user.id);
+  logEvent(user.id, phone, 'sms_reset_done', req);
   res.json({ success: true });
 });
 

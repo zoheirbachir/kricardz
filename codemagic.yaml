@@ -1,0 +1,91 @@
+# Codemagic CI/CD — builds the KriCar iOS app in the cloud (no Mac needed).
+# Repo layout: web app in ./frontend, native iOS project in ./frontend/ios/App.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# WORKFLOW 1 — "ios-build-check" (FREE, no Apple account)
+#   Compiles the app on Codemagic's Mac to prove it builds. Produces an UNSIGNED
+#   .app (not installable on a phone) — it just verifies everything is healthy.
+#
+# WORKFLOW 2 — "ios-testflight" (needs the $99 Apple Developer account)
+#   Signs the app and ships it to TestFlight so you install on your iPhone over
+#   Wi-Fi. Uncomment the signing/publishing lines and follow the numbered TODOs.
+# ─────────────────────────────────────────────────────────────────────────────
+
+workflows:
+
+  ios-build-check:
+    name: KriCar iOS — build check (free)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      node: 20
+      xcode: 15.4
+      cocoapods: default
+    scripts:
+      - name: Install web dependencies
+        script: |
+          cd frontend
+          npm install
+      - name: Build web assets (points app at the live backend)
+        script: |
+          cd frontend
+          npm run build:mobile
+      - name: Capacitor sync iOS (copies assets + runs pod install)
+        script: |
+          cd frontend
+          npx cap sync ios
+      - name: Compile iOS app (unsigned — verification only)
+        script: |
+          cd frontend/ios/App
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+    artifacts:
+      - /tmp/xcodebuild_logs/*.log
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # ios-testflight:
+  #   name: KriCar iOS — TestFlight
+  #   instance_type: mac_mini_m2
+  #   max_build_duration: 60
+  #   integrations:
+  #     # TODO 1: In App Store Connect create an API key, then in Codemagic
+  #     #         (Teams → Integrations → App Store Connect) add it and name it
+  #     #         exactly "CodemagicAppStoreKey".
+  #     app_store_connect: CodemagicAppStoreKey
+  #   environment:
+  #     node: 20
+  #     xcode: 15.4
+  #     cocoapods: default
+  #     ios_signing:
+  #       distribution_type: app_store
+  #       bundle_identifier: com.zoheirbachir.kricar   # TODO 2: must match the App ID you register
+  #     vars:
+  #       APP_STORE_APPLE_ID: 0000000000               # TODO 3: the app's Apple ID from App Store Connect
+  #   scripts:
+  #     - name: Install web dependencies
+  #       script: cd frontend && npm install
+  #     - name: Build web assets
+  #       script: cd frontend && npm run build:mobile
+  #     - name: Capacitor sync iOS
+  #       script: cd frontend && npx cap sync ios
+  #     - name: Set up signing
+  #       script: |
+  #         cd frontend/ios/App
+  #         xcode-project use-profiles
+  #     - name: Build signed IPA
+  #       script: |
+  #         cd frontend/ios/App
+  #         xcode-project build-ipa --workspace App.xcworkspace --scheme App
+  #   artifacts:
+  #     - build/ios/ipa/*.ipa
+  #     - /tmp/xcodebuild_logs/*.log
+  #   publishing:
+  #     app_store_connect:
+  #       auth: integration
+  #       submit_to_testflight: true

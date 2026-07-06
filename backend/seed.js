@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const db = require('./db/database');
 
@@ -38,10 +39,24 @@ async function seed() {
   const uid = (email) => users.find((u) => u.email === email).id;
   const reviewer = uid('karim@kricar.dz');
 
-  /* Ensure an administrator account exists — logs in with phone 0553636834 / 0553636834 */
-  const adminEmail = 'admin@kricar.dz';
-  const adminPhone = '0553636834';
-  const adminHash = await bcrypt.hash('0553636834', 10);
+  /* Ensure an administrator account exists. The password comes from ADMIN_PASSWORD.
+     In production we NEVER fall back to a known value (the repo is public) — if it's
+     unset we generate a random one and print it once so the deployer can rotate it.
+     Locally (dev) we keep the old convenience password so nothing breaks. */
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@kricar.dz';
+  const adminPhone = process.env.ADMIN_PHONE || '0553636834';
+  const isProd = process.env.NODE_ENV === 'production';
+  let adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    if (isProd) {
+      adminPassword = crypto.randomBytes(12).toString('hex');
+      console.warn(`⚠️  ADMIN_PASSWORD not set — generated a temporary admin password: ${adminPassword}`);
+      console.warn('    Set ADMIN_PASSWORD in the environment to choose a permanent one.');
+    } else {
+      adminPassword = '0553636834'; // local-dev convenience only
+    }
+  }
+  const adminHash = await bcrypt.hash(adminPassword, 10);
   const existingAdmin = db.prepare('SELECT id FROM users WHERE email = ? OR phone = ?').get(adminEmail, adminPhone);
   if (!existingAdmin) {
     db.prepare(`INSERT INTO users (id, email, password_hash, name, phone, role, is_admin, verified, id_verified, email_verified, kyc_status)

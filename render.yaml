@@ -22,3 +22,12 @@ services:
         value: production
       - key: JWT_SECRET
         generateValue: true  # Render generates a secure secret automatically
+      - key: ADMIN_PASSWORD
+        sync: false          # set YOUR strong admin password in the Render dashboard (never in the repo)
+      # Optional — configure a mail provider so password-reset emails actually send in prod:
+      # - key: GMAIL_USER
+      #   sync: false
+      # - key: GMAIL_PASS
+      #   sync: false
+      # - key: APP_URL
+      #   sync: false

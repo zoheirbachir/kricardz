@@ -11,7 +11,8 @@ const { sendMail, isDevMail } = require('../lib/mailer');
 const { sendSms } = require('../lib/sms');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'kricar_secret_2024';
+const JWT_SECRET = require('../config/secret');
+const isProd = process.env.NODE_ENV === 'production';
 
 /* ── Token + audit helpers (email verification & password reset) ── */
 const rawToken = () => crypto.randomBytes(32).toString('hex');
@@ -56,7 +57,9 @@ async function sendVerificationEmail(user, req) {
     html: `<p>Bienvenue sur <b>KriCar</b> !</p><p>Confirmez votre adresse email (lien valable 24h) :</p><p><a href="${link}">Confirmer mon adresse email</a></p><p style="color:#888;font-size:12px">Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message.</p>`,
   });
   logEvent(user.id, user.email, 'email_verify_sent', req);
-  return result.dev ? link : null; // raw link returned only in dev mode
+  /* Only ever surface the link in the API response in non-production dev mode.
+     In production without a mail provider, nothing is returned (fix the provider). */
+  return (result.dev && !isProd) ? link : null;
 }
 
 /* ── KYC file uploads ── */
@@ -216,7 +219,7 @@ router.post('/forgot-password', async (req, res) => {
       html: `<p>Vous avez demandé à réinitialiser votre mot de passe.</p><p>Ouvrez ce lien (valable 1 heure) :</p><p><a href="${link}">Réinitialiser mon mot de passe</a></p><p style="color:#888;font-size:12px">Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>`,
     });
     logEvent(user.id, email, 'password_reset_requested', req);
-    if (result.dev) dev_reset_link = link;
+    if (result.dev && !isProd) dev_reset_link = link;
   } else {
     logEvent(null, email, 'password_reset_requested', req); // count attempts even for unknown emails
   }
@@ -262,7 +265,7 @@ router.post('/forgot-password-sms', async (req, res) => {
       body: `KriCar : votre code de réinitialisation est ${code}. Il expire dans 10 minutes. Ne le partagez avec personne.`,
     });
     logEvent(user.id, phone, 'sms_reset_requested', req);
-    if (result.dev) dev_code = code; // dev mode surfaces the code on screen
+    if (result.dev && !isProd) dev_code = code; // dev only — never leak the code in prod
   } else {
     logEvent(null, phone, 'sms_reset_requested', req); // count even unknown numbers
   }

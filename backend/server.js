@@ -21,10 +21,6 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-  console.warn('⚠️  JWT_SECRET is not set — using the insecure default. Set it in production.');
-}
-
 app.use(cors({ origin: ORIGIN }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

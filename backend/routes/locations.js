@@ -1,6 +1,8 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const db = require('../db/database');
 const { auth, optionalAuth } = require('../middleware/auth');
+const JWT_SECRET = require('../config/secret');
 
 const router = express.Router();
 
@@ -18,8 +20,6 @@ router.post('/cars/:id', (req, res) => {
       return res.status(401).json({ error: 'GPS token invalide' });
     }
   } else if (authHeader?.startsWith('Bearer ')) {
-    const jwt = require('jsonwebtoken');
-    const JWT_SECRET = process.env.JWT_SECRET || 'kricar_secret_2024';
     try {
       const payload = jwt.verify(authHeader.slice(7), JWT_SECRET);
       if (payload.id !== car.owner_id) return res.status(403).json({ error: 'Accès refusé' });

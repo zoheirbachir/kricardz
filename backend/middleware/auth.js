@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const db = require('../db/database');
-const JWT_SECRET = process.env.JWT_SECRET || 'kricar_secret_2024';
+const JWT_SECRET = require('../config/secret');
 
 function auth(req, res, next) {
   const header = req.headers.authorization;

@@ -22,6 +22,22 @@ function parseCar(car) {
   };
 }
 
+/* Count a car view at most once per IP+car per 30 min, so refreshes/bots can't
+   inflate the counter (and we don't write to the DB on every single hit). */
+const VIEW_TTL = 30 * 60 * 1000;
+const viewSeen = new Map();
+function shouldCountView(ip, carId) {
+  const key = `${ip}:${carId}`;
+  const now = Date.now();
+  const last = viewSeen.get(key);
+  if (last && now - last < VIEW_TTL) return false;
+  viewSeen.set(key, now);
+  if (viewSeen.size > 5000) { // opportunistic cleanup to bound memory
+    for (const [k, t] of viewSeen) if (now - t > VIEW_TTL) viewSeen.delete(k);
+  }
+  return true;
+}
+
 router.get('/', optionalAuth, (req, res) => {
   const { wilaya, type, min_price, max_price, search, include_unavailable, limit = 20, offset = 0 } = req.query;
   /* The public catalog (like kricar-dz.com/search) lists unavailable cars too, with a badge.
@@ -64,8 +80,12 @@ router.get('/:id', optionalAuth, (req, res) => {
   const car = db.prepare('SELECT c.*, u.name as owner_name, u.avatar as owner_avatar, u.phone as owner_phone, u.verified as owner_verified, u.id_verified as owner_id_verified FROM cars c JOIN users u ON c.owner_id = u.id WHERE c.id = ?').get(req.params.id);
   if (!car) return res.status(404).json({ error: 'Véhicule introuvable' });
 
-  /* Increment the view counter (best-effort, don't fail the request on error) */
-  try { db.prepare('UPDATE cars SET views = COALESCE(views, 0) + 1 WHERE id = ?').run(req.params.id); car.views = (car.views || 0) + 1; } catch {}
+  /* Increment the view counter — skip the owner's own visits and de-dupe per IP
+     (best-effort, never fail the request on error). */
+  const isOwnerViewing = req.user && req.user.id === car.owner_id;
+  if (!isOwnerViewing && shouldCountView(req.ip || 'anon', req.params.id)) {
+    try { db.prepare('UPDATE cars SET views = COALESCE(views, 0) + 1 WHERE id = ?').run(req.params.id); car.views = (car.views || 0) + 1; } catch {}
+  }
 
   const parsed = parseCar(car);
   const stats = db.prepare('SELECT AVG(rating) as avg, COUNT(*) as count FROM reviews WHERE car_id = ?').get(car.id);

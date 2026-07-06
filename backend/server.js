@@ -3,6 +3,7 @@ try { require('dotenv').config(); } catch { /* dotenv not installed — env come
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const http = require('http');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
@@ -24,6 +25,12 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 5000;
 
+/* Security headers. CSP is disabled because the SPA loads external fonts, map tiles
+   and CDN images; CORP is cross-origin so the mobile app can embed /uploads media. */
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 app.use(cors({ origin: ORIGIN }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -70,7 +70,9 @@ router.put('/:id/status', auth, (req, res) => {
   const isOwner = booking.owner_id === req.user.id;
   const isRenter = booking.renter_id === req.user.id;
   if (!isOwner && !isRenter) return res.status(403).json({ error: 'Accès refusé' });
+  /* Only the owner can confirm or mark a rental completed; either party may cancel. */
   if (status === 'confirmed' && !isOwner) return res.status(403).json({ error: 'Seul le propriétaire peut confirmer' });
+  if (status === 'completed' && !isOwner) return res.status(403).json({ error: 'Seul le propriétaire peut marquer la réservation terminée.' });
 
   db.prepare('UPDATE bookings SET status = ? WHERE id = ?').run(status, req.params.id);
   res.json(db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id));

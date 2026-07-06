@@ -1,37 +1,33 @@
 /* ── v1 → v2 data migration ──
-   Merges the original CRICAR MySQL export (u228904793_kricar123.sql) into the
-   new SQLite schema. Called from seed.js AFTER the main seed so it augments the
-   12 showcase cars instead of replacing them.
+   Merges the original CRICAR MySQL export into the new SQLite schema. Called from
+   seed.js AFTER the main seed so it augments the 12 showcase cars.
 
-   Notes:
-   - Passwords are kept as their original bcrypt hashes ($2a/$2y) — bcryptjs
-     verifies both, so v1 users log in with their real passwords (by phone or email).
-   - v1 admin (id 1, phone 0553636834) is skipped: the new admin already uses
-     0553636834 / 0553636834 as required.
-   - v1 vehicle 3 (Fiat 500) is already in the main seed, owned by Badidi, so only
-     v1 vehicle 4 (Toyota) is added here. Its main image is served from the CDN.
-*/
+   Passwords: the original bcrypt hashes are NOT stored in this (public) repo.
+   Supply them — optionally — via the V1_PASSWORD_HASHES env var as JSON
+   {"<phone>":"<bcrypt-hash>"} so migrated users keep their old passwords. Without
+   it, each migrated account gets a random password and the user regains access via
+   the "forgot password" flow (which is the right thing to do anyway, since the old
+   hashes were previously exposed in git history). */
+
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const CDN = 'https://kricar-dz.com/uploads/vehicles/';
-
-/* province_id → wilaya name (standard Algerian numbering) */
 const WILAYA = { 5: 'Batna', 11: 'Tamanrasset', 16: 'Alger', 31: 'Oran', 40: 'Khenchela' };
 
-/* v1 users (id 1 admin intentionally omitted). match_phone → update existing seed
-   account; otherwise inserted fresh with a deterministic id. */
+let ENV_HASHES = {};
+try { ENV_HASHES = JSON.parse(process.env.V1_PASSWORD_HASHES || '{}'); } catch { ENV_HASHES = {}; }
+const randomHash = () => bcrypt.hashSync(crypto.randomBytes(12).toString('hex'), 10);
+
+/* `existing: true` → match an already-seeded account by phone and update it.
+   Everyone else is inserted fresh with a deterministic id. */
 const USERS = [
-  { v1: 4, match_phone: '0673590224', pass: '$2a$12$49QAeSnjeZiVEgsU7fakCeP5cxYWknwDjsfsM5pJbi0iPY.HYMQky',
-    name: 'Badidi bouda islam', role: 'owner', lessor_type: 'individual', kyc: 'approved', dl: null },
-  { v1: 5, id: 'v1-user-5', email: '0666666666@v1.kricar.dz', phone: '0666666666', pass: '$2y$10$MvLM6K4saejoInVmor2QeuvGh5J3kG5acHRXCCntILHZ.hsHGmqDC',
-    name: 'test', role: 'owner', lessor_type: 'agency', kyc: 'pending', agency: 'test', reg: '0666666666', province: 11 },
-  { v1: 6, id: 'v1-user-6', email: '0663614442@v1.kricar.dz', phone: '0663614442', pass: '$2y$10$U2suSJ0qQ.DhRgzhyWXrzuUB3l.OI3JkYjkhzkW38GISDSZ9uRq/y',
-    name: 'Hani test', role: 'owner', lessor_type: 'agency', kyc: 'approved', agency: 'Hani test', reg: '202222', province: 40 },
-  { v1: 7, id: 'v1-user-7', email: 'lemsibadox@gmail.dz', phone: '0555667788', pass: '$2y$10$UGMcH65GcwdhL0gsjOhHHewbI9LgRhE/Pl82MhOyfeC4RIrP9j0Xa',
-    name: 'Djamel djamel', role: 'renter', dl: '2019-04-17' },
-  { v1: 8, id: 'v1-user-8', email: '0777777777@v1.kricar.dz', phone: '0777777777', pass: '$2y$10$Ysn6/tu1JMb5qV3dtLmcVeEG3NsyDSkBqoCIBVU4PSZq5C2WlZI9S',
-    name: 'hani', role: 'renter', dl: '2023-04-24' },
-  { v1: 9, id: 'v1-user-9', email: '0688888888@v1.kricar.dz', phone: '0688888888', pass: '$2y$10$9XxZ5q63Yl1AvyiSF18ICOLVR/LbsdfrBIyk1fvApXpKlv8EvWgz.',
-    name: 'SAHRA', role: 'owner', lessor_type: 'agency', kyc: 'pending', agency: 'HANI', reg: '9999999', province: 11 },
+  { v1: 4, phone: '0673590224', existing: true, name: 'Badidi bouda islam', role: 'owner', lessor_type: 'individual', kyc: 'approved' },
+  { v1: 5, id: 'v1-user-5', phone: '0666666666', email: '0666666666@v1.kricar.dz', name: 'test', role: 'owner', lessor_type: 'agency', kyc: 'pending', agency: 'test', reg: '0666666666', province: 11 },
+  { v1: 6, id: 'v1-user-6', phone: '0663614442', email: '0663614442@v1.kricar.dz', name: 'Hani test', role: 'owner', lessor_type: 'agency', kyc: 'approved', agency: 'Hani test', reg: '202222', province: 40 },
+  { v1: 7, id: 'v1-user-7', phone: '0555667788', email: 'lemsibadox@gmail.dz', name: 'Djamel djamel', role: 'renter', dl: '2019-04-17' },
+  { v1: 8, id: 'v1-user-8', phone: '0777777777', email: '0777777777@v1.kricar.dz', name: 'hani', role: 'renter', dl: '2023-04-24' },
+  { v1: 9, id: 'v1-user-9', phone: '0688888888', email: '0688888888@v1.kricar.dz', name: 'SAHRA', role: 'owner', lessor_type: 'agency', kyc: 'pending', agency: 'HANI', reg: '9999999', province: 11 },
 ];
 
 function seedV1(db) {
@@ -39,21 +35,26 @@ function seedV1(db) {
 
   for (const u of USERS) {
     const kycOk = u.kyc === 'approved' ? 1 : 0;
-    if (u.match_phone) {
-      /* Existing seed account (Badidi) — bring in the real password + KYC. */
-      const existing = db.prepare('SELECT id FROM users WHERE phone = ?').get(u.match_phone);
+    const envHash = ENV_HASHES[u.phone];
+
+    if (u.existing) {
+      const existing = db.prepare('SELECT id FROM users WHERE phone = ?').get(u.phone);
       if (existing) {
-        db.prepare(`UPDATE users SET password_hash = ?, kyc_status = ?, verified = 1, id_verified = 1,
-          lessor_type = COALESCE(lessor_type, ?) WHERE id = ?`).run(u.pass, u.kyc, u.lessor_type || null, existing.id);
+        /* Only reset the password if the real v1 hash was supplied via env;
+           otherwise leave whatever the main seed set. */
+        if (envHash) db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(envHash, existing.id);
+        db.prepare(`UPDATE users SET kyc_status = ?, verified = 1, id_verified = 1,
+          lessor_type = COALESCE(lessor_type, ?) WHERE id = ?`).run(u.kyc, u.lessor_type || null, existing.id);
         idByV1[u.v1] = existing.id;
       }
       continue;
     }
+
     db.prepare(`INSERT OR IGNORE INTO users
       (id, email, password_hash, name, phone, role, verified, id_verified, email_verified,
        kyc_status, lessor_type, driving_license_issued_date, agency_legal_name, agency_commercial_reg_number)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)`).run(
-      u.id, u.email, u.pass, u.name, u.phone, u.role, kycOk, kycOk,
+      u.id, u.email, envHash || randomHash(), u.name, u.phone, u.role, kycOk, kycOk,
       u.kyc || 'pending', u.lessor_type || null, u.dl || null, u.agency || null, u.reg || null
     );
     idByV1[u.v1] = u.id;

@@ -7,21 +7,29 @@ function auth(req, res, next) {
   if (!header || !header.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Non autorisé' });
   }
+  let payload;
   try {
-    const token = header.slice(7);
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
+    payload = jwt.verify(header.slice(7), JWT_SECRET);
   } catch {
-    res.status(401).json({ error: 'Token invalide' });
+    return res.status(401).json({ error: 'Token invalide' });
   }
+  /* Re-check the account on every request so a ban or deletion takes effect
+     immediately, rather than staying valid until the 30-day token expires. */
+  const u = db.prepare('SELECT id, role, COALESCE(banned, 0) AS banned FROM users WHERE id = ?').get(payload.id);
+  if (!u) return res.status(401).json({ error: 'Compte introuvable' });
+  if (u.banned === 1) return res.status(403).json({ error: 'Ce compte a été bloqué par un administrateur.' });
+  req.user = { id: u.id, role: u.role };
+  next();
 }
 
 function optionalAuth(req, res, next) {
   const header = req.headers.authorization;
   if (header && header.startsWith('Bearer ')) {
     try {
-      req.user = jwt.verify(header.slice(7), JWT_SECRET);
-    } catch {}
+      const payload = jwt.verify(header.slice(7), JWT_SECRET);
+      const u = db.prepare('SELECT id, role, COALESCE(banned, 0) AS banned FROM users WHERE id = ?').get(payload.id);
+      if (u && u.banned !== 1) req.user = { id: u.id, role: u.role }; // ignore banned/deleted
+    } catch { /* anonymous */ }
   }
   next();
 }

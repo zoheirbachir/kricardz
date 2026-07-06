@@ -104,7 +104,10 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, mot de passe et nom requis' });
     }
-    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+    if (String(password).length < 8) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères.' });
+    }
+    const existing = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?)').get(email);
     if (existing) return res.status(409).json({ error: 'Email déjà utilisé' });
 
     /* Collect uploaded document paths */

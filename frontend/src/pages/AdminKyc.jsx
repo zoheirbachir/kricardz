@@ -98,6 +98,14 @@ export default function AdminKyc() {
 
   const docs = detail?.kyc_docs || {};
   const presentDocs = DOC_ORDER.filter(([k]) => docs[k]);
+  /* KYC files are served from an authenticated route; <img>/<a> can't send the
+     Authorization header, so pass the JWT as a query param. */
+  const withToken = (p) => {
+    if (!p) return p;
+    if (!p.startsWith('/api/')) return p; // legacy/public path — leave as-is
+    const t = localStorage.getItem('token');
+    return `${p}${p.includes('?') ? '&' : '?'}token=${encodeURIComponent(t || '')}`;
+  };
 
   const infoRows = detail ? [
     ['Téléphone', detail.phone],
@@ -210,10 +218,10 @@ export default function AdminKyc() {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {presentDocs.map(([k, label]) => (
-                    <a key={k} href={docs[k]} target="_blank" rel="noreferrer"
+                    <a key={k} href={withToken(docs[k])} target="_blank" rel="noreferrer"
                       className="group block rounded-xl overflow-hidden border border-[var(--border)] hover:border-primary-300 transition-colors">
                       <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                        <img src={docs[k]} alt={label} loading="lazy"
+                        <img src={withToken(docs[k])} alt={label} loading="lazy"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       </div>
                       <p className="text-[11px] font-medium text-gray-600 dark:text-gray-300 px-2 py-1.5 truncate">{label}</p>

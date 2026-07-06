@@ -34,7 +34,10 @@ export default function TrackCar() {
 
   /* Connect to Socket.io for live updates */
   useEffect(() => {
-    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+    const socket = io(SOCKET_URL, {
+      transports: ['websocket', 'polling'],
+      auth: { token: localStorage.getItem('token') }, // server authorizes tracking
+    });
     socketRef.current = socket;
 
     socket.on('connect', () => {
@@ -43,6 +46,7 @@ export default function TrackCar() {
     });
 
     socket.on('disconnect', () => setLive(false));
+    socket.on('track:denied', () => { setLive(false); setError('Suivi non autorisé pour ce véhicule.'); });
 
     socket.on('car:location', (data) => {
       setLocation(data);

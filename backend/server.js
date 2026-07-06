@@ -5,8 +5,11 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
 const path = require('path');
+const JWT_SECRET = require('./config/secret');
+const { canTrackCar } = require('./lib/tracking');
 
 const app = express();
 const server = http.createServer(app);
@@ -28,9 +31,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 /* Make io accessible in route handlers */
 app.set('io', io);
 
-/* Socket.io: clients join a room per car they want to track */
+/* Socket.io: a client may only join a car's live-tracking room if its token
+   authorizes it (owner / active renter / admin). The token is passed via
+   io(url, { auth: { token } }) on the client. */
 io.on('connection', (socket) => {
   socket.on('track:car', (carId) => {
+    let userId = null;
+    try { userId = jwt.verify(socket.handshake.auth?.token || '', JWT_SECRET).id; } catch { userId = null; }
+    if (!canTrackCar(userId, carId)) {
+      socket.emit('track:denied', { car_id: carId });
+      return;
+    }
     socket.join(`car:${carId}`);
   });
   socket.on('untrack:car', (carId) => {

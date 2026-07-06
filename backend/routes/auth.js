@@ -3,12 +3,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
-const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
 const db = require('../db/database');
 const { auth } = require('../middleware/auth');
 const { sendMail, isDevMail } = require('../lib/mailer');
 const { sendSms } = require('../lib/sms');
+const { makeUploader, uploadErrorHandler, DOC_TYPES } = require('../lib/uploads');
 
 const router = express.Router();
 const JWT_SECRET = require('../config/secret');
@@ -45,6 +46,18 @@ function tooManyRecent(email, type, maxCount, windowMinutes) {
   return (row?.n || 0) >= maxCount;
 }
 
+/* In-memory login throttle, keyed by IP. Render free tier is single-instance so a
+   Map suffices; use a shared store (Redis) if you ever run multiple instances. */
+const loginHits = new Map();
+function loginThrottle(ip, max = 15, windowMs = 15 * 60 * 1000) {
+  const now = Date.now();
+  const rec = loginHits.get(ip);
+  if (!rec || now - rec.first > windowMs) { loginHits.set(ip, { count: 1, first: now }); return true; }
+  rec.count++;
+  return rec.count <= max;
+}
+const loginThrottleReset = (ip) => loginHits.delete(ip);
+
 async function sendVerificationEmail(user, req) {
   const raw = rawToken();
   db.prepare('UPDATE users SET email_verify_token = ?, email_verify_expires = ? WHERE id = ?')
@@ -62,12 +75,11 @@ async function sendVerificationEmail(user, req) {
   return (result.dev && !isProd) ? link : null;
 }
 
-/* ── KYC file uploads ── */
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, '../uploads')),
-  filename: (req, file, cb) => cb(null, `${uuidv4()}${path.extname(file.originalname)}`),
-});
-const upload = multer({ storage, limits: { fileSize: 8 * 1024 * 1024 } });
+/* ── KYC file uploads ──
+   Identity docs go to a PRIVATE folder OUTSIDE ../uploads, so express.static never
+   serves them. They're retrieved only through the authenticated /kyc-file route. */
+const KYC_DIR = path.join(__dirname, '../private_uploads/kyc');
+const upload = makeUploader({ dir: KYC_DIR, allow: DOC_TYPES, maxMB: 8 });
 const KYC_FIELDS = [
   { name: 'driving_license_front', maxCount: 1 },
   { name: 'driving_license_back', maxCount: 1 },
@@ -99,7 +111,7 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
     const files = req.files || {};
     const docs = {};
     for (const f of KYC_FIELDS) {
-      if (files[f.name] && files[f.name][0]) docs[f.name] = `/uploads/${files[f.name][0].filename}`;
+      if (files[f.name] && files[f.name][0]) docs[f.name] = `/api/auth/kyc-file/${files[f.name][0].filename}`;
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -145,6 +157,9 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
+  const ip = (req.ip || req.headers['x-forwarded-for'] || 'unknown').toString();
+  if (!loginThrottle(ip)) return res.status(429).json({ error: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.' });
+
   const { email, password } = req.body;
   const identifier = (email || '').trim();
   if (!identifier || !password) return res.status(400).json({ error: 'Email/téléphone et mot de passe requis' });
@@ -157,6 +172,7 @@ router.post('/login', async (req, res) => {
   if (!ok) return res.status(401).json({ error: 'Identifiants incorrects' });
   if (user.banned === 1) return res.status(403).json({ error: 'Ce compte a été bloqué par un administrateur.' });
 
+  loginThrottleReset(ip); // successful login clears the counter for this IP
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
   const { password_hash, ...safeUser } = user;
   res.json({ token, user: safeUser });
@@ -166,6 +182,33 @@ router.get('/me', auth, (req, res) => {
   const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, kyc_rejection_reason, is_admin, created_at FROM users WHERE id = ?').get(req.user.id);
   if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
   res.json(user);
+});
+
+/* ── Serve a private KYC document ──
+   Only an admin, or the user who owns the file, may fetch it. The JWT can come from
+   the Authorization header OR a ?token= query param (so <img src> can load it). */
+router.get('/kyc-file/:name', (req, res) => {
+  const name = req.params.name;
+  if (!/^[A-Za-z0-9._-]+$/.test(name)) return res.status(400).json({ error: 'Nom de fichier invalide' });
+
+  const bearer = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : null;
+  const token = bearer || req.query.token;
+  if (!token) return res.status(401).json({ error: 'Non autorisé' });
+  let payload;
+  try { payload = jwt.verify(token, JWT_SECRET); } catch { return res.status(401).json({ error: 'Token invalide' }); }
+
+  const me = db.prepare('SELECT is_admin, kyc_docs FROM users WHERE id = ?').get(payload.id);
+  if (!me) return res.status(401).json({ error: 'Non autorisé' });
+
+  let authorized = me.is_admin === 1;
+  if (!authorized) {
+    try { authorized = Object.values(JSON.parse(me.kyc_docs || '{}')).some(p => p.endsWith('/' + name)); } catch { /* ignore */ }
+  }
+  if (!authorized) return res.status(403).json({ error: 'Accès refusé' });
+
+  const file = path.join(KYC_DIR, name);
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Fichier introuvable' });
+  res.sendFile(file);
 });
 
 /* ── Confirm email address (link from the verification email) ── */
@@ -302,14 +345,18 @@ router.post('/reset-password-sms', async (req, res) => {
 });
 
 router.put('/me', auth, (req, res) => {
+  const current = db.prepare('SELECT name, phone FROM users WHERE id = ?').get(req.user.id);
   const { name, phone } = req.body;
   db.prepare('UPDATE users SET name = ?, phone = ? WHERE id = ?').run(
-    name || req.body.name,
-    phone || null,
+    name || current.name,
+    phone !== undefined ? (phone || null) : current.phone,
     req.user.id
   );
   const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified FROM users WHERE id = ?').get(req.user.id);
   res.json(user);
 });
+
+/* Turn rejected/oversized KYC uploads into a clean 400 */
+router.use(uploadErrorHandler);
 
 module.exports = router;

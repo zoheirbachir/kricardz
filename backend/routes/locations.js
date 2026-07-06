@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../db/database');
 const { auth, optionalAuth } = require('../middleware/auth');
 const JWT_SECRET = require('../config/secret');
+const { canTrackCar } = require('../lib/tracking');
 
 const router = express.Router();
 
@@ -56,15 +57,19 @@ router.post('/cars/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-/* Get current location of a car */
-router.get('/cars/:id', optionalAuth, (req, res) => {
+/* Get current location of a car — restricted to owner / active renter / admin */
+router.get('/cars/:id', auth, (req, res) => {
+  if (!canTrackCar(req.user.id, req.params.id)) {
+    return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à suivre ce véhicule.' });
+  }
   const loc = db.prepare('SELECT * FROM car_locations WHERE car_id = ?').get(req.params.id);
   if (!loc) return res.status(404).json({ error: 'Aucune position disponible pour ce véhicule' });
   res.json(loc);
 });
 
-/* Get all available cars with their location (for map view) */
-router.get('/cars', (req, res) => {
+/* Available cars with their location (map view) — logged-in users only, so the
+   live positions of every vehicle aren't exposed to anonymous scrapers. */
+router.get('/cars', auth, (req, res) => {
   const cars = db.prepare(`
     SELECT c.id, c.title, c.brand, c.model, c.type, c.price_per_day, c.wilaya,
            cl.lat, cl.lng, cl.speed, cl.updated_at as loc_updated_at

@@ -2,16 +2,13 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db/database');
 const { auth, optionalAuth } = require('../middleware/auth');
-const multer = require('multer');
 const path = require('path');
+const { makeUploader, uploadErrorHandler } = require('../lib/uploads');
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, path.join(__dirname, '../uploads')),
-  filename: (req, file, cb) => cb(null, `${uuidv4()}${path.extname(file.originalname)}`),
-});
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+/* Car photos only — images, no SVG/HTML (prevents stored-XSS via uploaded files). */
+const upload = makeUploader({ dir: path.join(__dirname, '../uploads'), maxMB: 5 });
 
 function parseCar(car) {
   if (!car) return null;
@@ -165,5 +162,8 @@ router.post('/:id/favorite', auth, (req, res) => {
     res.json({ favorited: true });
   }
 });
+
+/* Turn rejected/oversized uploads into a clean 400 */
+router.use(uploadErrorHandler);
 
 module.exports = router;

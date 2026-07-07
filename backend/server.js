@@ -81,9 +81,17 @@ app.get('/api/wilayas', (req, res) => {
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
 /* ── Serve the built React app (production single-origin deploy) ──
-   Run `npm run build` in ../frontend first. If you serve the SPA with Nginx
-   instead, this block simply stays dormant (no dist folder = skipped). */
-const distPath = path.join(__dirname, '../frontend/dist');
+   Two possible locations, checked in order:
+   1. backend/public  — the frontend build copied INSIDE backend/ (see
+      backend/scripts/bundle-frontend.js). Use this when the host only deploys
+      the backend/ folder as its own app root (e.g. Hostinger's Node.js git-deploy),
+      so a single deploy always carries its own frontend with it.
+   2. ../frontend/dist — a sibling folder, when the whole repo is deployed together
+      (e.g. Render) and `npm run build` was run in frontend/ directly.
+   If neither exists, this block stays dormant and only the API is served. */
+const distPath = fs.existsSync(path.join(__dirname, 'public', 'index.html'))
+  ? path.join(__dirname, 'public')
+  : path.join(__dirname, '../frontend/dist');
 if (fs.existsSync(distPath)) {
   app.use(express.static(distPath));
   /* SPA fallback: send index.html for any non-API, non-asset GET so client-side

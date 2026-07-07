@@ -11,6 +11,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const JWT_SECRET = require('./config/secret');
 const { canTrackCar } = require('./lib/tracking');
+const db = require('./db/database');
 
 const app = express();
 const server = http.createServer(app);
@@ -103,8 +104,28 @@ if (fs.existsSync(distPath)) {
   console.log('Serving frontend build from', distPath);
 }
 
-server.listen(PORT, () => {
-  console.log(`KriCar API + Socket.io running on port ${PORT}`);
-  /* Periodic + on-shutdown database snapshots (best-effort; never crashes the server). */
-  try { require('./lib/backup').startAutoBackups(); } catch (e) { console.error('backup init failed:', e.message); }
-});
+/* On hosts where we can't easily run `node seed.js` once by hand (e.g. Hostinger's
+   Node app manager, whose Node binary isn't on the SSH PATH), run it automatically
+   — but ONLY when the cars table is empty. This seeds a brand-new deployment once
+   and never again, so it can't wipe real bookings/reviews on a later restart. */
+async function ensureSeeded() {
+  try {
+    const { n } = db.prepare('SELECT COUNT(*) AS n FROM cars').get();
+    if (n === 0) {
+      console.log('No cars found — running the initial seed...');
+      await require('./seed').seed();
+      console.log('Initial seed complete.');
+    }
+  } catch (e) {
+    console.error('Auto-seed check failed (server will still start):', e.message);
+  }
+}
+
+(async () => {
+  await ensureSeeded();
+  server.listen(PORT, () => {
+    console.log(`KriCar API + Socket.io running on port ${PORT}`);
+    /* Periodic + on-shutdown database snapshots (best-effort; never crashes the server). */
+    try { require('./lib/backup').startAutoBackups(); } catch (e) { console.error('backup init failed:', e.message); }
+  });
+})();

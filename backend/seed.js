@@ -149,12 +149,18 @@ async function seed() {
   try { require('./db/v1data').seedV1(db); } catch (e) { console.error('v1 merge failed:', e.message); }
 
   console.log('Seed complete!');
-  process.exit(0);
 }
 
-/* Seeding must never block the API from starting. On any failure we log it and
-   exit 0 so the `node seed.js && node server.js` boot chain still launches the server. */
-seed().catch((e) => {
-  console.error('Seed failed (continuing to start server anyway):', e);
-  process.exit(0);
-});
+module.exports = { seed };
+
+/* Only self-run + exit the process when invoked directly (`node seed.js`).
+   When imported by server.js (e.g. the auto-seed-if-empty check), seed() must
+   NOT call process.exit() — that would kill the whole running server. */
+if (require.main === module) {
+  seed()
+    .then(() => process.exit(0))
+    .catch((e) => {
+      console.error('Seed failed (continuing to start server anyway):', e);
+      process.exit(0);
+    });
+}

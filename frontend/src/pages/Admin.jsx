@@ -359,6 +359,29 @@ export default function Admin() {
               </tbody>
             </table>
           </div>
+
+          {/* Danger zone — reseed the catalogue */}
+          <div className="card p-5 border-2 border-red-200 dark:border-red-500/30">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-300 flex items-center justify-center shrink-0">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-gray-900 dark:text-white">Réinitialiser le catalogue</p>
+                <p className="text-sm text-gray-500 mt-0.5">Recharge les 12 véhicules et 2 agences de démonstration avec les données actuelles du code. Une sauvegarde est prise automatiquement avant, mais <b>toutes les réservations et tous les avis</b> (y compris ceux d'utilisateurs réels) seront supprimés.</p>
+              </div>
+              <button
+                onClick={() => run(
+                  'Réinitialiser le catalogue ? Une sauvegarde sera prise avant, mais toutes les réservations et avis existants seront supprimés. Cette action est irréversible sans restaurer la sauvegarde.',
+                  () => api.post('/admin/reseed'),
+                  'Catalogue réinitialisé.'
+                )}
+                disabled={busy}
+                className="text-sm font-semibold px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white shrink-0">
+                Réinitialiser
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

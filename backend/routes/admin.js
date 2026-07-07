@@ -253,4 +253,22 @@ router.get('/database/download', adminAuth, (req, res) => {
   }
 });
 
+/* Re-run the showcase seed (wipes + reinserts the 12 demo cars, the 2 demo agencies,
+   and the migrated v1 data — real user accounts, bookings and reviews from other
+   users are untouched by seed() itself, EXCEPT that the wipe step inside seed()
+   deletes ALL reviews/bookings/car_locations/favorites, not just the demo ones, so
+   this is a "reset the catalogue to its known-good state" action, not a soft merge.
+   Exists because some hosts (e.g. Hostinger) don't expose a way to run `node seed.js`
+   by hand — this lets an admin apply a corrected seed.js from the UI instead. Takes
+   a snapshot first so it's always reversible via the Sauvegardes tab. */
+router.post('/reseed', adminAuth, async (req, res) => {
+  try {
+    backup.backupNow('pre-reseed');
+    await require('../seed').seed();
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Échec du reseed : ' + e.message });
+  }
+});
+
 module.exports = router;

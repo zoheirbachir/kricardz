@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import LogoMark from './LogoMark';
 
 export default function Footer() {
   const { t } = useTranslation();
@@ -12,9 +13,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-9 h-9 bg-primary-500 rounded-xl flex items-center justify-center shadow-clay">
-                <span className="text-white font-bold text-base">K</span>
-              </div>
+              <LogoMark className="w-9 h-9 shadow-clay" />
               <span className="font-display font-semibold text-2xl text-white">Kri<span className="text-primary-400">Car</span></span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">{t('footer.tagline')}</p>

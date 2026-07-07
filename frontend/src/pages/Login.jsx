@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import LogoMark from '../components/LogoMark';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -30,9 +31,7 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center shadow-clay">
-              <span className="text-white font-bold">K</span>
-            </div>
+            <LogoMark className="w-10 h-10 shadow-clay" />
             <span className="font-display font-semibold text-2xl text-gray-900">Kri<span className="text-primary-500">Car</span></span>
           </Link>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-gray-900 mt-6">{t('auth.login_title')}</h1>

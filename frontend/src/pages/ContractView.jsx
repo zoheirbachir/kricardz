@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { API_ORIGIN } from '../api';
 import EStamp from '../components/EStamp';
+import LogoMark from '../components/LogoMark';
 
 /* On the web API_ORIGIN is empty → use the current site. On mobile (Capacitor) it's
    the hosted backend URL, so QR codes point at the real site, not capacitor://. */
@@ -62,7 +63,7 @@ export default function ContractView() {
         <div className="flex items-start justify-between border-b-2 border-gray-900 pb-4 mb-6">
           <div>
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-primary-500 rounded-lg flex items-center justify-center"><span className="text-white font-bold">K</span></div>
+              <LogoMark className="w-9 h-9" rounded="rounded-lg" />
               <span className="font-display font-semibold text-xl">Kri<span className="text-primary-500">Car</span></span>
             </div>
             <p className="text-xs text-gray-500 mt-1">{isRental ? 'Contrat de location de véhicule' : 'Contrat de partenariat'}</p>

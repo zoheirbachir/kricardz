@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../api';
+import LogoMark from '../components/LogoMark';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -32,7 +33,7 @@ export default function ResetPassword() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center shadow-clay"><span className="text-white font-bold">K</span></div>
+            <LogoMark className="w-10 h-10 shadow-clay" />
             <span className="font-display font-semibold text-2xl text-gray-900">Kri<span className="text-primary-500">Car</span></span>
           </Link>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-gray-900 mt-6">Nouveau mot de passe</h1>

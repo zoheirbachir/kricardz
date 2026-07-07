@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import LogoMark from './LogoMark';
 
 export default function Navbar() {
   const { t } = useTranslation();
@@ -46,9 +47,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-            <div className="w-9 h-9 bg-primary-500 rounded-xl flex items-center justify-center shadow-clay group-hover:rotate-3 group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold text-base">K</span>
-            </div>
+            <LogoMark className="w-9 h-9 shadow-clay group-hover:rotate-3 group-hover:scale-105 transition-transform" />
             <span className="font-display font-semibold text-2xl tracking-tight text-gray-900 dark:text-white leading-none">Kri<span className="text-primary-500">Car</span></span>
           </Link>
 

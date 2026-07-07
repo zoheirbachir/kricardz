@@ -12,7 +12,6 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
-const CDN = 'https://kricar-dz.com/uploads/vehicles/';
 const WILAYA = { 5: 'Batna', 11: 'Tamanrasset', 16: 'Alger', 31: 'Oran', 40: 'Khenchela' };
 
 let ENV_HASHES = {};
@@ -72,7 +71,8 @@ function seedV1(db) {
       VALUES (?, ?, ?, ?, ?, ?, 'classic', ?)`).run(a.id, a.owner, a.name, a.wilaya, a.wilaya, a.phone, a.verified);
   }
 
-  /* v1 vehicle 4 — Toyota col (main image lives on the CDN; the video is gone). */
+  /* v1 vehicle 4 — Toyota col. No photo/video: the original files lived on the old
+     kricar-dz.com site, which this app has since replaced on that same domain. */
   if (idByV1[6]) {
     db.prepare(`INSERT OR IGNORE INTO cars
       (id, owner_id, agency_id, title, brand, model, year, type, wilaya, city, price_per_day, description,
@@ -81,7 +81,7 @@ function seedV1(db) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1, ?, ?, ?)`).run(
       'v1-car-4', idByV1[6], 'v1-agency-6', 'Toyota col 2006', 'Toyota', 'col', 2006, 'sport',
       WILAYA[40], WILAYA[40], 1000, 'تاست',
-      '[]', JSON.stringify([CDN + '69e248df47484_1776437471.jpg']),
+      '[]', '[]',
       5, 'manual', 'essence', 20000, 300, 10, 1,
       null, '', 25, '2026-04-17 14:51:11'
     );

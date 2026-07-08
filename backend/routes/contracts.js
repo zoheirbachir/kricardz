@@ -97,6 +97,13 @@ router.post('/rental/:bookingId', auth, (req, res) => {
   const isParty = booking.owner_id === req.user.id || booking.renter_id === req.user.id;
   if (!isParty && !me?.is_admin) return res.status(403).json({ error: 'Accès refusé' });
 
+  /* A rental contract represents an agreed rental — it must not be generated
+     before the owner has actually confirmed the booking (matches the same rule
+     already enforced for reviews). */
+  if (!['confirmed', 'completed'].includes(booking.status) && !me?.is_admin) {
+    return res.status(409).json({ error: 'Le contrat ne peut être généré qu\'après confirmation de la réservation par le propriétaire.' });
+  }
+
   const existing = db.prepare(`SELECT * FROM contracts WHERE type = 'rental' AND booking_id = ?`).get(booking.id);
   if (existing) return res.json(serialize(existing));
 

@@ -16,12 +16,28 @@ const db = require('./db/database');
 const app = express();
 const server = http.createServer(app);
 
-/* In production set CORS_ORIGIN to your domain(s), comma-separated, e.g.
-   CORS_ORIGIN="https://kricar.dz,https://www.kricar.dz". Defaults to "*". */
-const ORIGIN = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()) : '*';
+/* In production set CORS_ORIGIN to your web domain(s), comma-separated, e.g.
+   CORS_ORIGIN="https://kricar-dz.com,https://www.kricar-dz.com". Defaults to "*".
+
+   The Android/iOS app is ALWAYS allowed on top of that, regardless of CORS_ORIGIN —
+   Capacitor apps call the API from their own webview origin (capacitor://localhost
+   on iOS, https://localhost with androidScheme:"https" on Android, per
+   frontend/capacitor.config.json), which has nothing to do with the web domain.
+   Locking CORS_ORIGIN to just the website would otherwise silently break every
+   request from the mobile app. */
+const MOBILE_APP_ORIGINS = ['capacitor://localhost', 'https://localhost', 'ionic://localhost'];
+const configuredOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()) : null;
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // same-origin / server-to-server / curl (no Origin header)
+  if (!configuredOrigins) return true; // no restriction configured -> allow all (dev default)
+  if (configuredOrigins.includes('*')) return true;
+  return configuredOrigins.includes(origin) || MOBILE_APP_ORIGINS.includes(origin);
+}
+const corsOriginFn = (origin, callback) => callback(null, isAllowedOrigin(origin));
 
 const io = new Server(server, {
-  cors: { origin: ORIGIN, methods: ['GET', 'POST'] },
+  cors: { origin: corsOriginFn, methods: ['GET', 'POST'] },
 });
 
 const PORT = process.env.PORT || 5000;
@@ -32,7 +48,7 @@ app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
-app.use(cors({ origin: ORIGIN }));
+app.use(cors({ origin: corsOriginFn }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

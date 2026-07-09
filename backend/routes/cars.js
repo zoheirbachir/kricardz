@@ -3,12 +3,26 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../db/database');
 const { auth, optionalAuth } = require('../middleware/auth');
 const path = require('path');
-const { makeUploader, uploadErrorHandler } = require('../lib/uploads');
+const fs = require('fs');
+const { makeUploader, uploadErrorHandler, MEDIA_TYPES } = require('../lib/uploads');
 
 const router = express.Router();
 
-/* Car photos only — images, no SVG/HTML (prevents stored-XSS via uploaded files). */
-const upload = makeUploader({ dir: path.join(__dirname, '../uploads'), maxMB: 5 });
+/* Car media: up to 8 photos on `images`, one clip on `video`. Photos are images
+   only; the video is mp4/mov/webm. 60MB/file allows a short phone clip. */
+const UPLOAD_DIR = path.join(__dirname, '../uploads/vehicles');
+const upload = makeUploader({ dir: UPLOAD_DIR, allow: MEDIA_TYPES, maxMB: 60 });
+const carMedia = upload.fields([{ name: 'images', maxCount: 8 }, { name: 'video', maxCount: 1 }]);
+
+/* Delete an uploaded media file referenced by its public /uploads/... path
+   (best-effort; only touches files inside our own uploads dir). */
+function removeUploadedFile(publicPath) {
+  if (!publicPath || !publicPath.startsWith('/uploads/')) return; // ignore external URLs (YouTube etc.)
+  const abs = path.join(__dirname, '..', publicPath.replace(/^\//, ''));
+  const uploadsRoot = path.join(__dirname, '../uploads');
+  if (!abs.startsWith(uploadsRoot)) return; // never escape the uploads dir
+  fs.unlink(abs, () => {});
+}
 
 function parseCar(car) {
   if (!car) return null;
@@ -105,51 +119,89 @@ router.get('/:id', optionalAuth, (req, res) => {
 
 /* Coerce an optional numeric body field to an int or null */
 const numOrNull = (v) => (v === undefined || v === '' || v === null ? null : Number(v));
+const RENT_MODES = ['daily', 'hourly', 'both'];
+const cleanRentMode = (v) => (RENT_MODES.includes(v) ? v : 'daily');
 
-router.post('/', auth, upload.array('images', 8), (req, res) => {
-  const { title, brand, model, year, type, wilaya, city, price_per_day, description, features, seats, transmission, fuel,
+router.post('/', auth, carMedia, (req, res) => {
+  const { title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode,
+    description, features, seats, transmission, fuel,
     caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url } = req.body;
-  if (!title || !brand || !model || !year || !type || !wilaya || !price_per_day) {
+  const mode = cleanRentMode(rent_mode);
+  /* Daily price is required unless the vehicle is hourly-only. */
+  if (!title || !brand || !model || !year || !type || !wilaya || (mode !== 'hourly' && !price_per_day)) {
     return res.status(400).json({ error: 'Champs obligatoires manquants' });
   }
+  if ((mode === 'hourly' || mode === 'both') && !price_per_hour) {
+    return res.status(400).json({ error: 'Le prix par heure est requis pour la location à l\'heure.' });
+  }
 
-  const images = (req.files || []).map(f => `/uploads/${f.filename}`);
+  const images = (req.files?.images || []).map(f => `/uploads/vehicles/${f.filename}`);
+  const videoFile = req.files?.video?.[0];
+  const video = videoFile ? `/uploads/vehicles/${videoFile.filename}` : (video_url || null);
   const id = uuidv4();
 
-  db.prepare(`INSERT INTO cars (id, owner_id, title, brand, model, year, type, wilaya, city, price_per_day, description, features, images, seats, transmission, fuel,
+  db.prepare(`INSERT INTO cars (id, owner_id, title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode, description, features, images, seats, transmission, fuel,
     caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
     id, req.user.id, title, brand, model, Number(year), type, wilaya, city || null,
-    Number(price_per_day), description || null,
+    mode === 'hourly' ? null : Number(price_per_day), numOrNull(price_per_hour), mode, description || null,
     JSON.stringify(features ? (Array.isArray(features) ? features : [features]) : []),
     JSON.stringify(images),
     Number(seats) || 5, transmission || 'manual', fuel || 'essence',
     numOrNull(caution), numOrNull(km_per_day), numOrNull(extra_km_price),
     (with_driver === 'true' || with_driver === true || with_driver === '1') ? 1 : 0,
-    numOrNull(weekly_price), numOrNull(monthly_price), video_url || null
+    numOrNull(weekly_price), numOrNull(monthly_price), video
   );
 
   res.status(201).json(parseCar(db.prepare('SELECT * FROM cars WHERE id = ?').get(id)));
 });
 
-router.put('/:id', auth, upload.array('images', 8), (req, res) => {
+router.put('/:id', auth, carMedia, (req, res) => {
   const car = db.prepare('SELECT * FROM cars WHERE id = ?').get(req.params.id);
   if (!car) return res.status(404).json({ error: 'Véhicule introuvable' });
   if (car.owner_id !== req.user.id) return res.status(403).json({ error: 'Accès refusé' });
 
-  const { title, brand, model, year, type, wilaya, city, price_per_day, description, features, available, seats, transmission, fuel,
-    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url } = req.body;
-  const newImages = (req.files || []).map(f => `/uploads/${f.filename}`);
-  const existingImages = JSON.parse(car.images || '[]');
-  const allImages = [...existingImages, ...newImages];
-  /* Keep the existing value when a field is omitted from the request */
-  const keepNum = (v, cur) => (v === undefined || v === '' ? cur : Number(v));
+  const { title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode,
+    description, features, available, seats, transmission, fuel,
+    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url, remove_video } = req.body;
 
-  db.prepare(`UPDATE cars SET title=?, brand=?, model=?, year=?, type=?, wilaya=?, city=?, price_per_day=?, description=?, features=?, images=?, available=?, seats=?, transmission=?, fuel=?,
+  /* ── Photo management ──
+     `existing_images` (JSON array) is the list of previously-uploaded photos the
+     owner chose to KEEP. Anything on the car but not in that list is deleted from
+     disk. New uploads are appended. If the field is absent, keep all existing. */
+  const priorImages = JSON.parse(car.images || '[]');
+  let keptImages = priorImages;
+  if (req.body.existing_images !== undefined) {
+    try { keptImages = JSON.parse(req.body.existing_images); } catch { keptImages = []; }
+    if (!Array.isArray(keptImages)) keptImages = [];
+    for (const img of priorImages) if (!keptImages.includes(img)) removeUploadedFile(img);
+  }
+  const newImages = (req.files?.images || []).map(f => `/uploads/vehicles/${f.filename}`);
+  const allImages = [...keptImages, ...newImages];
+
+  /* ── Video ── replace with a new upload, set a URL, or remove entirely. */
+  let video = car.video_url;
+  const newVideoFile = req.files?.video?.[0];
+  if (newVideoFile) {
+    removeUploadedFile(car.video_url);
+    video = `/uploads/vehicles/${newVideoFile.filename}`;
+  } else if (remove_video === 'true' || remove_video === '1') {
+    removeUploadedFile(car.video_url);
+    video = null;
+  } else if (video_url !== undefined) {
+    video = video_url || null;
+  }
+
+  const keepNum = (v, cur) => (v === undefined || v === '' ? cur : Number(v));
+  const mode = rent_mode !== undefined ? cleanRentMode(rent_mode) : car.rent_mode;
+
+  db.prepare(`UPDATE cars SET title=?, brand=?, model=?, year=?, type=?, wilaya=?, city=?, price_per_day=?, price_per_hour=?, rent_mode=?, description=?, features=?, images=?, available=?, seats=?, transmission=?, fuel=?,
     caution=?, km_per_day=?, extra_km_price=?, with_driver=?, weekly_price=?, monthly_price=?, video_url=? WHERE id=?`).run(
     title || car.title, brand || car.brand, model || car.model, Number(year) || car.year,
-    type || car.type, wilaya || car.wilaya, city || car.city, Number(price_per_day) || car.price_per_day,
-    description || car.description,
+    type || car.type, wilaya || car.wilaya, city || car.city,
+    price_per_day !== undefined ? (price_per_day === '' ? null : Number(price_per_day)) : car.price_per_day,
+    price_per_hour !== undefined ? (price_per_hour === '' ? null : Number(price_per_hour)) : car.price_per_hour,
+    mode, description || car.description,
     JSON.stringify(features ? (Array.isArray(features) ? features : [features]) : JSON.parse(car.features)),
     JSON.stringify(allImages),
     available !== undefined ? (available === 'true' || available === true ? 1 : 0) : car.available,
@@ -157,7 +209,7 @@ router.put('/:id', auth, upload.array('images', 8), (req, res) => {
     keepNum(caution, car.caution), keepNum(km_per_day, car.km_per_day), keepNum(extra_km_price, car.extra_km_price),
     with_driver !== undefined ? ((with_driver === 'true' || with_driver === true || with_driver === '1') ? 1 : 0) : car.with_driver,
     keepNum(weekly_price, car.weekly_price), keepNum(monthly_price, car.monthly_price),
-    video_url !== undefined ? (video_url || null) : car.video_url,
+    video,
     req.params.id
   );
 

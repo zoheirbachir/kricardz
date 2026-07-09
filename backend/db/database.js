@@ -151,8 +151,12 @@ try { db.exec(`ALTER TABLE cars ADD COLUMN extra_km_price INTEGER`); } catch {} 
 try { db.exec(`ALTER TABLE cars ADD COLUMN with_driver INTEGER DEFAULT 0`); } catch {} // 1 = avec chauffeur, 0 = sans chauffeur
 try { db.exec(`ALTER TABLE cars ADD COLUMN weekly_price INTEGER`); } catch {}      // optional weekly rate (DA)
 try { db.exec(`ALTER TABLE cars ADD COLUMN monthly_price INTEGER`); } catch {}     // optional monthly rate (DA)
-try { db.exec(`ALTER TABLE cars ADD COLUMN video_url TEXT`); } catch {}            // optional YouTube / mp4 link
+try { db.exec(`ALTER TABLE cars ADD COLUMN video_url TEXT`); } catch {}            // uploaded video path or YouTube / mp4 link
 try { db.exec(`ALTER TABLE cars ADD COLUMN views INTEGER DEFAULT 0`); } catch {}   // detail-page view counter
+/* Hourly rental support: rent_mode = daily | hourly | both */
+try { db.exec(`ALTER TABLE cars ADD COLUMN price_per_hour INTEGER`); } catch {}    // optional hourly rate (DA)
+try { db.exec(`ALTER TABLE cars ADD COLUMN rent_mode TEXT DEFAULT 'daily'`); } catch {}
+try { db.exec(`UPDATE cars SET rent_mode = 'daily' WHERE rent_mode IS NULL`); } catch {}
 
 /* Backfill sensible defaults so existing/seeded cars surface the new sections */
 try {
@@ -169,6 +173,17 @@ try { db.exec(`UPDATE agencies SET agency_type = 'classic' WHERE agency_type IS 
 
 /* Car registration plate — printed on rental contracts (idempotent) */
 try { db.exec(`ALTER TABLE cars ADD COLUMN registration_number TEXT`); } catch {}
+
+/* ── App settings (key/value) ──
+   Admin-editable values that must change without a code deploy — e.g. KriCar's own
+   commercial-register number printed inside the electronic-contract stamp/QR. */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+`);
 
 /* ── Electronic contracts (CRICAR 2.0) ──
    type:   'partnership' (KriCar ↔ agency) | 'rental' (client ↔ agency)

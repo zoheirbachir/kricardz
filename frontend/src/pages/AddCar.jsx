@@ -16,13 +16,14 @@ export default function AddCar() {
   const [error, setError] = useState('');
   const [form, setForm] = useState({
     title: '', brand: '', model: '', year: new Date().getFullYear(), type: 'sedan',
-    wilaya: '', city: '', price_per_day: '', description: '',
+    wilaya: '', city: '', price_per_day: '', price_per_hour: '', rent_mode: 'daily', description: '',
     seats: 5, transmission: 'manual', fuel: 'essence', features: [],
     caution: '', km_per_day: '', extra_km_price: '', with_driver: false,
     weekly_price: '', monthly_price: '', video_url: '',
   });
   const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [videoFile, setVideoFile] = useState(null);
 
   useEffect(() => { api.get('/wilayas').then(r => setWilayas(r.data)); }, []);
 
@@ -48,6 +49,7 @@ export default function AddCar() {
         else fd.append(k, v);
       });
       images.forEach(img => fd.append('images', img));
+      if (videoFile) fd.append('video', videoFile);
       const res = await api.post('/cars', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast({ type: 'success', message: 'Annonce publiée avec succès !' });
       navigate(`/cars/${res.data.id}`);
@@ -117,8 +119,26 @@ export default function AddCar() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Prix par jour (DA)</label>
-            <input type="number" className="input" required min={1000} placeholder="Ex: 5000" value={form.price_per_day} onChange={e => set('price_per_day', e.target.value)} />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Mode de location</label>
+            <select className="input" value={form.rent_mode} onChange={e => set('rent_mode', e.target.value)}>
+              <option value="daily">À la journée</option>
+              <option value="hourly">À l'heure</option>
+              <option value="both">À la journée et à l'heure</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {form.rent_mode !== 'hourly' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Prix par jour (DA)</label>
+                <input type="number" className="input" required min={1000} placeholder="Ex: 5000" value={form.price_per_day} onChange={e => set('price_per_day', e.target.value)} />
+              </div>
+            )}
+            {form.rent_mode !== 'daily' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Prix par heure (DA)</label>
+                <input type="number" className="input" required min={100} placeholder="Ex: 800" value={form.price_per_hour} onChange={e => set('price_per_hour', e.target.value)} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -200,8 +220,15 @@ export default function AddCar() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Lien vidéo (YouTube ou mp4) <span className="text-gray-400 font-normal">— optionnel</span></label>
-            <input type="url" className="input" placeholder="https://youtube.com/watch?v=..." value={form.video_url} onChange={e => set('video_url', e.target.value)} />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Vidéo du véhicule <span className="text-gray-400 font-normal">— optionnel</span></label>
+            <label className="block border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-primary-300 hover:bg-primary-50/40 transition-colors">
+              <input type="file" accept="video/mp4,video/quicktime,video/webm" className="hidden" onChange={e => setVideoFile(e.target.files[0] || null)} />
+              {videoFile
+                ? <span className="text-sm text-primary-700 font-medium">🎬 {videoFile.name}</span>
+                : <span className="text-sm text-gray-500">Cliquez pour téléverser une vidéo (mp4/mov, max 60 Mo)</span>}
+            </label>
+            <p className="text-xs text-gray-400 mt-2">Ou collez un lien YouTube :</p>
+            <input type="url" className="input mt-1" placeholder="https://youtube.com/watch?v=..." value={form.video_url} onChange={e => set('video_url', e.target.value)} />
           </div>
         </div>
 

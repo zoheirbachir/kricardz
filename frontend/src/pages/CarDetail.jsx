@@ -195,10 +195,20 @@ export default function CarDetail() {
                 </p>
               </div>
               <div className="text-right shrink-0">
-                <div className="font-display text-3xl font-semibold text-primary-600">{car.price_per_day?.toLocaleString()} DA</div>
-                <div className="text-sm text-gray-400">{t('car.per_day')}</div>
-                {car.weekly_price ? <div className="text-xs text-gray-400 mt-1">{car.weekly_price.toLocaleString()} DA {t('car.per_week')}</div> : null}
-                {car.monthly_price ? <div className="text-xs text-gray-400">{car.monthly_price.toLocaleString()} DA {t('car.per_month')}</div> : null}
+                {car.rent_mode === 'hourly' ? (
+                  <>
+                    <div className="font-display text-3xl font-semibold text-primary-600">{car.price_per_hour?.toLocaleString()} DA</div>
+                    <div className="text-sm text-gray-400">/ heure</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="font-display text-3xl font-semibold text-primary-600">{car.price_per_day?.toLocaleString()} DA</div>
+                    <div className="text-sm text-gray-400">{t('car.per_day')}</div>
+                    {car.rent_mode === 'both' && car.price_per_hour ? <div className="text-xs text-gray-500 mt-1">{car.price_per_hour.toLocaleString()} DA / heure</div> : null}
+                    {car.weekly_price ? <div className="text-xs text-gray-400 mt-1">{car.weekly_price.toLocaleString()} DA {t('car.per_week')}</div> : null}
+                    {car.monthly_price ? <div className="text-xs text-gray-400">{car.monthly_price.toLocaleString()} DA {t('car.per_month')}</div> : null}
+                  </>
+                )}
               </div>
             </div>
 
@@ -493,7 +503,12 @@ export default function CarDetail() {
                     value={booking.message} onChange={e => setBooking(b => ({...b, message: e.target.value}))} />
                 </div>
 
-                {days > 0 && (
+                {car.rent_mode === 'hourly' && (
+                  <div className="bg-honey-50 border border-honey-100 rounded-xl p-3 text-sm text-honey-800">
+                    Ce véhicule se loue à l'heure ({car.price_per_hour?.toLocaleString()} DA/h). Indiquez les créneaux souhaités dans votre message et le propriétaire confirmera.
+                  </div>
+                )}
+                {days > 0 && car.price_per_day > 0 && (
                   <div className="bg-gray-50 rounded-xl p-3 text-sm space-y-1.5">
                     <div className="flex justify-between text-gray-600">
                       <span>{car.price_per_day?.toLocaleString()} DA × {days} {t('booking.days')}</span>

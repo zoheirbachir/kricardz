@@ -11,6 +11,17 @@ const TABS = [
   { key: 'bookings', label: 'Réservations' },
   { key: 'contracts', label: 'Contrats' },
   { key: 'backups', label: 'Sauvegardes' },
+  { key: 'settings', label: 'Paramètres' },
+];
+
+/* Labels for the editable KriCar contract-settings fields */
+const SETTINGS_FIELDS = [
+  ['kricar_commercial_reg_number', 'N° de registre de commerce (utilisé dans le QR/cachet du contrat)'],
+  ['kricar_name', 'Nom affiché'],
+  ['kricar_legal_name', 'Raison sociale'],
+  ['kricar_address', 'Adresse'],
+  ['kricar_phone', 'Téléphone'],
+  ['kricar_email', 'Email'],
 ];
 
 const fmtSize = (b) => b > 1048576 ? (b / 1048576).toFixed(1) + ' Mo' : (b / 1024).toFixed(0) + ' Ko';
@@ -42,6 +53,7 @@ export default function Admin() {
   const [bookings, setBookings] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [backups, setBackups] = useState([]);
+  const [settings, setSettings] = useState(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [q, setQ] = useState('');
@@ -50,7 +62,7 @@ export default function Admin() {
 
   const load = useCallback((which) => {
     if (which === 'overview') { setLoading(true); loadStats().finally(() => setLoading(false)); return; }
-    const map = { agencies: setAgencies, cars: setCars, users: setUsers, bookings: setBookings, contracts: setContracts, backups: setBackups };
+    const map = { agencies: setAgencies, cars: setCars, users: setUsers, bookings: setBookings, contracts: setContracts, backups: setBackups, settings: setSettings };
     setLoading(true);
     api.get(`/admin/${which}`).then(r => map[which](r.data))
       .catch(() => toast({ type: 'error', message: 'Échec du chargement.' }))
@@ -79,6 +91,17 @@ export default function Admin() {
       URL.revokeObjectURL(blobUrl);
     } catch {
       toast({ type: 'error', message: 'Échec du téléchargement.' });
+    } finally { setBusy(false); }
+  };
+
+  const saveSettings = async () => {
+    setBusy(true);
+    try {
+      const { data } = await api.put('/admin/settings', settings);
+      setSettings(data.settings);
+      toast({ type: 'success', message: 'Paramètres enregistrés.' });
+    } catch (e) {
+      toast({ type: 'error', message: e.response?.data?.error || 'Échec de l\'enregistrement.' });
     } finally { setBusy(false); }
   };
 
@@ -143,7 +166,7 @@ export default function Admin() {
       )}
 
       {/* Search bar for list tabs */}
-      {!['overview', 'bookings', 'backups'].includes(tab) && (
+      {!['overview', 'bookings', 'backups', 'settings'].includes(tab) && (
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher…"
           className="input max-w-sm mb-4 text-sm" />
       )}
@@ -382,6 +405,25 @@ export default function Admin() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Settings */}
+      {tab === 'settings' && !loading && settings && (
+        <div className="card p-5 space-y-4 max-w-2xl">
+          <div>
+            <h2 className="font-semibold text-gray-900 dark:text-white">Informations KriCar (contrats électroniques)</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Ces valeurs apparaissent dans le cachet et le QR code de chaque contrat. Modifiez le registre de commerce ici — aucune modification du code n'est nécessaire.</p>
+          </div>
+          {SETTINGS_FIELDS.map(([key, label]) => (
+            <div key={key}>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+              <input className="input" value={settings[key] ?? ''} onChange={e => setSettings(s => ({ ...s, [key]: e.target.value }))} />
+            </div>
+          ))}
+          <button onClick={saveSettings} disabled={busy} className="btn-primary text-sm">
+            {busy ? 'Enregistrement…' : 'Enregistrer les paramètres'}
+          </button>
         </div>
       )}
     </div>

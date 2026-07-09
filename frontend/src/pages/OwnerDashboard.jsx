@@ -182,6 +182,10 @@ export default function OwnerDashboard() {
                 </div>
                 <div className="flex flex-col gap-1 shrink-0">
                   <Link to={`/cars/${car.id}`} className="btn-ghost text-xs py-1 px-2">{t('common.see_all')}</Link>
+                  <Link to={`/dashboard/owner/edit/${car.id}`} className="flex items-center justify-center gap-1 text-xs text-gray-700 hover:text-primary-600 py-1 px-2 border border-gray-200 rounded-lg text-center">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    Modifier
+                  </Link>
                   <Link to={`/track/${car.id}`} className="flex items-center justify-center gap-1 text-xs text-primary-600 hover:text-primary-700 py-1 px-2 border border-primary-200 rounded-lg text-center">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" /></svg>
                     GPS

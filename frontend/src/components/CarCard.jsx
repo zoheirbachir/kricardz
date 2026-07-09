@@ -82,8 +82,20 @@ export default function CarCard({ car }) {
         {/* Price & owner */}
         <div className="flex items-end justify-between pt-1 border-t border-gray-100">
           <div className="pt-2">
-            <span className="font-display text-xl font-semibold text-gray-900">{car.price_per_day?.toLocaleString()}</span>
-            <span className="text-xs text-gray-500 ml-1">{t('common.da_day')}</span>
+            {car.rent_mode === 'hourly' ? (
+              <>
+                <span className="font-display text-xl font-semibold text-gray-900">{car.price_per_hour?.toLocaleString()}</span>
+                <span className="text-xs text-gray-500 ml-1">DA/h</span>
+              </>
+            ) : (
+              <>
+                <span className="font-display text-xl font-semibold text-gray-900">{car.price_per_day?.toLocaleString()}</span>
+                <span className="text-xs text-gray-500 ml-1">{t('common.da_day')}</span>
+                {car.rent_mode === 'both' && car.price_per_hour ? (
+                  <span className="text-xs text-gray-400 ml-1">· {car.price_per_hour.toLocaleString()} DA/h</span>
+                ) : null}
+              </>
+            )}
           </div>
           {car.owner_verified && (
             <span className="text-xs text-pine-600 flex items-center gap-1 font-semibold pt-2">

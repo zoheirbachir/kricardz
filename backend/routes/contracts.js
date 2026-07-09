@@ -3,18 +3,13 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db/database');
 const { auth } = require('../middleware/auth');
+const settings = require('../lib/settings');
 
 const router = express.Router();
 
-/* KriCar's own legal identity — printed on every contract + stamp. */
-const KRICAR_INFO = {
-  name: 'KriCar (CRICAR)',
-  legal_name: 'KriCar — Plateforme de location de véhicules',
-  commercial_reg_number: 'EN COURS',
-  address: 'Algérie',
-  phone: '0673590224',
-  email: 'Kricar.services@gmail.com',
-};
+/* KriCar's own legal identity — printed on every contract + stamp.
+   Read from app_settings so an admin can update e.g. the commercial-register number
+   (used in the contract stamp/QR) without a code change. */
 
 /* Human-readable, unique contract number: KC-<R|P>-<year>-<6-digit seq>. */
 function nextContractNumber(type) {
@@ -55,7 +50,7 @@ router.post('/partnership', auth, (req, res) => {
   const now = new Date();
   const end = new Date(now); end.setMonth(end.getMonth() + 3); // 3 free months
   const data = {
-    kricar: KRICAR_INFO,
+    kricar: settings.kricarInfo(),
     agency: agencyBlock(owner),
     terms: {
       free_period_months: 3,
@@ -112,7 +107,7 @@ router.post('/rental/:bookingId', auth, (req, res) => {
 
   const days = Math.max(1, Math.ceil((new Date(booking.end_date) - new Date(booking.start_date)) / 86400000));
   const data = {
-    kricar: KRICAR_INFO,
+    kricar: settings.kricarInfo(),
     agency: agencyBlock(owner),
     client: {
       name: renter.name,

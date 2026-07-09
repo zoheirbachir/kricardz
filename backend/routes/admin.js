@@ -3,6 +3,7 @@ const path = require('path');
 const db = require('../db/database');
 const { adminAuth } = require('../middleware/auth');
 const backup = require('../lib/backup');
+const settings = require('../lib/settings');
 
 const router = express.Router();
 
@@ -251,6 +252,23 @@ router.get('/database/download', adminAuth, (req, res) => {
   } catch (e) {
     res.status(500).json({ error: 'Échec de la sauvegarde : ' + e.message });
   }
+});
+
+/* ── App settings (e.g. KriCar's commercial-register number for contracts) ── */
+router.get('/settings', adminAuth, (req, res) => {
+  res.json(settings.all());
+});
+
+router.put('/settings', adminAuth, (req, res) => {
+  const body = req.body || {};
+  const updated = {};
+  for (const key of settings.EDITABLE_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(body, key)) {
+      settings.set(key, body[key]);
+      updated[key] = settings.get(key);
+    }
+  }
+  res.json({ ok: true, settings: settings.all() });
 });
 
 /* Re-run the showcase seed (wipes + reinserts the 12 demo cars, the 2 demo agencies,

@@ -58,8 +58,19 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-6 text-xs text-center">
-          © {year} KriCar. {t('footer.rights')}.
+        <div className="border-t border-gray-800 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-center">
+          <p>© {year} KriCar. {t('footer.rights')}.</p>
+          <p className="text-gray-500">
+            Conçu et développé par{' '}
+            <a
+              href="https://zoheirbachir.github.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary-400 hover:text-primary-300 transition-colors"
+            >
+              Zoheir Bachir
+            </a>
+          </p>
         </div>
       </div>
     </footer>

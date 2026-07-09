@@ -64,6 +64,30 @@ export default function About() {
         </div>
       </div>
 
+      <div className="card p-8 mb-8">
+        <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900 mb-4">Conception & développement</h2>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300 font-display font-semibold text-2xl shrink-0">
+            ZB
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-gray-900 text-lg">Zoheir Bachir</p>
+            <p className="text-sm text-gray-500 mb-3">
+              Conception et développement complet de la plateforme KriCar — web et mobile.
+            </p>
+            <a
+              href="https://zoheirbachir.github.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors"
+            >
+              Voir mon portfolio
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div className="relative overflow-hidden text-center bg-gradient-to-br from-primary-500 to-primary-700 rounded-3xl p-10 text-white">
         <div className="absolute -top-10 -right-10 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
         <div className="relative">

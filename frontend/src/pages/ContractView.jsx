@@ -133,8 +133,32 @@ export default function ContractView() {
           </Section>
         )}
 
+        {/* Signatures (griffes) — handwritten sign-off area for the two parties */}
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <p className="text-xs font-semibold text-gray-700 mb-1">
+              {isRental ? "Le loueur / L'agence" : 'Pour KriCar'}
+            </p>
+            <p className="text-[11px] text-gray-500 mb-8">
+              {isRental ? (d.agency?.name || '') : d.kricar?.name}
+            </p>
+            <div className="border-t border-gray-400" />
+            <p className="text-[10px] text-gray-400 mt-1">Griffe et signature</p>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-700 mb-1">
+              {isRental ? 'Le client' : "Pour l'agence"}
+            </p>
+            <p className="text-[11px] text-gray-500 mb-8">
+              {isRental ? (d.client?.name || '') : (d.agency?.name || '')}
+            </p>
+            <div className="border-t border-gray-400" />
+            <p className="text-[10px] text-gray-400 mt-1">Griffe et signature</p>
+          </div>
+        </div>
+
         {/* Legal note */}
-        <p className="text-[11px] text-gray-400 leading-relaxed mt-4 mb-6 border-t border-gray-100 pt-3">
+        <p className="text-[11px] text-gray-400 leading-relaxed mt-6 mb-6 border-t border-gray-100 pt-3">
           Ce contrat électronique est généré automatiquement par la plateforme KriCar et scellé par les cachets
           électroniques ci-dessous. Chaque cachet contient un code QR permettant de vérifier l'authenticité du
           contrat. Tout document ne portant pas ces cachets est considéré comme non valide.

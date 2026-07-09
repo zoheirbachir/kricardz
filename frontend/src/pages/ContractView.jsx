@@ -3,6 +3,11 @@ import { useParams, Link } from 'react-router-dom';
 import api, { API_ORIGIN } from '../api';
 import EStamp from '../components/EStamp';
 import LogoMark from '../components/LogoMark';
+import SignaturePad from '../components/SignaturePad';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+
+const fmtSignedAt = (iso) => iso ? new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 
 /* On the web API_ORIGIN is empty → use the current site. On mobile (Capacitor) it's
    the hosted backend URL, so QR codes point at the real site, not capacitor://. */
@@ -24,14 +29,43 @@ const Section = ({ title, children }) => (
 
 export default function ContractView() {
   const { id } = useParams();
+  const { user } = useAuth();
+  const toast = useToast();
   const [c, setC] = useState(null);
   const [error, setError] = useState('');
+  const [padOpen, setPadOpen] = useState(false);
+  const [signing, setSigning] = useState(false);
 
   useEffect(() => {
     api.get(`/contracts/${id}`)
       .then(r => setC(r.data))
       .catch(e => setError(e.response?.data?.error || 'Contrat introuvable'));
   }, [id]);
+
+  /* Which signature slot (if any) the logged-in user may fill on this contract. */
+  const mySlot = (() => {
+    if (!c || !user) return null;
+    if (c.type === 'partnership') {
+      if (c.agency_owner_id === user.id) return 'agency';
+      if (user.is_admin) return 'kricar';
+    } else if (c.type === 'rental') {
+      if (c.agency_owner_id === user.id) return 'agency';
+      if (c.renter_id === user.id) return 'client';
+    }
+    return null;
+  })();
+
+  const submitSignature = async (dataUrl) => {
+    setSigning(true);
+    try {
+      const r = await api.post(`/contracts/${id}/sign`, { signature: dataUrl });
+      setC(r.data);
+      setPadOpen(false);
+      toast({ type: 'success', message: 'Signature enregistrée.' });
+    } catch (e) {
+      toast({ type: 'error', message: e.response?.data?.error || 'Échec de la signature.' });
+    } finally { setSigning(false); }
+  };
 
   if (error) return (
     <div className="max-w-3xl mx-auto px-4 py-20 text-center">
@@ -133,28 +167,42 @@ export default function ContractView() {
           </Section>
         )}
 
-        {/* Signatures (griffes) — handwritten sign-off area for the two parties */}
+        {/* Signatures (griffes) — signed online (finger/mouse) by each party */}
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
-            <p className="text-xs font-semibold text-gray-700 mb-1">
-              {isRental ? "Le loueur / L'agence" : 'Pour KriCar'}
-            </p>
-            <p className="text-[11px] text-gray-500 mb-8">
-              {isRental ? (d.agency?.name || '') : d.kricar?.name}
-            </p>
-            <div className="border-t border-gray-400" />
-            <p className="text-[10px] text-gray-400 mt-1">Griffe et signature</p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-gray-700 mb-1">
-              {isRental ? 'Le client' : "Pour l'agence"}
-            </p>
-            <p className="text-[11px] text-gray-500 mb-8">
-              {isRental ? (d.client?.name || '') : (d.agency?.name || '')}
-            </p>
-            <div className="border-t border-gray-400" />
-            <p className="text-[10px] text-gray-400 mt-1">Griffe et signature</p>
-          </div>
+          {(isRental
+            ? [{ slot: 'agency', label: "Le loueur / L'agence", name: d.agency?.name }, { slot: 'client', label: 'Le client', name: d.client?.name }]
+            : [{ slot: 'kricar', label: 'Pour KriCar', name: d.kricar?.name }, { slot: 'agency', label: "Pour l'agence", name: d.agency?.name }]
+          ).map(({ slot, label, name }) => {
+            const sig = c.signatures?.[slot];
+            return (
+              <div key={slot}>
+                <p className="text-xs font-semibold text-gray-700 mb-1">{label}</p>
+                <p className="text-[11px] text-gray-500 mb-2">{name || ''}</p>
+                {sig ? (
+                  <div>
+                    <img src={sig.image} alt="signature" className="h-16 object-contain" />
+                    <div className="border-t border-gray-400 mt-1" />
+                    <p className="text-[10px] text-pine-600 mt-1">✓ Signé le {fmtSignedAt(sig.signed_at)}{sig.name ? ` · ${sig.name}` : ''}</p>
+                  </div>
+                ) : mySlot === slot ? (
+                  <div>
+                    <div className="h-16 flex items-end">
+                      <button type="button" onClick={() => setPadOpen(true)}
+                        className="btn-primary text-xs py-1.5 px-3 print:hidden">✍️ Signer en ligne</button>
+                    </div>
+                    <div className="border-t border-gray-400 mt-1" />
+                    <p className="text-[10px] text-gray-400 mt-1">Griffe et signature</p>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="h-16" />
+                    <div className="border-t border-gray-400" />
+                    <p className="text-[10px] text-gray-400 mt-1">Griffe et signature</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Legal note */}
@@ -188,6 +236,10 @@ export default function ContractView() {
           />
         </div>
       </div>
+
+      {padOpen && (
+        <SignaturePad onSave={submitSignature} onCancel={() => setPadOpen(false)} saving={signing} />
+      )}
     </div>
   );
 }

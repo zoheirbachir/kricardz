@@ -204,4 +204,8 @@ db.exec(`
   );
 `);
 
+/* Online signatures (griffes) drawn by each party — JSON:
+   { agency: {image,name,signed_at}, client: {...}, kricar: {...} } (idempotent) */
+try { db.exec(`ALTER TABLE contracts ADD COLUMN signatures TEXT DEFAULT '{}'`); } catch {}
+
 module.exports = db;

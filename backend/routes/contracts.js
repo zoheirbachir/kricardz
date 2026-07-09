@@ -184,7 +184,46 @@ router.get('/verify/:token', (req, res) => {
 });
 
 function serialize(c) {
-  return { ...c, data: JSON.parse(c.data) };
+  let signatures = {};
+  try { signatures = JSON.parse(c.signatures || '{}'); } catch { signatures = {}; }
+  return { ...c, data: JSON.parse(c.data), signatures };
 }
+
+/* Which signature slot may the current user fill on this contract?
+   - partnership: admin → 'kricar'; the agency owner → 'agency'
+   - rental:      the agency/loueur → 'agency'; the renter/client → 'client' */
+function signatureSlotFor(contract, userId, isAdmin) {
+  if (contract.type === 'partnership') {
+    if (contract.agency_owner_id === userId) return 'agency';
+    if (isAdmin) return 'kricar';
+  } else if (contract.type === 'rental') {
+    if (contract.agency_owner_id === userId) return 'agency';
+    if (contract.renter_id === userId) return 'client';
+  }
+  return null;
+}
+
+/* ── Sign a contract online (finger-drawn signature, e.g. from a phone) ── */
+router.post('/:id/sign', auth, (req, res) => {
+  const c = db.prepare('SELECT * FROM contracts WHERE id = ?').get(req.params.id);
+  if (!c) return res.status(404).json({ error: 'Contrat introuvable' });
+
+  const me = db.prepare('SELECT is_admin, name FROM users WHERE id = ?').get(req.user.id);
+  const slot = signatureSlotFor(c, req.user.id, me?.is_admin === 1);
+  if (!slot) return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à signer ce contrat.' });
+
+  const { signature } = req.body;
+  if (!signature || typeof signature !== 'string' || !signature.startsWith('data:image/')) {
+    return res.status(400).json({ error: 'Signature invalide.' });
+  }
+  if (signature.length > 300000) return res.status(400).json({ error: 'Signature trop volumineuse.' });
+
+  let signatures = {};
+  try { signatures = JSON.parse(c.signatures || '{}'); } catch { signatures = {}; }
+  signatures[slot] = { image: signature, name: me?.name || null, signed_at: new Date().toISOString() };
+  db.prepare('UPDATE contracts SET signatures = ? WHERE id = ?').run(JSON.stringify(signatures), c.id);
+
+  res.json(serialize(db.prepare('SELECT * FROM contracts WHERE id = ?').get(c.id)));
+});
 
 module.exports = router;

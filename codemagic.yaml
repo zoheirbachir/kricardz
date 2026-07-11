@@ -101,10 +101,14 @@ workflows:
           xcode-project use-profiles --verbose
       - name: Build signed IPA
         script: |
-          cd frontend/ios/App
-          xcode-project build-ipa --workspace App.xcworkspace --scheme App
+          # Run from the repo root (no cd) with the full workspace path so the
+          # .ipa lands at build/ios/ipa/ where the artifacts/publisher expect it.
+          xcode-project build-ipa \
+            --workspace frontend/ios/App/App.xcworkspace \
+            --scheme App
     artifacts:
       - build/ios/ipa/*.ipa
+      - frontend/ios/App/build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
     publishing:
       app_store_connect:

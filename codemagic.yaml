@@ -84,12 +84,15 @@ workflows:
         script: cd frontend && npx cap sync ios
       - name: Set up signing
         script: |
-          # Create (if missing) the iOS Distribution certificate + App Store
-          # provisioning profile for the bundle id, using the App Store Connect
-          # API key integration, then patch the Xcode project to use them.
+          # Apple's API can only create/save a signing certificate if we supply
+          # the certificate's private key. Generate a fresh RSA key, then create
+          # (or reuse) the iOS Distribution certificate + App Store provisioning
+          # profile for the bundle id and patch the Xcode project to use them.
           keychain initialize
+          ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/kricar_dist_key -q -N ""
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
+            --certificate-key=@file:/tmp/kricar_dist_key \
             --create \
             --verbose
           keychain add-certificates

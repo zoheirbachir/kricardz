@@ -90,10 +90,14 @@ workflows:
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --verbose
           keychain add-certificates
-          cd frontend/ios/App
-          xcode-project use-profiles
+          # Apply the downloaded profile to the App target. Point at the workspace
+          # explicitly so the App target (not just Pods) gets the profile.
+          xcode-project use-profiles \
+            --project "frontend/ios/App/App.xcodeproj" \
+            --verbose
       - name: Build signed IPA
         script: |
           cd frontend/ios/App

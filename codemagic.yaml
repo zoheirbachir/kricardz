@@ -72,7 +72,7 @@ workflows:
         distribution_type: app_store
         bundle_identifier: dz.kricar.app
       vars:
-        APP_STORE_APPLE_ID: 0000000000   # ← replace with the app's Apple ID number
+        APP_STORE_APPLE_ID: 6789854020   # KriCar app's Apple ID (App Store Connect → App Information)
     scripts:
       - name: Install web dependencies
         script: cd frontend && npm install

@@ -68,11 +68,13 @@ workflows:
       node: 20
       xcode: 15.4
       cocoapods: default
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: dz.kricar.app
+      # NOTE: no `ios_signing:` block on purpose. That block does automatic
+      # signing during environment setup and fails with "No matching profiles
+      # found" when the profile doesn't exist yet — before any script runs.
+      # Instead we create the certificate + profile ourselves in "Set up signing".
       vars:
         APP_STORE_APPLE_ID: 6789854020   # KriCar app's Apple ID (App Store Connect → App Information)
+        BUNDLE_ID: dz.kricar.app
     scripts:
       - name: Install web dependencies
         script: cd frontend && npm install
@@ -86,7 +88,7 @@ workflows:
           # provisioning profile for the bundle id, using the App Store Connect
           # API key integration, then apply them to the Xcode project.
           keychain initialize
-          app-store-connect fetch-signing-files "dz.kricar.app" \
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
           keychain add-certificates

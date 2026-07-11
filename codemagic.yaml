@@ -19,7 +19,7 @@ workflows:
     max_build_duration: 60
     environment:
       node: 20
-      xcode: 15.4
+      xcode: latest
       cocoapods: default
     scripts:
       - name: Install web dependencies
@@ -66,7 +66,7 @@ workflows:
       app_store_connect: CodemagicAppStoreKey
     environment:
       node: 20
-      xcode: 15.4
+      xcode: latest
       cocoapods: default
       # NOTE: no `ios_signing:` block on purpose. That block does automatic
       # signing during environment setup and fails with "No matching profiles

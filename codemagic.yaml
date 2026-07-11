@@ -64,7 +64,7 @@ workflows:
   #     cocoapods: default
   #     ios_signing:
   #       distribution_type: app_store
-  #       bundle_identifier: com.zoheirbachir.kricar   # TODO 2: must match the App ID you register
+  #       bundle_identifier: dz.kricar.app             # TODO 2: matches the Capacitor project; register this exact App ID
   #     vars:
   #       APP_STORE_APPLE_ID: 0000000000               # TODO 3: the app's Apple ID from App Store Connect
   #   scripts:

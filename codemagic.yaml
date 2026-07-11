@@ -82,6 +82,14 @@ workflows:
         script: cd frontend && npx cap sync ios
       - name: Set up signing
         script: |
+          # Create (if missing) the iOS Distribution certificate + App Store
+          # provisioning profile for the bundle id, using the App Store Connect
+          # API key integration, then apply them to the Xcode project.
+          keychain initialize
+          app-store-connect fetch-signing-files "dz.kricar.app" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
           cd frontend/ios/App
           xcode-project use-profiles
       - name: Build signed IPA

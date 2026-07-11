@@ -86,18 +86,16 @@ workflows:
         script: |
           # Create (if missing) the iOS Distribution certificate + App Store
           # provisioning profile for the bundle id, using the App Store Connect
-          # API key integration, then apply them to the Xcode project.
+          # API key integration, then patch the Xcode project to use them.
           keychain initialize
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create \
             --verbose
           keychain add-certificates
-          # Apply the downloaded profile to the App target. Point at the workspace
-          # explicitly so the App target (not just Pods) gets the profile.
-          xcode-project use-profiles \
-            --project "frontend/ios/App/App.xcodeproj" \
-            --verbose
+          # Run from the repo root with no extra flags so it recursively finds
+          # App.xcodeproj and switches it to manual signing with the profile.
+          xcode-project use-profiles --verbose
       - name: Build signed IPA
         script: |
           cd frontend/ios/App

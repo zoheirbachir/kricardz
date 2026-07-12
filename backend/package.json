@@ -6,7 +6,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node seed.js",
-    "build:frontend": "npm --prefix ../frontend install && npm --prefix ../frontend run build",
+    "build": "echo \"Nothing to build on the server — the frontend is pre-bundled in public/.\"",
+    "build:frontend": "node -e \"process.exit(require('fs').existsSync('../frontend')?0:1)\" && npm --prefix ../frontend install && npm --prefix ../frontend run build || echo \"[build:frontend] ../frontend not present — using the pre-bundled public/ instead.\"",
     "bundle:frontend": "node scripts/bundle-frontend.js"
   },
   "engines": {

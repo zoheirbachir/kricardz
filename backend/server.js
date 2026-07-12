@@ -52,35 +52,6 @@ app.use(cors({ origin: corsOriginFn }));
 app.use(express.json());
 app.use('/uploads', express.static(require('./config/paths').UPLOADS_ROOT));
 
-/* Temporary diagnostic: reports where the app looks for uploaded media and
-   whether it can see the files. Remove once media serving is confirmed. */
-app.get('/api/_diag/uploads', (req, res) => {
-  const fs = require('fs');
-  const paths = require('./config/paths');
-  const os = require('os');
-  const sample = '6a26ef4ae577c_1780936522.jpeg';
-  const candidates = [
-    paths.VEHICLES_DIR,
-    '/home/u228904793/kricar-uploads/vehicles',
-    require('path').join(os.homedir(), 'kricar-uploads', 'vehicles'),
-    require('path').join(__dirname, 'uploads', 'vehicles'),
-  ];
-  const report = candidates.map(dir => {
-    let exists = false, count = null, hasSample = false;
-    try { exists = fs.existsSync(dir); } catch {}
-    try { if (exists) { const f = fs.readdirSync(dir); count = f.length; hasSample = f.includes(sample); } } catch {}
-    return { dir, exists, count, hasSample };
-  });
-  res.json({
-    env_UPLOADS_ROOT: process.env.UPLOADS_ROOT || null,
-    resolved_UPLOADS_ROOT: paths.UPLOADS_ROOT,
-    VEHICLES_DIR: paths.VEHICLES_DIR,
-    __dirname,
-    homedir: os.homedir(),
-    candidates: report,
-  });
-});
-
 /* Make io accessible in route handlers */
 app.set('io', io);
 

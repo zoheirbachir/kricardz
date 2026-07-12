@@ -5,12 +5,14 @@ const { auth, optionalAuth } = require('../middleware/auth');
 const path = require('path');
 const fs = require('fs');
 const { makeUploader, uploadErrorHandler, MEDIA_TYPES } = require('../lib/uploads');
+const { UPLOADS_ROOT, VEHICLES_DIR } = require('../config/paths');
 
 const router = express.Router();
 
 /* Car media: up to 8 photos on `images`, one clip on `video`. Photos are images
-   only; the video is mp4/mov/webm. 60MB/file allows a short phone clip. */
-const UPLOAD_DIR = path.join(__dirname, '../uploads/vehicles');
+   only; the video is mp4/mov/webm. 60MB/file allows a short phone clip.
+   VEHICLES_DIR honours UPLOADS_ROOT so media can live outside the deploy dir. */
+const UPLOAD_DIR = VEHICLES_DIR;
 const upload = makeUploader({ dir: UPLOAD_DIR, allow: MEDIA_TYPES, maxMB: 60 });
 const carMedia = upload.fields([{ name: 'images', maxCount: 8 }, { name: 'video', maxCount: 1 }]);
 
@@ -18,9 +20,9 @@ const carMedia = upload.fields([{ name: 'images', maxCount: 8 }, { name: 'video'
    (best-effort; only touches files inside our own uploads dir). */
 function removeUploadedFile(publicPath) {
   if (!publicPath || !publicPath.startsWith('/uploads/')) return; // ignore external URLs (YouTube etc.)
-  const abs = path.join(__dirname, '..', publicPath.replace(/^\//, ''));
-  const uploadsRoot = path.join(__dirname, '../uploads');
-  if (!abs.startsWith(uploadsRoot)) return; // never escape the uploads dir
+  // Map the public /uploads/... path onto the real (possibly external) uploads root.
+  const abs = path.join(UPLOADS_ROOT, publicPath.replace(/^\/uploads\//, ''));
+  if (!abs.startsWith(UPLOADS_ROOT)) return; // never escape the uploads dir
   fs.unlink(abs, () => {});
 }
 

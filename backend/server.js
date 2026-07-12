@@ -50,7 +50,7 @@ app.use(helmet({
 }));
 app.use(cors({ origin: corsOriginFn }));
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(require('./config/paths').UPLOADS_ROOT));
 
 /* Make io accessible in route handlers */
 app.set('io', io);

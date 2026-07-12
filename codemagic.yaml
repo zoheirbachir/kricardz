@@ -84,15 +84,16 @@ workflows:
         script: cd frontend && npx cap sync ios
       - name: Set up signing
         script: |
-          # Apple's API can only create/save a signing certificate if we supply
-          # the certificate's private key. Generate a fresh RSA key, then create
-          # (or reuse) the iOS Distribution certificate + App Store provisioning
-          # profile for the bundle id and patch the Xcode project to use them.
+          # Use ONE persistent signing key stored in the CERTIFICATE_PRIVATE_KEY
+          # Codemagic variable. Because the key is the same every build,
+          # fetch-signing-files finds and REUSES the existing distribution
+          # certificate instead of trying to create a new one each time (which
+          # eventually hits Apple's cert limit -> HTTP 409). --create only makes
+          # the certificate on the very first run; after that it's reused.
           keychain initialize
-          ssh-keygen -t rsa -b 2048 -m PEM -f /tmp/kricar_dist_key -q -N ""
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --certificate-key=@file:/tmp/kricar_dist_key \
+            --certificate-key "@env:CERTIFICATE_PRIVATE_KEY" \
             --create \
             --verbose
           keychain add-certificates

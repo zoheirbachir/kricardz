@@ -65,6 +65,11 @@ workflows:
     integrations:
       app_store_connect: CodemagicAppStoreKey
     environment:
+      # CERTIFICATE_PRIVATE_KEY (the persistent signing key) lives in this group.
+      # Create the group + variable in Codemagic: app → Environment variables →
+      # group "signing", add CERTIFICATE_PRIVATE_KEY (secure), paste the PEM key.
+      groups:
+        - signing
       node: 20
       xcode: latest
       cocoapods: default

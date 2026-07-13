@@ -14,7 +14,7 @@ const TABS = [
   { key: 'settings', label: 'Paramètres' },
 ];
 
-/* Labels for the editable KriCar contract-settings fields */
+/* Labels for the editable DzKricar contract-settings fields */
 const SETTINGS_FIELDS = [
   ['kricar_commercial_reg_number', 'N° de registre de commerce (utilisé dans le QR/cachet du contrat)'],
   ['kricar_name', 'Nom affiché'],
@@ -412,7 +412,7 @@ export default function Admin() {
       {tab === 'settings' && !loading && settings && (
         <div className="card p-5 space-y-4 max-w-2xl">
           <div>
-            <h2 className="font-semibold text-gray-900 dark:text-white">Informations KriCar (contrats électroniques)</h2>
+            <h2 className="font-semibold text-gray-900 dark:text-white">Informations DzKricar (contrats électroniques)</h2>
             <p className="text-sm text-gray-500 mt-0.5">Ces valeurs apparaissent dans le cachet et le QR code de chaque contrat. Modifiez le registre de commerce ici — aucune modification du code n'est nécessaire.</p>
           </div>
           {SETTINGS_FIELDS.map(([key, label]) => (

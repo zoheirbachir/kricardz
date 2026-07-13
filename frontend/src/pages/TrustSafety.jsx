@@ -56,7 +56,7 @@ export default function TrustSafety() {
             <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </div>
           <div>
-            <h2 className="font-display font-semibold text-xl text-pine-800 dark:text-pine-200">KriCar Trust Score</h2>
+            <h2 className="font-display font-semibold text-xl text-pine-800 dark:text-pine-200">DzKricar Trust Score</h2>
             <p className="text-pine-700 dark:text-pine-300/80 text-sm">{t('trust.score_desc')}</p>
           </div>
           <div className="ml-auto text-right shrink-0">

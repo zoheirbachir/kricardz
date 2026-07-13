@@ -48,7 +48,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
             <LogoMark className="w-9 h-9 shadow-clay group-hover:rotate-3 group-hover:scale-105 transition-transform" />
-            <span className="font-display font-semibold text-2xl tracking-tight text-gray-900 dark:text-white leading-none">Kri<span className="text-primary-500">Car</span></span>
+            <span className="font-display font-semibold text-2xl tracking-tight text-gray-900 dark:text-white leading-none">Dz<span className="text-primary-500">Kricar</span></span>
           </Link>
 
           {/* Desktop nav */}

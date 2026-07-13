@@ -47,7 +47,7 @@ export default function ScrollExperience({ heightVh = 420 }) {
         {/* Captions */}
         <div className="absolute inset-x-0 bottom-28 flex justify-center px-6 text-center pointer-events-none">
           <motion.div style={{ opacity: cap1, y: cap1y }} className="absolute">
-            <p className="text-primary-400 font-semibold tracking-[0.25em] uppercase text-sm mb-3">KriCar</p>
+            <p className="text-primary-400 font-semibold tracking-[0.25em] uppercase text-sm mb-3">DzKricar</p>
             <h2 className="font-display text-4xl md:text-6xl font-semibold text-white tracking-tight drop-shadow-lg">Votre prochaine voiture</h2>
             <p className="text-white/70 mt-3 text-lg drop-shadow">Faites défiler pour l'explorer de l'intérieur.</p>
           </motion.div>

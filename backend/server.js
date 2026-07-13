@@ -140,7 +140,7 @@ async function ensureSeeded() {
 (async () => {
   await ensureSeeded();
   server.listen(PORT, () => {
-    console.log(`KriCar API + Socket.io running on port ${PORT}`);
+    console.log(`DzKricar API + Socket.io running on port ${PORT}`);
     /* Periodic + on-shutdown database snapshots (best-effort; never crashes the server). */
     try { require('./lib/backup').startAutoBackups(); } catch (e) { console.error('backup init failed:', e.message); }
   });

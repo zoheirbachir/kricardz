@@ -34,7 +34,7 @@ export default function ResetPassword() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
             <LogoMark className="w-10 h-10 shadow-clay" />
-            <span className="font-display font-semibold text-2xl text-gray-900">Kri<span className="text-primary-500">Car</span></span>
+            <span className="font-display font-semibold text-2xl text-gray-900">Dz<span className="text-primary-500">Kricar</span></span>
           </Link>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-gray-900 mt-6">Nouveau mot de passe</h1>
           <p className="text-gray-500 text-sm mt-1.5">Choisissez un nouveau mot de passe sécurisé.</p>

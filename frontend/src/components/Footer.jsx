@@ -14,7 +14,7 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2.5 mb-3">
               <LogoMark className="w-9 h-9 shadow-clay" />
-              <span className="font-display font-semibold text-2xl text-white">Kri<span className="text-primary-400">Car</span></span>
+              <span className="font-display font-semibold text-2xl text-white">Dz<span className="text-primary-400">Kricar</span></span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">{t('footer.tagline')}</p>
             <div className="flex gap-3 mt-4">
@@ -59,7 +59,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-center">
-          <p>© {year} KriCar. {t('footer.rights')}.</p>
+          <p>© {year} DzKricar. {t('footer.rights')}.</p>
           <p className="text-gray-500">
             Conçu et développé par{' '}
             <a

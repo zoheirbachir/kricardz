@@ -26,7 +26,7 @@ export default function VerifyContract() {
               <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
             <h1 className="font-display text-2xl font-semibold text-gray-900">Contrat authentique</h1>
-            <p className="text-gray-500 text-sm mt-1">Ce contrat a bien été émis par KriCar.</p>
+            <p className="text-gray-500 text-sm mt-1">Ce contrat a bien été émis par DzKricar.</p>
             <div className="mt-6 text-left space-y-2 bg-gray-50 rounded-xl p-4 text-sm">
               <div className="flex justify-between"><span className="text-gray-500">N° de contrat</span><span className="font-mono font-semibold">{data.contract_number}</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="font-medium">{data.type === 'rental' ? 'Location' : 'Partenariat'}</span></div>

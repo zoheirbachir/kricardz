@@ -28,7 +28,7 @@
     "stats_wilayas": "ولاية",
     "stats_users": "مستخدم",
     "stats_bookings": "حجز",
-    "why_title": "لماذا KriCar؟",
+    "why_title": "لماذا DzKricar؟",
     "why_verified": "أصحاب موثقون",
     "why_verified_desc": "جميع الملاك موثقون بهوية وصورة شخصية.",
     "why_insurance": "تأمين شامل",
@@ -171,7 +171,7 @@
   },
   "trust": {
     "title": "الثقة والأمان",
-    "subtitle": "يتخذ KriCar كل الإجراءات لتأمين كل معاملة.",
+    "subtitle": "يتخذ DzKricar كل الإجراءات لتأمين كل معاملة.",
     "id_verify_title": "التحقق من الهوية",
     "id_verify_desc": "يجب على كل مستخدم تقديم هوية سارية وصورة شخصية للتحقق. هذا يضمن تفاعلك مع أشخاص حقيقيين.",
     "insurance_title": "تغطية التأمين",

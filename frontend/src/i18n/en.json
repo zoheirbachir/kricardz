@@ -28,7 +28,7 @@
     "stats_wilayas": "Wilayas",
     "stats_users": "Users",
     "stats_bookings": "Bookings",
-    "why_title": "Why KriCar?",
+    "why_title": "Why DzKricar?",
     "why_verified": "Verified owners",
     "why_verified_desc": "All owners are verified with ID and selfie.",
     "why_insurance": "Insurance included",
@@ -82,7 +82,7 @@
     "trust_payment": "Secure payment",
     "trust_payment_sub": "Funds protected",
     "testi1": "Very easy to use, I found a car in 10 minutes. The owner was very professional.",
-    "testi2": "I rent my car on weekends and earn extra income. KriCar makes it simple and safe.",
+    "testi2": "I rent my car on weekends and earn extra income. DzKricar makes it simple and safe.",
     "testi3": "Prices are much cheaper than agencies. And the verification system really reassures me."
   },
   "car": {
@@ -171,7 +171,7 @@
   },
   "trust": {
     "title": "Trust & Safety",
-    "subtitle": "KriCar takes every measure to secure each transaction.",
+    "subtitle": "DzKricar takes every measure to secure each transaction.",
     "id_verify_title": "Identity verification",
     "id_verify_desc": "Every user must provide a valid ID and selfie to be verified. This ensures you interact with real people.",
     "insurance_title": "Insurance coverage",
@@ -265,7 +265,7 @@
       },
       {
         "q": "Are there fees for owners?",
-        "a": "Posting a listing is 100% free. KriCar takes a small commission on each successful rental."
+        "a": "Posting a listing is 100% free. DzKricar takes a small commission on each successful rental."
       }
     ]
   },

@@ -320,7 +320,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Why KriCar ── */}
+      {/* ── Why DzKricar ── */}
       <section className="py-20 bg-white dark:bg-[#16130D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div ref={whyRef} className={`reveal ${whyVisible ? 'visible' : ''} text-center mb-12`}>

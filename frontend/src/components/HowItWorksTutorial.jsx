@@ -122,7 +122,7 @@ export default function HowItWorksTutorial() {
           <div className="relative h-[420px] rounded-[1.9rem] bg-white overflow-hidden">
             {/* status bar */}
             <div className="flex items-center justify-between px-4 pt-2 pb-1 text-[8px] text-gray-400">
-              <span>9:41</span><span className="font-semibold text-primary-600">KriCar</span><span>▮▮▮</span>
+              <span>9:41</span><span className="font-semibold text-primary-600">DzKricar</span><span>▮▮▮</span>
             </div>
             <AnimatePresence mode="wait">
               <motion.div

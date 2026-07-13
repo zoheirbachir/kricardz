@@ -164,7 +164,7 @@ export default function Register() {
             <div className="inline-flex w-16 h-16 rounded-2xl bg-primary-50 dark:bg-primary-500/15 text-primary-600 dark:text-primary-300 items-center justify-center mb-4 shadow-clay">
               <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
             </div>
-            <span className="font-display font-semibold text-xl text-gray-900 dark:text-white block mb-2">Kri<span className="text-primary-500">Car</span></span>
+            <span className="font-display font-semibold text-xl text-gray-900 dark:text-white block mb-2">Dz<span className="text-primary-500">Kricar</span></span>
             <h1 className="font-display text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{t('auth.register_title')}</h1>
             <p className="text-gray-500 text-sm mt-1.5">Rejoignez notre communauté aujourd'hui.</p>
           </div>

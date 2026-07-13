@@ -17,7 +17,7 @@ export default function Privacy() {
       <p className="text-sm text-gray-400 mb-8">Dernière mise à jour : 1 juillet 2026</p>
 
       <Section n="1" title="Responsable du traitement">
-        <p>KriCar (« la Plateforme ») est une plateforme algérienne de location de véhicules entre particuliers et agences. KriCar est responsable du traitement des données personnelles collectées via le site et l'application mobile.</p>
+        <p>DzKricar (« la Plateforme ») est une plateforme algérienne de location de véhicules entre particuliers et agences. DzKricar est responsable du traitement des données personnelles collectées via le site et l'application mobile.</p>
         <p>Contact : <a href="mailto:Kricar.services@gmail.com" className="text-primary-600 hover:underline">Kricar.services@gmail.com</a> — Tél. <a href="tel:0673590224" className="text-primary-600 hover:underline">0673590224</a> — Alger, Algérie.</p>
       </Section>
 

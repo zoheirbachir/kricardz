@@ -28,7 +28,7 @@
     "stats_wilayas": "Wilayas",
     "stats_users": "Utilisateurs",
     "stats_bookings": "Réservations",
-    "why_title": "Pourquoi KriCar ?",
+    "why_title": "Pourquoi DzKricar ?",
     "why_verified": "Propriétaires vérifiés",
     "why_verified_desc": "Tous nos propriétaires sont vérifiés avec pièce d'identité et selfie.",
     "why_insurance": "Assurance incluse",
@@ -82,7 +82,7 @@
     "trust_payment": "Paiement sécurisé",
     "trust_payment_sub": "Fonds protégés",
     "testi1": "Très facile à utiliser, j'ai trouvé une voiture en 10 minutes. Le propriétaire était très professionnel.",
-    "testi2": "Je loue ma voiture les weekends et je génère un revenu supplémentaire. KriCar rend ça simple et sécurisé.",
+    "testi2": "Je loue ma voiture les weekends et je génère un revenu supplémentaire. DzKricar rend ça simple et sécurisé.",
     "testi3": "Les prix sont beaucoup moins chers qu'en agence. Et le système de vérification me rassure vraiment."
   },
   "car": {
@@ -171,7 +171,7 @@
   },
   "trust": {
     "title": "Confiance & Sécurité",
-    "subtitle": "KriCar met tout en œuvre pour sécuriser chaque transaction.",
+    "subtitle": "DzKricar met tout en œuvre pour sécuriser chaque transaction.",
     "id_verify_title": "Vérification d'identité",
     "id_verify_desc": "Chaque utilisateur doit fournir une pièce d'identité valide et un selfie pour être vérifié. Ce processus garantit que vous interagissez avec de vraies personnes.",
     "insurance_title": "Couverture assurance",
@@ -265,7 +265,7 @@
       },
       {
         "q": "Y a-t-il des frais pour les propriétaires ?",
-        "a": "La publication d'une annonce est 100% gratuite. KriCar prend une petite commission sur chaque location réussie."
+        "a": "La publication d'une annonce est 100% gratuite. DzKricar prend une petite commission sur chaque location réussie."
       }
     ]
   },

@@ -1,6 +1,6 @@
 {
   "appId": "dz.kricar.app",
-  "appName": "dzkricar",
+  "appName": "DzKricar",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

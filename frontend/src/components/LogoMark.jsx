@@ -1,4 +1,4 @@
-/* KriCar's icon mark: a "K" monogram whose diagonal strokes double as a car
+/* DzKricar's icon mark: a "K" monogram whose diagonal strokes double as a car
    silhouette (roofline + hood) sitting on two wheel dots. Pure geometry on a
    40x40 grid so it stays crisp from favicon size up to app-icon size. */
 export default function LogoMark({ className = 'w-9 h-9', rounded = 'rounded-xl' }) {

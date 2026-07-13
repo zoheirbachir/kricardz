@@ -7,7 +7,7 @@ const settings = require('../lib/settings');
 
 const router = express.Router();
 
-/* KriCar's own legal identity — printed on every contract + stamp.
+/* DzKricar's own legal identity — printed on every contract + stamp.
    Read from app_settings so an admin can update e.g. the commercial-register number
    (used in the contract stamp/QR) without a code change. */
 
@@ -25,7 +25,7 @@ function newQrToken() {
 }
 
 /* Platform liability disclaimer printed on every contract after the signatures. */
-const DISCLAIMER = "Après signature des deux parties, KriCar agit uniquement comme intermédiaire technique de mise en relation et décline toute responsabilité concernant l'exécution de la location, l'état du véhicule, les paiements ou tout litige entre le loueur et le locataire. Chaque partie demeure seule responsable de ses obligations.";
+const DISCLAIMER = "Après signature des deux parties, DzKricar agit uniquement comme intermédiaire technique de mise en relation et décline toute responsabilité concernant l'exécution de la location, l'état du véhicule, les paiements ou tout litige entre le loueur et le locataire. Chaque partie demeure seule responsable de ses obligations.";
 
 /* Build the agency/owner identity block from the owner user record. */
 function agencyBlock(owner) {

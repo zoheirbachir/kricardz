@@ -17,12 +17,12 @@ export default function Terms() {
       <p className="text-sm text-gray-400 mb-8">Dernière mise à jour : 1 juillet 2026</p>
 
       <Section n="1" title="Objet">
-        <p>Les présentes conditions régissent l'utilisation de la plateforme KriCar, service algérien de mise en relation pour la location de véhicules entre particuliers et agences. En créant un compte, vous acceptez ces conditions.</p>
+        <p>Les présentes conditions régissent l'utilisation de la plateforme DzKricar, service algérien de mise en relation pour la location de véhicules entre particuliers et agences. En créant un compte, vous acceptez ces conditions.</p>
       </Section>
 
       <Section n="2" title="Définitions">
         <ul className="list-disc pl-5 space-y-1">
-          <li><b>KriCar</b> : la plateforme (site et application) qui met en relation les parties.</li>
+          <li><b>DzKricar</b> : la plateforme (site et application) qui met en relation les parties.</li>
           <li><b>Propriétaire / Agence</b> : l'utilisateur qui propose un véhicule à la location.</li>
           <li><b>Locataire</b> : l'utilisateur qui réserve un véhicule.</li>
           <li><b>Contrat de location</b> : le contrat électronique conclu entre le locataire et le propriétaire / l'agence.</li>
@@ -33,8 +33,8 @@ export default function Terms() {
         <p>L'inscription est gratuite. Chaque utilisateur doit fournir des informations exactes et confirmer son adresse email. La location exige une vérification d'identité (KYC) : pièce d'identité ou passeport, numéro d'identité nationale, selfie, et — pour les locataires — un permis de conduire valide (numéro et dates de validité). Toute fausse déclaration entraîne la suspension du compte.</p>
       </Section>
 
-      <Section n="4" title="Rôle de KriCar">
-        <p>KriCar est un intermédiaire technique de mise en relation. KriCar n'est pas partie au contrat de location conclu entre le locataire et le propriétaire / l'agence, et ne loue pas de véhicules en son nom propre. KriCar fournit les outils (annonces, réservations, contrats électroniques, cachets, suivi GPS) mais la location relève de la responsabilité des parties.</p>
+      <Section n="4" title="Rôle de DzKricar">
+        <p>DzKricar est un intermédiaire technique de mise en relation. DzKricar n'est pas partie au contrat de location conclu entre le locataire et le propriétaire / l'agence, et ne loue pas de véhicules en son nom propre. DzKricar fournit les outils (annonces, réservations, contrats électroniques, cachets, suivi GPS) mais la location relève de la responsabilité des parties.</p>
       </Section>
 
       <Section n="5" title="Obligations du propriétaire / de l'agence">
@@ -46,7 +46,7 @@ export default function Terms() {
       </Section>
 
       <Section n="7" title="Contrats électroniques et cachets">
-        <p>À chaque location, un contrat électronique est généré automatiquement, scellé par les cachets électroniques de KriCar et de l'agence. Chaque contrat porte un numéro unique et un QR code permettant de vérifier son authenticité. Un document ne portant pas ces cachets est considéré comme non valide.</p>
+        <p>À chaque location, un contrat électronique est généré automatiquement, scellé par les cachets électroniques de DzKricar et de l'agence. Chaque contrat porte un numéro unique et un QR code permettant de vérifier son authenticité. Un document ne portant pas ces cachets est considéré comme non valide.</p>
       </Section>
 
       <Section n="8" title="Réservations, prix et caution">
@@ -58,11 +58,11 @@ export default function Terms() {
       </Section>
 
       <Section n="10" title="Responsabilité">
-        <p>KriCar ne saurait être tenu responsable des litiges, dommages ou manquements liés à l'exécution du contrat de location entre les parties. KriCar met en œuvre des moyens raisonnables (vérification d'identité, contrats, support) pour sécuriser les transactions, sans garantie de résultat.</p>
+        <p>DzKricar ne saurait être tenu responsable des litiges, dommages ou manquements liés à l'exécution du contrat de location entre les parties. DzKricar met en œuvre des moyens raisonnables (vérification d'identité, contrats, support) pour sécuriser les transactions, sans garantie de résultat.</p>
       </Section>
 
       <Section n="11" title="Suspension et résiliation">
-        <p>KriCar peut suspendre ou supprimer tout compte en cas de fraude, de fausse déclaration, de comportement abusif ou de violation des présentes conditions. Vous pouvez supprimer votre compte à tout moment.</p>
+        <p>DzKricar peut suspendre ou supprimer tout compte en cas de fraude, de fausse déclaration, de comportement abusif ou de violation des présentes conditions. Vous pouvez supprimer votre compte à tout moment.</p>
       </Section>
 
       <Section n="12" title="Données personnelles">

@@ -98,7 +98,7 @@ export default function ContractView() {
           <div>
             <div className="flex items-center gap-2">
               <LogoMark className="w-9 h-9" rounded="rounded-lg" />
-              <span className="font-display font-semibold text-xl">Kri<span className="text-primary-500">Car</span></span>
+              <span className="font-display font-semibold text-xl">Dz<span className="text-primary-500">Kricar</span></span>
             </div>
             <p className="text-xs text-gray-500 mt-1">{isRental ? 'Contrat de location de véhicule' : 'Contrat de partenariat'}</p>
           </div>
@@ -171,7 +171,7 @@ export default function ContractView() {
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
           {(isRental
             ? [{ slot: 'agency', label: "Le loueur / L'agence", name: d.agency?.name }, { slot: 'client', label: 'Le client', name: d.client?.name }]
-            : [{ slot: 'kricar', label: 'Pour KriCar', name: d.kricar?.name }, { slot: 'agency', label: "Pour l'agence", name: d.agency?.name }]
+            : [{ slot: 'kricar', label: 'Pour DzKricar', name: d.kricar?.name }, { slot: 'agency', label: "Pour l'agence", name: d.agency?.name }]
           ).map(({ slot, label, name }) => {
             const sig = c.signatures?.[slot];
             return (
@@ -242,7 +242,7 @@ export default function ContractView() {
 
         {/* Legal note */}
         <p className="text-[11px] text-gray-400 leading-relaxed mt-4 mb-6 border-t border-gray-100 pt-3">
-          Ce contrat électronique est généré automatiquement par la plateforme KriCar et scellé par les cachets
+          Ce contrat électronique est généré automatiquement par la plateforme DzKricar et scellé par les cachets
           électroniques ci-dessous. Chaque cachet contient un code QR permettant de vérifier l'authenticité du
           contrat. Tout document ne portant pas ces cachets est considéré comme non valide.
         </p>
@@ -251,7 +251,7 @@ export default function ContractView() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <EStamp
             variant="kricar"
-            title="Cachet KriCar"
+            title="Cachet DzKricar"
             qrValue={verifyUrl}
             lines={[
               { label: 'Société', value: d.kricar?.name },

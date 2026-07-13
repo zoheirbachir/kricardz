@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">dzkricar</string>
-    <string name="title_activity_main">dzkricar</string>
+    <string name="app_name">DzKricar</string>
+    <string name="title_activity_main">DzKricar</string>
     <string name="package_name">dz.kricar.app</string>
     <string name="custom_url_scheme">dz.kricar.app</string>
 </resources>

@@ -6,7 +6,7 @@ const IcFlag = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="curren
 
 export default function About() {
   const stats = [
-    { title: '2023', desc: 'Année de création de KriCar', Icon: IcCalendar },
+    { title: '2023', desc: 'Année de création de DzKricar', Icon: IcCalendar },
     { title: '58', desc: 'Wilayas couvertes à travers l\'Algérie', Icon: IcMap },
     { title: '100%', desc: 'Algérien, fait par et pour des Algériens', Icon: IcFlag },
   ];
@@ -21,7 +21,7 @@ export default function About() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
         <p className="eyebrow justify-center mb-3">Notre histoire</p>
-        <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-gray-900 mb-3">À propos de KriCar</h1>
+        <h1 className="font-display text-4xl md:text-5xl font-semibold tracking-tight text-gray-900 mb-3">À propos de DzKricar</h1>
         <p className="text-xl text-gray-500 max-w-2xl mx-auto">
           La première plateforme algérienne de location de voitures entre particuliers.
         </p>
@@ -30,7 +30,7 @@ export default function About() {
       <div className="card p-8 mb-8">
         <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900 mb-4">Notre mission</h2>
         <p className="text-gray-600 leading-relaxed text-lg">
-          KriCar est né d'un constat simple : en Algérie, louer une voiture est souvent compliqué,
+          DzKricar est né d'un constat simple : en Algérie, louer une voiture est souvent compliqué,
           cher et peu transparent. Nous avons créé une plateforme qui met en relation directement
           les propriétaires de véhicules avec les personnes qui en ont besoin, dans un cadre
           sécurisé, transparent et à des prix accessibles.
@@ -73,7 +73,7 @@ export default function About() {
           <div className="flex-1">
             <p className="font-semibold text-gray-900 text-lg">Zoheir Bachir</p>
             <p className="text-sm text-gray-500 mb-3">
-              Conception et développement complet de la plateforme KriCar — web et mobile.
+              Conception et développement complet de la plateforme DzKricar — web et mobile.
             </p>
             <a
               href="https://zoheirbachir.github.io"

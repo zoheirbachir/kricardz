@@ -4,8 +4,8 @@ const db = require('../db/database');
    Defaults live here so the app works before an admin ever edits anything;
    an admin override in the DB always wins. */
 const DEFAULTS = {
-  kricar_name: 'KriCar (CRICAR)',
-  kricar_legal_name: 'KriCar — Plateforme de location de véhicules',
+  kricar_name: 'DzKricar (CRICAR)',
+  kricar_legal_name: 'DzKricar — Plateforme de location de véhicules',
   kricar_commercial_reg_number: 'EN COURS',
   kricar_address: 'Algérie',
   kricar_phone: '0673590224',
@@ -33,7 +33,7 @@ function all() {
   return out;
 }
 
-/* KriCar's own identity block, as embedded into every electronic contract/stamp. */
+/* DzKricar's own identity block, as embedded into every electronic contract/stamp. */
 function kricarInfo() {
   return {
     name: get('kricar_name'),

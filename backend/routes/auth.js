@@ -65,9 +65,9 @@ async function sendVerificationEmail(user, req) {
   const link = `${appBaseUrl(req)}/verify-email?token=${raw}`;
   const result = await sendMail({
     to: user.email,
-    subject: 'KriCar — Confirmez votre adresse email',
-    text: `Bienvenue sur KriCar !\n\nConfirmez votre adresse email en ouvrant ce lien (valable 24h) :\n${link}\n\nSi vous n'êtes pas à l'origine de cette inscription, ignorez ce message.`,
-    html: `<p>Bienvenue sur <b>KriCar</b> !</p><p>Confirmez votre adresse email (lien valable 24h) :</p><p><a href="${link}">Confirmer mon adresse email</a></p><p style="color:#888;font-size:12px">Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message.</p>`,
+    subject: 'DzKricar — Confirmez votre adresse email',
+    text: `Bienvenue sur DzKricar !\n\nConfirmez votre adresse email en ouvrant ce lien (valable 24h) :\n${link}\n\nSi vous n'êtes pas à l'origine de cette inscription, ignorez ce message.`,
+    html: `<p>Bienvenue sur <b>DzKricar</b> !</p><p>Confirmez votre adresse email (lien valable 24h) :</p><p><a href="${link}">Confirmer mon adresse email</a></p><p style="color:#888;font-size:12px">Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message.</p>`,
   });
   logEvent(user.id, user.email, 'email_verify_sent', req);
   /* Only ever surface the link in the API response in non-production dev mode.
@@ -260,7 +260,7 @@ router.post('/forgot-password', async (req, res) => {
     const link = `${appBaseUrl(req)}/reset-password?token=${raw}`;
     const result = await sendMail({
       to: user.email,
-      subject: 'KriCar — Réinitialisation de votre mot de passe',
+      subject: 'DzKricar — Réinitialisation de votre mot de passe',
       text: `Vous avez demandé à réinitialiser votre mot de passe.\n\nOuvrez ce lien (valable 1 heure) :\n${link}\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message — votre mot de passe reste inchangé.`,
       html: `<p>Vous avez demandé à réinitialiser votre mot de passe.</p><p>Ouvrez ce lien (valable 1 heure) :</p><p><a href="${link}">Réinitialiser mon mot de passe</a></p><p style="color:#888;font-size:12px">Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.</p>`,
     });
@@ -308,7 +308,7 @@ router.post('/forgot-password-sms', async (req, res) => {
       .run(hashToken(code), inMinutes(10), user.id);
     const result = await sendSms({
       to: phone,
-      body: `KriCar : votre code de réinitialisation est ${code}. Il expire dans 10 minutes. Ne le partagez avec personne.`,
+      body: `DzKricar : votre code de réinitialisation est ${code}. Il expire dans 10 minutes. Ne le partagez avec personne.`,
     });
     logEvent(user.id, phone, 'sms_reset_requested', req);
     if (result.dev && !isProd) dev_code = code; // dev only — never leak the code in prod

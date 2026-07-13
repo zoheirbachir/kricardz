@@ -33,7 +33,7 @@ function getTransporter() {
   return transporter;
 }
 
-const FROM = process.env.MAIL_FROM || 'KriCar <no-reply@kricar.dz>';
+const FROM = process.env.MAIL_FROM || 'DzKricar <no-reply@kricar.dz>';
 
 async function sendMail({ to, subject, html, text }) {
   const tx = getTransporter();

@@ -254,7 +254,7 @@ router.get('/database/download', adminAuth, (req, res) => {
   }
 });
 
-/* ── App settings (e.g. KriCar's commercial-register number for contracts) ── */
+/* ── App settings (e.g. DzKricar's commercial-register number for contracts) ── */
 router.get('/settings', adminAuth, (req, res) => {
   res.json(settings.all());
 });

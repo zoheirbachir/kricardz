@@ -16,6 +16,9 @@ router.post('/', auth, (req, res) => {
 
   const car = db.prepare('SELECT * FROM cars WHERE id = ? AND available = 1').get(car_id);
   if (!car) return res.status(404).json({ error: 'Véhicule introuvable ou indisponible' });
+  if (car.unavailable_until && new Date(car.unavailable_until) > new Date()) {
+    return res.status(409).json({ error: `Véhicule indisponible jusqu'au ${new Date(car.unavailable_until).toLocaleDateString('fr-FR')}.` });
+  }
   if (car.owner_id === req.user.id) return res.status(400).json({ error: 'Vous ne pouvez pas réserver votre propre véhicule' });
 
   const days = Math.ceil((new Date(end_date) - new Date(start_date)) / 86400000);

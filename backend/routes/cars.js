@@ -94,8 +94,9 @@ router.get('/', optionalAuth, (req, res) => {
      Other callers (e.g. the homepage) omit this flag and only get available cars. */
   const showAll = include_unavailable === '1' || include_unavailable === 'true';
 
-  /* Build the WHERE clause once so the list query and the total count stay in sync */
-  const conditions = [showAll ? '1=1' : 'c.available = 1'];
+  /* Build the WHERE clause once so the list query and the total count stay in sync.
+     "Available only" also excludes cars inside an unavailable-until window. */
+  const conditions = [showAll ? '1=1' : "(c.available = 1 AND (c.unavailable_until IS NULL OR c.unavailable_until <= date('now')))"];
   const whereParams = [];
   if (wilaya) { conditions.push('c.wilaya = ?'); whereParams.push(wilaya); }
   if (type) { conditions.push('c.type = ?'); whereParams.push(type); }

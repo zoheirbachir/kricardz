@@ -20,10 +20,15 @@ export default function AddCar() {
     seats: 5, transmission: 'manual', fuel: 'essence', features: [],
     caution: '', km_per_day: '', extra_km_price: '', with_driver: false,
     weekly_price: '', monthly_price: '', video_url: '',
+    registration_number: '', unavailable_until: '',
   });
   const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [videoFile, setVideoFile] = useState(null);
+  /* Mandatory documents to publish a car. */
+  const [plateFile, setPlateFile] = useState(null);
+  const [carteGriseFile, setCarteGriseFile] = useState(null);
+  const [insuranceFile, setInsuranceFile] = useState(null);
 
   useEffect(() => { api.get('/wilayas').then(r => setWilayas(r.data)); }, []);
 
@@ -41,6 +46,11 @@ export default function AddCar() {
 
   const handle = async (e) => {
     e.preventDefault();
+    /* The backend requires these to publish — validate up front for a clear message. */
+    if (!images.length) { setError('Ajoutez au moins une photo du véhicule.'); return; }
+    if (!plateFile) { setError('La photo de la plaque d\'immatriculation est requise.'); return; }
+    if (!carteGriseFile) { setError('La carte grise est requise.'); return; }
+    if (!insuranceFile) { setError('La vignette / document d\'assurance est requis.'); return; }
     setLoading(true); setError('');
     try {
       const fd = new FormData();
@@ -50,6 +60,9 @@ export default function AddCar() {
       });
       images.forEach(img => fd.append('images', img));
       if (videoFile) fd.append('video', videoFile);
+      fd.append('plate_image', plateFile);
+      fd.append('carte_grise_image', carteGriseFile);
+      fd.append('insurance_image', insuranceFile);
       const res = await api.post('/cars', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast({ type: 'success', message: 'Annonce publiée avec succès !' });
       navigate(`/cars/${res.data.id}`);
@@ -249,6 +262,41 @@ export default function AddCar() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Required documents (client requirement — a car can't be published without them) */}
+        <div className="card p-5 space-y-4">
+          <div>
+            <h2 className="font-semibold text-gray-900">Documents du véhicule</h2>
+            <p className="text-xs text-gray-500 mt-1">Obligatoires pour publier. La carte grise et l'assurance restent <span className="font-medium">privées</span> (visibles uniquement par l'administration pour vérification).</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Numéro d'immatriculation</label>
+            <input className="input" placeholder="Ex: 12345-116-16" value={form.registration_number} onChange={e => set('registration_number', e.target.value)} />
+          </div>
+          {[
+            { label: 'Photo de la plaque d\'immatriculation', file: plateFile, set: setPlateFile, accept: 'image/*', icon: '🔢' },
+            { label: 'Carte grise', file: carteGriseFile, set: setCarteGriseFile, accept: 'image/*,application/pdf', icon: '📗' },
+            { label: 'Assurance (vignette / document)', file: insuranceFile, set: setInsuranceFile, accept: 'image/*,application/pdf', icon: '🛡️' },
+          ].map((d) => (
+            <div key={d.label}>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{d.label} <span className="text-red-500">*</span></label>
+              <label className="block border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-primary-300 hover:bg-primary-50/40 transition-colors">
+                <input type="file" accept={d.accept} className="hidden" onChange={e => d.set(e.target.files[0] || null)} />
+                {d.file
+                  ? <span className="text-sm text-primary-700 font-medium">{d.icon} {d.file.name}</span>
+                  : <span className="text-sm text-gray-500">Cliquez pour téléverser (image ou PDF)</span>}
+              </label>
+            </div>
+          ))}
+        </div>
+
+        {/* Availability */}
+        <div className="card p-5 space-y-3">
+          <h2 className="font-semibold text-gray-900">Disponibilité</h2>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Indisponible jusqu'au <span className="text-gray-400 font-normal">— optionnel</span></label>
+          <input type="date" className="input" value={form.unavailable_until} onChange={e => set('unavailable_until', e.target.value)} />
+          <p className="text-xs text-gray-400">Laissez vide si la voiture est disponible dès maintenant. La voiture réapparaîtra comme disponible après cette date.</p>
         </div>
 
         {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div>}

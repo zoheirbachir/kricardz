@@ -26,6 +26,13 @@ export default function EditCar() {
   const [videoFile, setVideoFile] = useState(null);
   const [removeVideo, setRemoveVideo] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(null);
+  /* Document replacements (optional — only sent if a new file is chosen). */
+  const [plateFile, setPlateFile] = useState(null);
+  const [carteGriseFile, setCarteGriseFile] = useState(null);
+  const [insuranceFile, setInsuranceFile] = useState(null);
+  const [hasPlate, setHasPlate] = useState(false);
+  const [hasCarteGrise, setHasCarteGrise] = useState(false);
+  const [hasInsurance, setHasInsurance] = useState(false);
 
   useEffect(() => { api.get('/wilayas').then(r => setWilayas(r.data)); }, []);
 
@@ -41,9 +48,14 @@ export default function EditCar() {
         km_per_day: c.km_per_day ?? '', extra_km_price: c.extra_km_price ?? '', with_driver: !!c.with_driver,
         weekly_price: c.weekly_price ?? '', monthly_price: c.monthly_price ?? '',
         available: c.available !== false, video_url: isUploadedVideo(c.video_url) ? '' : (c.video_url || ''),
+        registration_number: c.registration_number || '',
+        unavailable_until: c.unavailable_until ? String(c.unavailable_until).slice(0, 10) : '',
       });
       setExistingImages(c.images || []);
       setCurrentVideo(c.video_url || null);
+      setHasPlate(!!c.plate_image);
+      setHasCarteGrise(!!c.carte_grise_image);
+      setHasInsurance(!!c.insurance_image);
     }).catch(() => setError('Véhicule introuvable')).finally(() => setLoading(false));
   }, [id]);
 
@@ -77,6 +89,9 @@ export default function EditCar() {
       newImages.forEach(img => fd.append('images', img));
       if (videoFile) fd.append('video', videoFile);
       else if (removeVideo) fd.append('remove_video', 'true');
+      if (plateFile) fd.append('plate_image', plateFile);
+      if (carteGriseFile) fd.append('carte_grise_image', carteGriseFile);
+      if (insuranceFile) fd.append('insurance_image', insuranceFile);
       await api.put(`/cars/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       toast({ type: 'success', message: 'Annonce mise à jour.' });
       navigate(`/cars/${id}`);
@@ -256,6 +271,36 @@ export default function EditCar() {
             <p className="text-sm text-gray-500">Cliquez pour ajouter des photos</p>
           </label>
           <p className="text-xs text-gray-400">Cliquez sur ✕ pour supprimer une photo. Les nouvelles photos ont un contour vert.</p>
+        </div>
+
+        {/* Documents & availability */}
+        <div className="card p-5 space-y-4">
+          <h2 className="font-semibold text-gray-900">Documents & disponibilité</h2>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Numéro d'immatriculation</label>
+            <input className="input" placeholder="Ex: 12345-116-16" value={form.registration_number} onChange={e => set('registration_number', e.target.value)} />
+          </div>
+          {[
+            { label: 'Photo de la plaque', file: plateFile, set: setPlateFile, has: hasPlate, accept: 'image/*' },
+            { label: 'Carte grise (privée)', file: carteGriseFile, set: setCarteGriseFile, has: hasCarteGrise, accept: 'image/*,application/pdf' },
+            { label: 'Assurance (privée)', file: insuranceFile, set: setInsuranceFile, has: hasInsurance, accept: 'image/*,application/pdf' },
+          ].map((d) => (
+            <div key={d.label}>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                {d.label} {d.has && !d.file && <span className="text-xs text-pine-600 font-normal">✓ déjà fourni</span>}
+              </label>
+              <label className="block border-2 border-dashed border-gray-200 rounded-xl p-3 text-center cursor-pointer hover:border-primary-300 hover:bg-primary-50/40 transition-colors">
+                <input type="file" accept={d.accept} className="hidden" onChange={e => d.set(e.target.files[0] || null)} />
+                {d.file
+                  ? <span className="text-sm text-primary-700 font-medium">📎 {d.file.name}</span>
+                  : <span className="text-sm text-gray-500">{d.has ? 'Remplacer (optionnel)' : 'Téléverser (image ou PDF)'}</span>}
+              </label>
+            </div>
+          ))}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Indisponible jusqu'au <span className="text-gray-400 font-normal">— optionnel</span></label>
+            <input type="date" className="input" value={form.unavailable_until} onChange={e => set('unavailable_until', e.target.value)} />
+          </div>
         </div>
 
         {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div>}

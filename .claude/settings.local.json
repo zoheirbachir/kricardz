@@ -90,7 +90,15 @@
       "Bash(curl -s -X POST \"http://localhost:5000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"email\":\"0553636834\",\"password\":\"wrong\"}')",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{console.log\\(JSON.parse\\(d\\).error||'unexpected success'\\)}\\);\")",
       "Bash(curl -s -X POST \"http://localhost:5000/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"email\":\"cherfaoui.oussama@kricar.dz\",\"password\":\"password123\"}')",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.user?\\('OK -> '+j.user.name\\):\\('FAIL: '+j.error\\)\\)}\\);\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.user?\\('OK -> '+j.user.name\\):\\('FAIL: '+j.error\\)\\)}\\);\")",
+      "Bash(node -e \"try{const p=require\\('C:/Users/am/Downloads/kricar \\(1\\)/kricar/mobile-app/package.json'\\); console.log\\('name:',p.name\\); console.log\\('deps:', Object.keys\\(p.dependencies||{}\\).join\\(', '\\)\\); console.log\\('scripts:', JSON.stringify\\(p.scripts||{}\\)\\);}catch\\(e\\){console.log\\('no package.json or:',e.message\\)}\")",
+      "Bash(npx cap *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh repo *)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api *)",
+      "Bash(cd \"C:/Users/am/Downloads/Telegram Desktop\" && ls -la *.docx 2>&1)"
     ]
   }
 }

@@ -205,8 +205,43 @@ export default function ContractView() {
           })}
         </div>
 
+        {/* Vehicle handover (check-in / check-out) — rental contracts */}
+        {isRental && c.handover && (
+          <div className="mt-6 border border-gray-200 rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-wider text-primary-600 font-bold mb-3">Documentation de la remise du véhicule</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="font-semibold text-gray-700 mb-1">À la livraison</p>
+                <Row label="Kilométrage" value={c.handover.checkin_km != null ? `${c.handover.checkin_km} km` : '—'} />
+                <Row label="Date" value={c.handover.checkin_at ? new Date(c.handover.checkin_at).toLocaleString('fr-FR') : '—'} />
+                {c.handover.checkin_video && (
+                  <a href={API_ORIGIN + c.handover.checkin_video} target="_blank" rel="noopener noreferrer" className="text-primary-600 text-xs print:hidden">🎬 Voir la vidéo de livraison</a>
+                )}
+              </div>
+              <div>
+                <p className="font-semibold text-gray-700 mb-1">Au retour</p>
+                <Row label="Kilométrage" value={c.handover.checkout_km != null ? `${c.handover.checkout_km} km` : '—'} />
+                <Row label="Date" value={c.handover.checkout_at ? new Date(c.handover.checkout_at).toLocaleString('fr-FR') : '—'} />
+                {c.handover.checkout_video && (
+                  <a href={API_ORIGIN + c.handover.checkout_video} target="_blank" rel="noopener noreferrer" className="text-primary-600 text-xs print:hidden">🎬 Voir la vidéo de retour</a>
+                )}
+              </div>
+            </div>
+            {c.handover.distance_km != null && (
+              <p className="text-sm mt-3 pt-3 border-t border-gray-100">Distance parcourue : <span className="font-semibold text-gray-900">{c.handover.distance_km} km</span></p>
+            )}
+          </div>
+        )}
+
+        {/* Platform liability disclaimer */}
+        {d.disclaimer && (
+          <p className="text-[11px] text-gray-500 leading-relaxed mt-6 bg-gray-50 border border-gray-100 rounded-xl p-3">
+            <span className="font-semibold text-gray-700">Clause de responsabilité — </span>{d.disclaimer}
+          </p>
+        )}
+
         {/* Legal note */}
-        <p className="text-[11px] text-gray-400 leading-relaxed mt-6 mb-6 border-t border-gray-100 pt-3">
+        <p className="text-[11px] text-gray-400 leading-relaxed mt-4 mb-6 border-t border-gray-100 pt-3">
           Ce contrat électronique est généré automatiquement par la plateforme KriCar et scellé par les cachets
           électroniques ci-dessous. Chaque cachet contient un code QR permettant de vérifier l'authenticité du
           contrat. Tout document ne portant pas ces cachets est considéré comme non valide.

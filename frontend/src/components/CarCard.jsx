@@ -29,7 +29,7 @@ export default function CarCard({ car }) {
     <motion.div variants={fadeUp} whileHover={{ y: -6 }} whileTap={{ scale: 0.99 }} transition={spring} className="h-full">
     <Link to={`/cars/${car.id}`} className="card group hover:shadow-lg block h-full">
       {/* Image */}
-      <div className={`relative h-44 bg-gray-100 overflow-hidden ${car.available === false ? 'opacity-70 grayscale' : ''}`}>
+      <div className={`relative h-44 bg-gray-100 overflow-hidden ${(car.currently_available === false || car.available === false) ? 'opacity-70 grayscale' : ''}`}>
         {image ? (
           <img src={image} alt={car.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
@@ -43,10 +43,13 @@ export default function CarCard({ car }) {
         <span className="absolute top-3 left-3 badge bg-white/90 backdrop-blur-sm text-gray-700 shadow-sm">
           {t(`types.${car.type}`) || car.type}
         </span>
-        {/* Unavailable badge — matches the live catalog */}
-        {car.available === false && (
+        {/* Unavailable badge — matches the live catalog. Shows the return date
+            when the car is in an "unavailable until [date]" window. */}
+        {(car.currently_available === false || car.available === false) && (
           <span className="absolute bottom-0 inset-x-0 bg-gray-900/75 text-white text-xs font-semibold text-center py-1.5 tracking-wide">
-            {t('car.unavailable')}
+            {car.available !== false && car.unavailable_until
+              ? `Indisponible jusqu'au ${new Date(car.unavailable_until).toLocaleDateString('fr-FR')}`
+              : t('car.unavailable')}
           </span>
         )}
         {car.verified && (

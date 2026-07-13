@@ -174,6 +174,27 @@ try { db.exec(`UPDATE agencies SET agency_type = 'classic' WHERE agency_type IS 
 /* Car registration plate — printed on rental contracts (idempotent) */
 try { db.exec(`ALTER TABLE cars ADD COLUMN registration_number TEXT`); } catch {}
 
+/* ── Client "final updates": mandatory car documents (idempotent) ──
+   plate_image is public (shown on the listing); carte_grise_image and
+   insurance_image are sensitive and served only through an auth-gated route. */
+try { db.exec(`ALTER TABLE cars ADD COLUMN plate_image TEXT`); } catch {}          // license-plate photo (public)
+try { db.exec(`ALTER TABLE cars ADD COLUMN carte_grise_image TEXT`); } catch {}    // gray card (private)
+try { db.exec(`ALTER TABLE cars ADD COLUMN insurance_image TEXT`); } catch {}      // insurance document (private)
+
+/* Availability with an optional end date: a car is available only when
+   available = 1 AND (unavailable_until IS NULL OR in the past). */
+try { db.exec(`ALTER TABLE cars ADD COLUMN unavailable_until TEXT`); } catch {}    // ISO date the car is unavailable until
+
+/* ── Handover documentation on bookings (check-in / check-out, idempotent) ──
+   The owner records a video + odometer reading before delivery and after return;
+   distance = checkout_km - checkin_km. Referenced in the rental contract. */
+try { db.exec(`ALTER TABLE bookings ADD COLUMN checkin_video TEXT`); } catch {}
+try { db.exec(`ALTER TABLE bookings ADD COLUMN checkin_km INTEGER`); } catch {}
+try { db.exec(`ALTER TABLE bookings ADD COLUMN checkin_at TEXT`); } catch {}
+try { db.exec(`ALTER TABLE bookings ADD COLUMN checkout_video TEXT`); } catch {}
+try { db.exec(`ALTER TABLE bookings ADD COLUMN checkout_km INTEGER`); } catch {}
+try { db.exec(`ALTER TABLE bookings ADD COLUMN checkout_at TEXT`); } catch {}
+
 /* ── App settings (key/value) ──
    Admin-editable values that must change without a code deploy — e.g. KriCar's own
    commercial-register number printed inside the electronic-contract stamp/QR. */

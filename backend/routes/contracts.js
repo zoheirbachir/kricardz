@@ -24,6 +24,9 @@ function newQrToken() {
   return crypto.randomBytes(16).toString('hex');
 }
 
+/* Platform liability disclaimer printed on every contract after the signatures. */
+const DISCLAIMER = "Après signature des deux parties, KriCar agit uniquement comme intermédiaire technique de mise en relation et décline toute responsabilité concernant l'exécution de la location, l'état du véhicule, les paiements ou tout litige entre le loueur et le locataire. Chaque partie demeure seule responsable de ses obligations.";
+
 /* Build the agency/owner identity block from the owner user record. */
 function agencyBlock(owner) {
   return {
@@ -64,6 +67,7 @@ router.post('/partnership', auth, (req, res) => {
         "Réduction permanente de 30% à l'ouverture du paiement électronique (partenaire fondateur)",
       ],
     },
+    disclaimer: DISCLAIMER,
     issued_at: now.toISOString(),
   };
 
@@ -134,6 +138,7 @@ router.post('/rental/:bookingId', auth, (req, res) => {
       total_price: booking.total_price,
       currency: 'DA',
     },
+    disclaimer: DISCLAIMER,
     issued_at: new Date().toISOString(),
   };
 
@@ -186,7 +191,20 @@ router.get('/verify/:token', (req, res) => {
 function serialize(c) {
   let signatures = {};
   try { signatures = JSON.parse(c.signatures || '{}'); } catch { signatures = {}; }
-  return { ...c, data: JSON.parse(c.data), signatures };
+  const out = { ...c, data: JSON.parse(c.data), signatures };
+  /* Attach the current handover record (check-in/out video + km) for rentals, so
+     the contract always reflects the latest state even if it was documented after
+     the contract was generated. Distance = checkout_km - checkin_km. */
+  if (c.type === 'rental' && c.booking_id) {
+    const b = db.prepare('SELECT checkin_video, checkin_km, checkin_at, checkout_video, checkout_km, checkout_at FROM bookings WHERE id = ?').get(c.booking_id);
+    if (b && (b.checkin_at || b.checkout_at)) {
+      out.handover = {
+        ...b,
+        distance_km: (b.checkin_km != null && b.checkout_km != null) ? (b.checkout_km - b.checkin_km) : null,
+      };
+    }
+  }
+  return out;
 }
 
 /* Which signature slot may the current user fill on this contract?

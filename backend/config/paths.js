@@ -15,15 +15,19 @@ const UPLOADS_ROOT = process.env.UPLOADS_ROOT
   : path.join(__dirname, '..', 'uploads');
 
 const VEHICLES_DIR = path.join(UPLOADS_ROOT, 'vehicles');
+/* Handover (check-in / check-out) videos — public path /uploads/handover/... */
+const HANDOVER_DIR = path.join(UPLOADS_ROOT, 'handover');
 
-/* Private KYC docs are served through an auth-gated route, never statically. */
+/* Private docs are served through auth-gated routes, never statically. */
 const PRIVATE_UPLOADS_ROOT = process.env.PRIVATE_UPLOADS_ROOT
   ? path.resolve(process.env.PRIVATE_UPLOADS_ROOT)
   : path.join(__dirname, '..', 'private_uploads');
+/* Sensitive car documents (carte grise, insurance) — owner/admin only. */
+const CAR_DOCS_DIR = path.join(PRIVATE_UPLOADS_ROOT, 'car_docs');
 
 /* Make sure the directories exist so a freshly-pointed UPLOADS_ROOT works. */
-for (const dir of [VEHICLES_DIR, PRIVATE_UPLOADS_ROOT]) {
+for (const dir of [VEHICLES_DIR, HANDOVER_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR]) {
   try { fs.mkdirSync(dir, { recursive: true }); } catch { /* ignore */ }
 }
 
-module.exports = { UPLOADS_ROOT, VEHICLES_DIR, PRIVATE_UPLOADS_ROOT };
+module.exports = { UPLOADS_ROOT, VEHICLES_DIR, HANDOVER_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR };

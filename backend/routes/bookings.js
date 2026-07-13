@@ -2,8 +2,13 @@ const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../db/database');
 const { auth } = require('../middleware/auth');
+const { makeUploader, VIDEO_TYPES } = require('../lib/uploads');
+const { HANDOVER_DIR } = require('../config/paths');
 
 const router = express.Router();
+
+/* Handover videos (before delivery / after return) — public path /uploads/handover/... */
+const handoverUpload = makeUploader({ dir: HANDOVER_DIR, allow: VIDEO_TYPES, maxMB: 60 });
 
 router.post('/', auth, (req, res) => {
   const { car_id, start_date, end_date, message } = req.body;
@@ -75,6 +80,48 @@ router.put('/:id/status', auth, (req, res) => {
   if (status === 'completed' && !isOwner) return res.status(403).json({ error: 'Seul le propriétaire peut marquer la réservation terminée.' });
 
   db.prepare('UPDATE bookings SET status = ? WHERE id = ?').run(status, req.params.id);
+  res.json(db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id));
+});
+
+/* ── Vehicle handover (client requirement) ──
+   The owner documents the car with a video + odometer reading before delivery
+   (check-in) and after return (check-out). Distance = checkout_km - checkin_km.
+   Owner-only, and only once the booking is confirmed/completed. */
+function loadOwnedBooking(req, res) {
+  const booking = db.prepare(`
+    SELECT b.*, c.owner_id FROM bookings b JOIN cars c ON b.car_id = c.id WHERE b.id = ?
+  `).get(req.params.id);
+  if (!booking) { res.status(404).json({ error: 'Réservation introuvable' }); return null; }
+  if (booking.owner_id !== req.user.id) { res.status(403).json({ error: 'Seul le propriétaire peut documenter la remise du véhicule.' }); return null; }
+  if (!['confirmed', 'completed'].includes(booking.status)) {
+    res.status(409).json({ error: 'La remise ne peut être enregistrée qu\'après confirmation de la réservation.' });
+    return null;
+  }
+  return booking;
+}
+
+router.post('/:id/checkin', auth, handoverUpload.single('checkin_video'), (req, res) => {
+  const booking = loadOwnedBooking(req, res);
+  if (!booking) return;
+  const km = req.body.checkin_km;
+  if (km === undefined || km === '' || isNaN(Number(km))) return res.status(400).json({ error: 'Le kilométrage de départ est requis.' });
+  const video = req.file ? `/uploads/handover/${req.file.filename}` : booking.checkin_video;
+  db.prepare('UPDATE bookings SET checkin_video = ?, checkin_km = ?, checkin_at = datetime(\'now\') WHERE id = ?')
+    .run(video, Number(km), req.params.id);
+  res.json(db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id));
+});
+
+router.post('/:id/checkout', auth, handoverUpload.single('checkout_video'), (req, res) => {
+  const booking = loadOwnedBooking(req, res);
+  if (!booking) return;
+  const km = req.body.checkout_km;
+  if (km === undefined || km === '' || isNaN(Number(km))) return res.status(400).json({ error: 'Le kilométrage de retour est requis.' });
+  if (booking.checkin_km != null && Number(km) < booking.checkin_km) {
+    return res.status(400).json({ error: 'Le kilométrage de retour doit être supérieur ou égal à celui de départ.' });
+  }
+  const video = req.file ? `/uploads/handover/${req.file.filename}` : booking.checkout_video;
+  db.prepare('UPDATE bookings SET checkout_video = ?, checkout_km = ?, checkout_at = datetime(\'now\') WHERE id = ?')
+    .run(video, Number(km), req.params.id);
   res.json(db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id));
 });
 

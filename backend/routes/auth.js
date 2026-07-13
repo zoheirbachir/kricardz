@@ -145,7 +145,7 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
       JSON.stringify(docs)
     );
 
-    const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, is_admin FROM users WHERE id = ?').get(id);
+    const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, is_admin, approved FROM users WHERE id = ?').get(id);
 
     /* Fire off the email-confirmation message (dev mode returns the link to show on screen). */
     let dev_verify_link = null;
@@ -182,7 +182,7 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', auth, (req, res) => {
-  const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, kyc_rejection_reason, is_admin, created_at FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, kyc_rejection_reason, is_admin, approved, approval_reason, created_at FROM users WHERE id = ?').get(req.user.id);
   if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
   res.json(user);
 });

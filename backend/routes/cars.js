@@ -160,6 +160,12 @@ const RENT_MODES = ['daily', 'hourly', 'both'];
 const cleanRentMode = (v) => (RENT_MODES.includes(v) ? v : 'daily');
 
 router.post('/', auth, carMedia, (req, res) => {
+  /* New accounts must be approved by an admin before they can publish a car. */
+  const me = db.prepare('SELECT approved, is_admin FROM users WHERE id = ?').get(req.user.id);
+  if (!me || (me.approved !== 1 && me.is_admin !== 1)) {
+    return res.status(403).json({ error: 'Votre compte est en attente de validation par un administrateur.' });
+  }
+
   const { title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode,
     description, features, seats, transmission, fuel, registration_number, unavailable_until,
     caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url } = req.body;

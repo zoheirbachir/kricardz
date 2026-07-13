@@ -50,6 +50,7 @@ export default function Admin() {
   const [agencies, setAgencies] = useState([]);
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
+  const [usersPending, setUsersPending] = useState(0);
   const [bookings, setBookings] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [backups, setBackups] = useState([]);
@@ -64,7 +65,10 @@ export default function Admin() {
     if (which === 'overview') { setLoading(true); loadStats().finally(() => setLoading(false)); return; }
     const map = { agencies: setAgencies, cars: setCars, users: setUsers, bookings: setBookings, contracts: setContracts, backups: setBackups, settings: setSettings };
     setLoading(true);
-    api.get(`/admin/${which}`).then(r => map[which](r.data))
+    api.get(`/admin/${which}`).then(r => {
+      if (which === 'users') { setUsers(r.data.users || []); setUsersPending(r.data.pending || 0); }
+      else map[which](r.data);
+    })
       .catch(() => toast({ type: 'error', message: 'Échec du chargement.' }))
       .finally(() => setLoading(false));
   }, [loadStats, toast]);
@@ -243,9 +247,14 @@ export default function Admin() {
       {/* Users */}
       {tab === 'users' && !loading && (
         <div className="card overflow-x-auto">
+          {usersPending > 0 && (
+            <div className="px-4 py-2.5 bg-honey-50 dark:bg-honey-500/10 text-honey-700 dark:text-honey-200 text-sm font-medium border-b border-honey-100 dark:border-honey-500/20">
+              {usersPending} compte(s) en attente de validation.
+            </div>
+          )}
           <table className="w-full text-sm">
             <thead className="text-left text-gray-500 border-b border-gray-100 dark:border-gray-800">
-              <tr>{['Nom', 'Rôle', 'Véhicules', 'KYC', 'Statut', 'Actions'].map(h => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
+              <tr>{['Nom', 'Rôle', 'Véhicules', 'KYC', 'Validation', 'Statut', 'Actions'].map(h => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
               {fUsers.map(u => (
@@ -257,10 +266,20 @@ export default function Admin() {
                   <td className="px-4 py-3 text-gray-500">{u.role === 'owner' ? (u.lessor_type === 'agency' ? 'Agence' : 'Propriétaire') : u.role === 'admin' ? 'Admin' : 'Locataire'}</td>
                   <td className="px-4 py-3">{u.car_count}</td>
                   <td className="px-4 py-3"><span className={KYC[u.kyc_status] || KYC.none}>{u.kyc_status || 'aucun'}</span></td>
+                  <td className="px-4 py-3">
+                    {u.is_admin ? <span className="text-xs text-gray-400">—</span>
+                      : u.approved ? <span className="badge-pine">Validé</span>
+                      : <span className="badge bg-honey-100 text-honey-700 dark:bg-honey-500/15 dark:text-honey-300">En attente</span>}
+                  </td>
                   <td className="px-4 py-3">{u.banned ? <span className="badge bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300">Bloqué</span> : <span className="badge-pine">Actif</span>}</td>
                   <td className="px-4 py-3">
                     {u.is_admin ? <span className="text-xs text-gray-400">—</span> : (
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
+                        {!u.approved
+                          ? <button onClick={() => run(`Valider le compte de ${u.name} ?`, () => api.post(`/admin/users/${u.id}/approve`), 'Compte validé.')}
+                              className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-pine-100 text-pine-700 hover:bg-pine-200 dark:bg-pine-500/15 dark:text-pine-300">Valider</button>
+                          : <button onClick={() => run(`Retirer la validation de ${u.name} ? Il ne pourra plus réserver ni publier.`, () => api.post(`/admin/users/${u.id}/reject`), 'Validation retirée.')}
+                              className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300">Retirer</button>}
                         <button onClick={() => run(u.banned ? `Débloquer ${u.name} ?` : `Bloquer ${u.name} ?`, () => api.post(`/admin/users/${u.id}/ban`), 'Mis à jour.')}
                           className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-honey-100 text-honey-700 hover:bg-honey-200 dark:bg-honey-500/15 dark:text-honey-300">
                           {u.banned ? 'Débloquer' : 'Bloquer'}
@@ -272,7 +291,7 @@ export default function Admin() {
                   </td>
                 </tr>
               ))}
-              {fUsers.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-400">Aucun utilisateur.</td></tr>}
+              {fUsers.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Aucun utilisateur.</td></tr>}
             </tbody>
           </table>
         </div>

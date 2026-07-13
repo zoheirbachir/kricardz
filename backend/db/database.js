@@ -124,6 +124,18 @@ try { db.exec(`ALTER TABLE users ADD COLUMN banned INTEGER DEFAULT 0`); } catch 
 try { db.exec(`ALTER TABLE users ADD COLUMN kyc_rejection_reason TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN kyc_reviewed_at TEXT`); } catch {}
 
+/* ── Admin approval of new accounts (idempotent) ──
+   New sign-ups start pending (approved = 0) and can browse but not book/publish
+   until an admin approves. Existing users (and admins) are backfilled to approved
+   so the new gate never locks out anyone who registered before it existed. */
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN approved INTEGER DEFAULT 0`);
+  db.exec(`UPDATE users SET approved = 1`);            // backfill everyone already registered
+} catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN approval_reason TEXT`); } catch {}   // reason if rejected
+try { db.exec(`ALTER TABLE users ADD COLUMN approved_at TEXT`); } catch {}
+try { db.exec(`UPDATE users SET approved = 1 WHERE is_admin = 1`); } catch {}     // admins always approved
+
 /* ── Email verification + password recovery (Feature 11, idempotent) ──
    Tokens are stored as SHA-256 hashes; the raw token only travels in the email link. */
 try { db.exec(`ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0`); } catch {}

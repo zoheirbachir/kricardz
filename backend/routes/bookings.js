@@ -11,6 +11,12 @@ const router = express.Router();
 const handoverUpload = makeUploader({ dir: HANDOVER_DIR, allow: VIDEO_TYPES, maxMB: 60 });
 
 router.post('/', auth, (req, res) => {
+  /* New accounts must be approved by an admin before they can book. */
+  const me = db.prepare('SELECT approved, is_admin FROM users WHERE id = ?').get(req.user.id);
+  if (!me || (me.approved !== 1 && me.is_admin !== 1)) {
+    return res.status(403).json({ error: 'Votre compte est en attente de validation par un administrateur.' });
+  }
+
   const { car_id, start_date, end_date, message } = req.body;
   if (!car_id || !start_date || !end_date) return res.status(400).json({ error: 'Données manquantes' });
 
@@ -52,9 +58,16 @@ router.get('/my', auth, (req, res) => {
 });
 
 router.get('/owner', auth, (req, res) => {
+  /* The agency receives the client's full identity + driving-license details for
+     each booking on its cars — everything needed to hand over the vehicle.
+     Document images stay private (KYC), not exposed here. */
   const bookings = db.prepare(`
     SELECT b.*, c.title, c.brand, c.model, c.images,
-           u.name as renter_name, u.phone as renter_phone, u.email as renter_email
+           u.name as renter_name, u.phone as renter_phone, u.email as renter_email,
+           u.document_type as renter_document_type, u.document_number as renter_id_number,
+           u.driving_license_number as renter_license_number,
+           u.driving_license_issued_date as renter_license_issued,
+           u.driving_license_expiry_date as renter_license_expiry
     FROM bookings b
     JOIN cars c ON b.car_id = c.id
     JOIN users u ON b.renter_id = u.id

@@ -101,6 +101,19 @@ export default function OwnerDashboard() {
         </div>
       </div>
 
+      {/* Account pending admin approval — can't publish a car until validated */}
+      {user?.approved === 0 && !user?.is_admin && (
+        <div className="mb-6 rounded-2xl border border-honey-200 bg-honey-50 dark:bg-honey-500/10 dark:border-honey-500/30 p-4 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-honey-100 dark:bg-honey-500/20 flex items-center justify-center text-honey-700 dark:text-honey-200 shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-honey-700 dark:text-honey-200">Compte en attente de validation</p>
+            <p className="text-sm text-honey-700/80 dark:text-honey-200/70 mt-0.5">Un administrateur doit valider votre compte avant que vous puissiez publier une annonce.</p>
+          </div>
+        </div>
+      )}
+
       {/* Founding-partner offer (CRICAR 2.0 — lock in agency perks before e-payment launches) */}
       <div className="mb-8 rounded-2xl border border-primary-200 dark:border-primary-500/30 bg-gradient-to-br from-primary-50 to-honey-50 dark:from-primary-500/10 dark:to-honey-500/10 p-5">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -233,6 +246,19 @@ export default function OwnerDashboard() {
                   <p className="text-xs text-gray-400 mt-0.5">
                     {new Date(b.start_date).toLocaleDateString('fr-DZ')} → {new Date(b.end_date).toLocaleDateString('fr-DZ')}
                   </p>
+                  {/* Full client identity for the agency (needed to hand over the car) */}
+                  {(b.renter_id_number || b.renter_license_number || b.renter_email) && (
+                    <div className="mt-2 rounded-lg bg-gray-50 dark:bg-gray-800/60 p-2.5 text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
+                      <p className="font-semibold text-gray-700 dark:text-gray-200">Informations du client</p>
+                      {b.renter_email && <p>Email : {b.renter_email}</p>}
+                      {b.renter_phone && <p>Téléphone : {b.renter_phone}</p>}
+                      {b.renter_id_number && <p>N° d'identité : {b.renter_id_number}</p>}
+                      {b.renter_license_number && <p>Permis n° : {b.renter_license_number}</p>}
+                      {(b.renter_license_issued || b.renter_license_expiry) && (
+                        <p>Permis : {b.renter_license_issued || '—'} → {b.renter_license_expiry || '—'}</p>
+                      )}
+                    </div>
+                  )}
                   {b.message && <p className="text-xs text-gray-500 italic mt-1">"{b.message}"</p>}
                 </div>
                 <div className="flex flex-col sm:items-end gap-2 shrink-0">

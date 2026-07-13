@@ -111,14 +111,19 @@ function cascadeDeleteUser(id) {
 /* ── Users ── */
 router.get('/users', adminAuth, (req, res) => {
   const { search = '', role = '' } = req.query;
+  const { status = '' } = req.query;
   let q = `SELECT id, name, email, phone, role, is_admin, COALESCE(banned,0) AS banned, verified, kyc_status, lessor_type, created_at,
+    COALESCE(approved,0) AS approved, approval_reason,
     (SELECT COUNT(*) FROM cars c WHERE c.owner_id = u.id) AS car_count
     FROM users u WHERE 1=1`;
   const p = [];
   if (search) { q += ' AND (u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)'; const s = `%${search}%`; p.push(s, s, s); }
   if (role) { q += ' AND u.role = ?'; p.push(role); }
+  if (status === 'pending') q += ' AND COALESCE(u.approved,0) = 0 AND (u.is_admin IS NULL OR u.is_admin = 0)';
   q += ' ORDER BY u.created_at DESC';
-  res.json(db.prepare(q).all(...p).map(u => ({ ...u, is_admin: Boolean(u.is_admin), banned: Boolean(u.banned), verified: Boolean(u.verified) })));
+  const rows = db.prepare(q).all(...p).map(u => ({ ...u, is_admin: Boolean(u.is_admin), banned: Boolean(u.banned), verified: Boolean(u.verified), approved: Boolean(u.approved) }));
+  const pending = db.prepare(`SELECT COUNT(*) AS c FROM users WHERE COALESCE(approved,0) = 0 AND ${NOT_ADMIN}`).get().c;
+  res.json({ users: rows, pending });
 });
 
 router.delete('/users/:id', adminAuth, (req, res) => {
@@ -287,6 +292,25 @@ router.post('/reseed', adminAuth, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: 'Échec du reseed : ' + e.message });
   }
+});
+
+/* ── Account approval ──
+   New sign-ups are pending until an admin approves them. Pending users can log in
+   and browse but can't book or publish (enforced in bookings/cars routes). The
+   pending list is served by GET /users?status=pending above. */
+router.post('/users/:id/approve', adminAuth, (req, res) => {
+  const u = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Utilisateur introuvable' });
+  db.prepare("UPDATE users SET approved = 1, approval_reason = NULL, approved_at = datetime('now') WHERE id = ?").run(req.params.id);
+  res.json({ ok: true, approved: true });
+});
+
+router.post('/users/:id/reject', adminAuth, (req, res) => {
+  const u = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
+  if (!u) return res.status(404).json({ error: 'Utilisateur introuvable' });
+  db.prepare("UPDATE users SET approved = 0, approval_reason = ?, approved_at = datetime('now') WHERE id = ?")
+    .run((req.body?.reason || 'Compte refusé par un administrateur.'), req.params.id);
+  res.json({ ok: true, approved: false });
 });
 
 module.exports = router;

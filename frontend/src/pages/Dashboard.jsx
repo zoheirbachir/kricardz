@@ -61,6 +61,19 @@ export default function Dashboard() {
       {/* Email confirmation reminder */}
       <EmailVerifyBanner />
 
+      {/* Account pending admin approval — can browse but not book/publish yet */}
+      {user?.approved === 0 && !user?.is_admin && (
+        <div className="mb-6 rounded-2xl border border-honey-200 bg-honey-50 dark:bg-honey-500/10 dark:border-honey-500/30 p-4 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-honey-100 dark:bg-honey-500/20 flex items-center justify-center text-honey-700 dark:text-honey-200 shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-honey-700 dark:text-honey-200">Compte en attente de validation</p>
+            <p className="text-sm text-honey-700/80 dark:text-honey-200/70 mt-0.5">Un administrateur doit valider votre compte avant que vous puissiez réserver un véhicule ou publier une annonce. Vous pouvez consulter le catalogue en attendant.</p>
+          </div>
+        </div>
+      )}
+
       {/* KYC verification status banner */}
       {user?.kyc_status === 'pending' && (
         <Reveal>

@@ -204,6 +204,13 @@ function serialize(c) {
       };
     }
   }
+  /* Attach the client's identity documents (ID/passport, licence, selfie) to the
+     rental contract so they're embedded in the signed document. Served through the
+     auth-gated /kyc-file route, which authorises the parties + admin. */
+  if (c.type === 'rental' && c.renter_id) {
+    const r = db.prepare('SELECT kyc_docs FROM users WHERE id = ?').get(c.renter_id);
+    if (r) { try { out.client_docs = JSON.parse(r.kyc_docs || '{}'); } catch { out.client_docs = {}; } }
+  }
   return out;
 }
 

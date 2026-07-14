@@ -4,10 +4,21 @@ import api, { API_ORIGIN } from '../api';
 import EStamp from '../components/EStamp';
 import LogoMark from '../components/LogoMark';
 import SignaturePad from '../components/SignaturePad';
+import AuthDoc from '../components/AuthDoc';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 const fmtSignedAt = (iso) => iso ? new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+/* Client documents embedded in the rental contract. */
+const CLIENT_DOC_LABELS = {
+  front_image: 'Pièce d\'identité (recto)',
+  back_image: 'Pièce d\'identité (verso)',
+  driving_license_front: 'Permis (recto)',
+  driving_license_back: 'Permis (verso)',
+  secondary_front_image: 'Document 2 (recto)',
+  secondary_back_image: 'Document 2 (verso)',
+};
 
 /* On the web API_ORIGIN is empty → use the current site. On mobile (Capacitor) it's
    the hosted backend URL, so QR codes point at the real site, not capacitor://. */
@@ -135,6 +146,18 @@ export default function ContractView() {
               <Row label="Permis délivré le" value={d.client?.driving_license_issued_date} />
               <Row label="Permis expire le" value={d.client?.driving_license_expiry_date} />
             </Section>
+
+            {/* Client identity documents embedded in the contract */}
+            {c.client_docs && Object.keys(CLIENT_DOC_LABELS).some(k => c.client_docs[k]) && (
+              <div className="mb-5">
+                <h3 className="font-semibold text-gray-800 text-sm uppercase tracking-wide mb-2 border-l-4 border-primary-500 pl-2">Documents du client</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {Object.entries(CLIENT_DOC_LABELS)
+                    .filter(([k]) => c.client_docs[k])
+                    .map(([k, label]) => <AuthDoc key={k} path={c.client_docs[k]} label={label} />)}
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <Section title="Véhicule">
                 <Row label="Marque / Modèle" value={`${d.vehicle?.brand} ${d.vehicle?.model}`} />

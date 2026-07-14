@@ -58,16 +58,19 @@ router.get('/my', auth, (req, res) => {
 });
 
 router.get('/owner', auth, (req, res) => {
-  /* The agency receives the client's full identity + driving-license details for
-     each booking on its cars — everything needed to hand over the vehicle.
-     Document images stay private (KYC), not exposed here. */
+  /* The agency receives the client's full identity, driving-license details AND
+     the documents the client uploaded at registration (ID/passport, licence,
+     selfie…) — everything needed to verify identity before handing over the car.
+     The doc files are still served only through the auth-gated /kyc-file route,
+     which authorises the agency for clients who have a booking on its cars. */
   const bookings = db.prepare(`
     SELECT b.*, c.title, c.brand, c.model, c.images,
            u.name as renter_name, u.phone as renter_phone, u.email as renter_email,
            u.document_type as renter_document_type, u.document_number as renter_id_number,
            u.driving_license_number as renter_license_number,
            u.driving_license_issued_date as renter_license_issued,
-           u.driving_license_expiry_date as renter_license_expiry
+           u.driving_license_expiry_date as renter_license_expiry,
+           u.kyc_docs as renter_kyc_docs
     FROM bookings b
     JOIN cars c ON b.car_id = c.id
     JOIN users u ON b.renter_id = u.id
@@ -75,7 +78,12 @@ router.get('/owner', auth, (req, res) => {
     ORDER BY b.created_at DESC
   `).all(req.user.id);
 
-  res.json(bookings.map(b => ({ ...b, images: JSON.parse(b.images || '[]') })));
+  res.json(bookings.map(b => {
+    let renter_docs = {};
+    try { renter_docs = JSON.parse(b.renter_kyc_docs || '{}'); } catch { renter_docs = {}; }
+    const { renter_kyc_docs, ...rest } = b;
+    return { ...rest, images: JSON.parse(b.images || '[]'), renter_docs };
+  }));
 });
 
 router.put('/:id/status', auth, (req, res) => {

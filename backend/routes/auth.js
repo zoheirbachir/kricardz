@@ -207,6 +207,18 @@ router.get('/kyc-file/:name', (req, res) => {
   if (!authorized) {
     try { authorized = Object.values(JSON.parse(me.kyc_docs || '{}')).some(p => p.endsWith('/' + name)); } catch { /* ignore */ }
   }
+  /* An agency/owner may view a client's registration documents when that client
+     has a (non-cancelled) booking on one of the agency's cars. */
+  if (!authorized) {
+    const fileOwner = db.prepare('SELECT id FROM users WHERE kyc_docs LIKE ?').get('%' + name + '%');
+    if (fileOwner) {
+      const booking = db.prepare(`
+        SELECT 1 FROM bookings b JOIN cars c ON b.car_id = c.id
+        WHERE b.renter_id = ? AND c.owner_id = ? AND b.status != 'cancelled' LIMIT 1
+      `).get(fileOwner.id, payload.id);
+      if (booking) authorized = true;
+    }
+  }
   if (!authorized) return res.status(403).json({ error: 'Accès refusé' });
 
   const file = path.join(KYC_DIR, name);

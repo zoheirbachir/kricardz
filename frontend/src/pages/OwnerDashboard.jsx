@@ -7,6 +7,18 @@ import { useToast } from '../context/ToastContext';
 import api from '../api';
 import { StaggerGroup, fadeUp } from '../lib/motion';
 import HandoverControls from '../components/HandoverControls';
+import AuthDoc from '../components/AuthDoc';
+
+/* Labels for the client documents an agency may see on a booking. */
+const RENTER_DOC_LABELS = {
+  front_image: 'Pièce d\'identité (recto)',
+  back_image: 'Pièce d\'identité (verso)',
+  driving_license_front: 'Permis (recto)',
+  driving_license_back: 'Permis (verso)',
+  secondary_front_image: 'Document 2 (recto)',
+  secondary_back_image: 'Document 2 (verso)',
+  selfie_image: 'Selfie',
+};
 
 const statusColors = {
   pending: 'bg-honey-50 text-honey-700',
@@ -256,6 +268,19 @@ export default function OwnerDashboard() {
                       {b.renter_license_number && <p>Permis n° : {b.renter_license_number}</p>}
                       {(b.renter_license_issued || b.renter_license_expiry) && (
                         <p>Permis : {b.renter_license_issued || '—'} → {b.renter_license_expiry || '—'}</p>
+                      )}
+                      {/* Documents the client uploaded at registration */}
+                      {b.renter_docs && Object.keys(RENTER_DOC_LABELS).some(k => b.renter_docs[k]) && (
+                        <div className="pt-2">
+                          <p className="font-semibold text-gray-700 dark:text-gray-200 mb-1.5">Documents du client</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            {Object.entries(RENTER_DOC_LABELS)
+                              .filter(([k]) => b.renter_docs[k])
+                              .map(([k, label]) => (
+                                <AuthDoc key={k} path={b.renter_docs[k]} label={label} />
+                              ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}

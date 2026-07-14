@@ -1,7 +1,9 @@
 const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
+const { DB_PATH } = require('../config/paths');
 
-const DB_PATH = path.join(__dirname, 'kricar.db');
+/* DB_PATH persists outside the deploy dir on hosts that wipe it each deploy
+   (see config/paths.js). Falls back to backend/db/kricar.db for local dev. */
 const db = new DatabaseSync(DB_PATH);
 
 db.exec(`PRAGMA journal_mode = WAL`);

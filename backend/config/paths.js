@@ -31,9 +31,19 @@ const PRIVATE_UPLOADS_ROOT = process.env.PRIVATE_UPLOADS_ROOT
 /* Sensitive car documents (carte grise, insurance) — owner/admin only. */
 const CAR_DOCS_DIR = path.join(PRIVATE_UPLOADS_ROOT, 'car_docs');
 
+/* The SQLite database file. It MUST live outside the deploy directory, or every
+   redeploy wipes it and all accounts/bookings are lost. When UPLOADS_ROOT points
+   at a persistent folder, default the DB to a sibling too. Overridable with
+   DB_PATH; local dev keeps it in backend/db. */
+const DB_PATH = process.env.DB_PATH
+  ? path.resolve(process.env.DB_PATH)
+  : (process.env.UPLOADS_ROOT
+      ? path.join(path.dirname(UPLOADS_ROOT), 'kricar-data', 'kricar.db')
+      : path.join(__dirname, '..', 'db', 'kricar.db'));
+
 /* Make sure the directories exist so a freshly-pointed UPLOADS_ROOT works. */
-for (const dir of [VEHICLES_DIR, HANDOVER_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR]) {
+for (const dir of [VEHICLES_DIR, HANDOVER_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR, path.dirname(DB_PATH)]) {
   try { fs.mkdirSync(dir, { recursive: true }); } catch { /* ignore */ }
 }
 
-module.exports = { UPLOADS_ROOT, VEHICLES_DIR, HANDOVER_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR };
+module.exports = { UPLOADS_ROOT, VEHICLES_DIR, HANDOVER_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR, DB_PATH };

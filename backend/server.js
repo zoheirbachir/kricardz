@@ -97,6 +97,15 @@ app.get('/api/wilayas', (req, res) => {
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
+/* Temporary: confirm the DB is running from the persistent location. Remove after. */
+app.get('/api/_diag/db', (req, res) => {
+  const { DB_PATH } = require('./config/paths');
+  let users = null, agencies = null;
+  try { users = db.prepare('SELECT COUNT(*) AS c FROM users').get().c; } catch {}
+  try { agencies = db.prepare("SELECT COUNT(*) AS c FROM users WHERE role = 'owner'").get().c; } catch {}
+  res.json({ db_path: DB_PATH, persistent: !DB_PATH.includes('/nodejs/') && !DB_PATH.includes('\\db\\'), users, owners: agencies });
+});
+
 /* ── Serve the built React app (production single-origin deploy) ──
    Two possible locations, checked in order:
    1. backend/public  — the frontend build copied INSIDE backend/ (see

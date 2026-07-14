@@ -101,6 +101,8 @@ try { db.exec(`ALTER TABLE cars ADD COLUMN gps_token TEXT`); } catch {}
 /* Add location shortcut columns on cars for fast queries */
 try { db.exec(`ALTER TABLE cars ADD COLUMN lat REAL`); } catch {}
 try { db.exec(`ALTER TABLE cars ADD COLUMN lng REAL`); } catch {}
+/* Add color column on cars */
+try { db.exec(`ALTER TABLE cars ADD COLUMN color TEXT`); } catch {}
 
 /* ── KYC / identity-verification columns on users (idempotent) ── */
 try { db.exec(`ALTER TABLE users ADD COLUMN kyc_status TEXT DEFAULT 'none'`); } catch {}

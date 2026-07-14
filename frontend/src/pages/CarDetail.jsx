@@ -243,7 +243,8 @@ export default function CarDetail() {
                 { label: t('car.transmission'), value: t(`car.${car.transmission}`) },
                 { label: t('car.fuel'), value: t(`car.${car.fuel}`) },
                 { label: t('car.driver'), value: car.with_driver ? t('car.with_driver') : t('car.without_driver') },
-              ].map(s => (
+                car.color ? { label: 'Couleur', value: car.color } : null,
+              ].filter(Boolean).map(s => (
                 <div key={s.label} className="bg-gray-50 rounded-xl p-3 text-center">
                   <div className="font-semibold text-gray-900 text-sm">{s.value}</div>
                   <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>

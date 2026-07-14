@@ -35,6 +35,8 @@ export default function AuthDoc({ path, label }) {
     return () => { cancelled = true; if (objUrl) URL.revokeObjectURL(objUrl); };
   }, [path]);
 
+  const isPdf = path && path.toLowerCase().endsWith('.pdf');
+
   return (
     <a href={url || undefined} target="_blank" rel="noreferrer"
       className="group block rounded-xl overflow-hidden border border-[var(--border)] hover:border-primary-300 transition-colors">
@@ -42,8 +44,15 @@ export default function AuthDoc({ path, label }) {
         {err
           ? <span className="text-[11px] text-red-500 px-2 text-center">Échec du chargement</span>
           : url
-            ? <img src={url} alt={label} onError={() => setErr(true)}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            ? isPdf
+              ? <div className="flex flex-col items-center justify-center p-3 text-red-500 gap-1">
+                  <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Ouvrir le PDF</span>
+                </div>
+              : <img src={url} alt={label} onError={() => setErr(true)}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
             : <span className="text-[11px] text-gray-400">Chargement…</span>}
       </div>
       <p className="text-[11px] font-medium text-gray-600 dark:text-gray-300 px-2 py-1.5 truncate">{label}</p>

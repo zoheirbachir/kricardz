@@ -20,7 +20,7 @@ export default function AddCar() {
     seats: 5, transmission: 'manual', fuel: 'essence', features: [],
     caution: '', km_per_day: '', extra_km_price: '', with_driver: false,
     weekly_price: '', monthly_price: '', video_url: '',
-    registration_number: '', unavailable_until: '',
+    registration_number: '', unavailable_until: '', color: '',
   });
   const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -158,7 +158,7 @@ export default function AddCar() {
         {/* Specs */}
         <div className="card p-5 space-y-4">
           <h2 className="font-semibold text-gray-900">Caractéristiques</h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Places</label>
               <input type="number" className="input" min={2} max={9} value={form.seats} onChange={e => set('seats', e.target.value)} />
@@ -177,6 +177,10 @@ export default function AddCar() {
                 <option value="diesel">{t('car.diesel')}</option>
                 <option value="electric">{t('car.electric')}</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Couleur</label>
+              <input className="input" placeholder="Ex: Noir, Blanc" value={form.color} onChange={e => set('color', e.target.value)} />
             </div>
           </div>
 

@@ -10,7 +10,8 @@ const router = express.Router();
 const LIST_COLS = 'id, name, email, phone, role, kyc_status, lessor_type, kyc_reviewed_at, created_at';
 const DETAIL_COLS = `id, name, email, phone, role, verified, id_verified, kyc_status,
   kyc_rejection_reason, kyc_reviewed_at, lessor_type, document_type, document_number,
-  driving_license_issued_date, driving_license_expiry_date, agency_legal_name, agency_commercial_reg_number, kyc_docs, created_at`;
+  driving_license_number, driving_license_issued_date, driving_license_expiry_date,
+  agency_legal_name, agency_commercial_reg_number, agency_address, national_id_number, kyc_docs, created_at`;
 
 /* Exclude admin accounts from the review queue everywhere */
 const NOT_ADMIN = '(is_admin IS NULL OR is_admin = 0)';

@@ -50,6 +50,7 @@ export default function EditCar() {
         available: c.available !== false, video_url: isUploadedVideo(c.video_url) ? '' : (c.video_url || ''),
         registration_number: c.registration_number || '',
         unavailable_until: c.unavailable_until ? String(c.unavailable_until).slice(0, 10) : '',
+        color: c.color || '',
       });
       setExistingImages(c.images || []);
       setCurrentVideo(c.video_url || null);
@@ -179,7 +180,7 @@ export default function EditCar() {
         {/* Specs */}
         <div className="card p-5 space-y-4">
           <h2 className="font-semibold text-gray-900">Caractéristiques</h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div><label className="block text-sm font-medium text-gray-700 mb-1.5">Places</label>
               <input type="number" className="input" min={2} max={9} value={form.seats} onChange={e => set('seats', e.target.value)} /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1.5">Transmission</label>
@@ -190,6 +191,8 @@ export default function EditCar() {
               <select className="input" value={form.fuel} onChange={e => set('fuel', e.target.value)}>
                 <option value="essence">{t('car.essence')}</option><option value="diesel">{t('car.diesel')}</option><option value="electric">{t('car.electric')}</option>
               </select></div>
+            <div><label className="block text-sm font-medium text-gray-700 mb-1.5">Couleur</label>
+              <input className="input" placeholder="Ex: Noir, Blanc" value={form.color} onChange={e => set('color', e.target.value)} /></div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">{t('car.features')}</label>

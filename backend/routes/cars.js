@@ -168,7 +168,7 @@ router.post('/', auth, carMedia, (req, res) => {
 
   const { title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode,
     description, features, seats, transmission, fuel, registration_number, unavailable_until,
-    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url } = req.body;
+    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url, color } = req.body;
   const mode = cleanRentMode(rent_mode);
   /* Daily price is required unless the vehicle is hourly-only. */
   if (!title || !brand || !model || !year || !type || !wilaya || (mode !== 'hourly' && !price_per_day)) {
@@ -198,15 +198,15 @@ router.post('/', auth, carMedia, (req, res) => {
   const video = videoFile ? `/uploads/vehicles/${videoFile.filename}` : (video_url || null);
   const id = uuidv4();
 
-  db.prepare(`INSERT INTO cars (id, owner_id, title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode, description, features, images, seats, transmission, fuel,
+  db.prepare(`INSERT INTO cars (id, owner_id, title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode, description, features, images, seats, transmission, fuel, color,
     caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url,
     registration_number, plate_image, carte_grise_image, insurance_image, unavailable_until)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
     id, req.user.id, title, brand, model, Number(year), type, wilaya, city || null,
     mode === 'hourly' ? null : Number(price_per_day), numOrNull(price_per_hour), mode, description || null,
     JSON.stringify(features ? (Array.isArray(features) ? features : [features]) : []),
     JSON.stringify(images),
-    Number(seats) || 5, transmission || 'manual', fuel || 'essence',
+    Number(seats) || 5, transmission || 'manual', fuel || 'essence', color || null,
     numOrNull(caution), numOrNull(km_per_day), numOrNull(extra_km_price),
     (with_driver === 'true' || with_driver === true || with_driver === '1') ? 1 : 0,
     numOrNull(weekly_price), numOrNull(monthly_price), video,
@@ -223,7 +223,7 @@ router.put('/:id', auth, carMedia, (req, res) => {
 
   const { title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode,
     description, features, available, seats, transmission, fuel, registration_number, unavailable_until,
-    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url, remove_video } = req.body;
+    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url, remove_video, color } = req.body;
 
   /* ── Photo management ──
      `existing_images` (JSON array) is the list of previously-uploaded photos the
@@ -268,7 +268,7 @@ router.put('/:id', auth, carMedia, (req, res) => {
   const keepNum = (v, cur) => (v === undefined || v === '' ? cur : Number(v));
   const mode = rent_mode !== undefined ? cleanRentMode(rent_mode) : car.rent_mode;
 
-  db.prepare(`UPDATE cars SET title=?, brand=?, model=?, year=?, type=?, wilaya=?, city=?, price_per_day=?, price_per_hour=?, rent_mode=?, description=?, features=?, images=?, available=?, seats=?, transmission=?, fuel=?,
+  db.prepare(`UPDATE cars SET title=?, brand=?, model=?, year=?, type=?, wilaya=?, city=?, price_per_day=?, price_per_hour=?, rent_mode=?, description=?, features=?, images=?, available=?, seats=?, transmission=?, fuel=?, color=?,
     caution=?, km_per_day=?, extra_km_price=?, with_driver=?, weekly_price=?, monthly_price=?, video_url=?,
     registration_number=?, plate_image=?, carte_grise_image=?, insurance_image=?, unavailable_until=? WHERE id=?`).run(
     title || car.title, brand || car.brand, model || car.model, Number(year) || car.year,
@@ -280,6 +280,7 @@ router.put('/:id', auth, carMedia, (req, res) => {
     JSON.stringify(allImages),
     available !== undefined ? (available === 'true' || available === true ? 1 : 0) : car.available,
     Number(seats) || car.seats, transmission || car.transmission, fuel || car.fuel,
+    color !== undefined ? (color || null) : car.color,
     keepNum(caution, car.caution), keepNum(km_per_day, car.km_per_day), keepNum(extra_km_price, car.extra_km_price),
     with_driver !== undefined ? ((with_driver === 'true' || with_driver === true || with_driver === '1') ? 1 : 0) : car.with_driver,
     keepNum(weekly_price, car.weekly_price), keepNum(monthly_price, car.monthly_price),

@@ -1,9 +1,27 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
+const fs = require('fs');
 const db = require('../db/database');
 const { auth } = require('../middleware/auth');
+const { makeUploader, IMAGE_TYPES } = require('../lib/uploads');
+const { AGENCIES_DIR, UPLOADS_ROOT } = require('../config/paths');
 
 const router = express.Router();
+
+/* Agency gallery photos (fleet / premises), max 12 per agency. */
+const galleryUpload = makeUploader({ dir: AGENCIES_DIR, allow: IMAGE_TYPES, maxMB: 10 });
+const MAX_GALLERY = 12;
+
+const parseGallery = (a) => { try { return JSON.parse(a?.gallery || '[]'); } catch { return []; } };
+
+/* Only delete files we own, inside the uploads dir. */
+function removeGalleryFile(publicPath) {
+  if (!publicPath || !publicPath.startsWith('/uploads/')) return;
+  const abs = path.join(UPLOADS_ROOT, publicPath.replace(/^\/uploads\//, ''));
+  if (!abs.startsWith(UPLOADS_ROOT)) return;
+  fs.unlink(abs, () => {});
+}
 
 /* Correlated subqueries keep vehicle_count and the rating aggregate independent
    (a JOIN over both cars and reviews would multiply the vehicle count). */
@@ -30,12 +48,20 @@ router.get('/', (req, res) => {
   res.json(db.prepare(query).all(...params));
 });
 
+/* The signed-in owner's own agency — used by the dashboard to manage the gallery. */
+router.get('/mine', auth, (req, res) => {
+  const agency = db.prepare(AGENCY_SELECT + ' WHERE a.owner_id = ?').get(req.user.id);
+  if (!agency) return res.status(404).json({ error: 'Aucune agence' });
+  res.json({ ...agency, gallery: parseGallery(agency) });
+});
+
 router.get('/:id', (req, res) => {
   const agency = db.prepare(AGENCY_SELECT + ' WHERE a.id = ?').get(req.params.id);
   if (!agency) return res.status(404).json({ error: 'Agence introuvable' });
 
   const cars = db.prepare('SELECT * FROM cars WHERE owner_id = ? AND available = 1 ORDER BY created_at DESC').all(agency.owner_id);
   agency.cars = cars.map(c => ({ ...c, features: JSON.parse(c.features || '[]'), images: JSON.parse(c.images || '[]') }));
+  agency.gallery = parseGallery(agency);
 
   res.json(agency);
 });
@@ -55,6 +81,40 @@ router.post('/', auth, (req, res) => {
 
   db.prepare('UPDATE users SET role = ? WHERE id = ?').run('owner', req.user.id);
   res.status(201).json(db.prepare('SELECT * FROM agencies WHERE id = ?').get(id));
+});
+
+/* ── Gallery management (agency owner only) ── */
+function loadOwnAgency(req, res) {
+  const agency = db.prepare('SELECT * FROM agencies WHERE id = ?').get(req.params.id);
+  if (!agency) { res.status(404).json({ error: 'Agence introuvable' }); return null; }
+  if (agency.owner_id !== req.user.id) { res.status(403).json({ error: 'Accès refusé' }); return null; }
+  return agency;
+}
+
+router.post('/:id/gallery', auth, galleryUpload.array('photos', MAX_GALLERY), (req, res) => {
+  const agency = loadOwnAgency(req, res);
+  if (!agency) return;
+  const current = parseGallery(agency);
+  const added = (req.files || []).map(f => `/uploads/agencies/${f.filename}`);
+  if (!added.length) return res.status(400).json({ error: 'Aucune photo reçue.' });
+  if (current.length + added.length > MAX_GALLERY) {
+    added.forEach(removeGalleryFile);
+    return res.status(400).json({ error: `Maximum ${MAX_GALLERY} photos dans la galerie.` });
+  }
+  const gallery = [...current, ...added];
+  db.prepare('UPDATE agencies SET gallery = ? WHERE id = ?').run(JSON.stringify(gallery), agency.id);
+  res.json({ gallery });
+});
+
+router.delete('/:id/gallery', auth, (req, res) => {
+  const agency = loadOwnAgency(req, res);
+  if (!agency) return;
+  const { photo } = req.body || {};
+  if (!photo) return res.status(400).json({ error: 'Photo à supprimer manquante.' });
+  const gallery = parseGallery(agency).filter(p => p !== photo);
+  removeGalleryFile(photo);
+  db.prepare('UPDATE agencies SET gallery = ? WHERE id = ?').run(JSON.stringify(gallery), agency.id);
+  res.json({ gallery });
 });
 
 module.exports = router;

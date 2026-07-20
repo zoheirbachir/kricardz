@@ -82,6 +82,24 @@ export default function AgencyDetail() {
         </div>
       </div>
 
+      {/* Agency photo gallery */}
+      {agency.gallery?.length > 0 && (
+        <div className="mb-10">
+          <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-4">
+            En images
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {agency.gallery.map((p, i) => (
+              <a key={p} href={p.startsWith('/') ? p : p} target="_blank" rel="noreferrer"
+                className="block rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 aspect-[4/3] group">
+                <img src={p} alt={`${agency.name} — photo ${i + 1}`} loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Cars */}
       <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900 dark:text-white mb-5">
         Véhicules de cette agence

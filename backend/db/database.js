@@ -185,6 +185,8 @@ try {
 /* ── Agency catalog columns (idempotent) ── */
 try { db.exec(`ALTER TABLE agencies ADD COLUMN agency_type TEXT DEFAULT 'classic'`); } catch {} // classic | luxury | wedding | trucks
 try { db.exec(`ALTER TABLE agencies ADD COLUMN cover TEXT`); } catch {}                          // banner image url
+/* Photo gallery (fleet / premises) shown on the public agency page — JSON array of paths */
+try { db.exec(`ALTER TABLE agencies ADD COLUMN gallery TEXT DEFAULT '[]'`); } catch {}
 try { db.exec(`UPDATE agencies SET agency_type = 'classic' WHERE agency_type IS NULL`); } catch {}
 
 /* Car registration plate — printed on rental contracts (idempotent) */

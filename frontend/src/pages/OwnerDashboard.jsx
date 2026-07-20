@@ -8,6 +8,7 @@ import api from '../api';
 import { StaggerGroup, fadeUp } from '../lib/motion';
 import HandoverControls from '../components/HandoverControls';
 import AuthDoc from '../components/AuthDoc';
+import AgencyGallery from '../components/AgencyGallery';
 
 /* Labels for the client documents an agency may see on a booking. */
 const RENTER_DOC_LABELS = {
@@ -143,6 +144,9 @@ export default function OwnerDashboard() {
           </button>
         </div>
       </div>
+
+      {/* Agency photo gallery (only shown if this account has an agency profile) */}
+      <AgencyGallery />
 
       {/* Stats */}
       <StaggerGroup className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8" stagger={0.08}>

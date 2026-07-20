@@ -4,6 +4,7 @@ const db = require('../db/database');
 const { auth } = require('../middleware/auth');
 const { makeUploader, VIDEO_TYPES } = require('../lib/uploads');
 const { HANDOVER_DIR } = require('../config/paths');
+const { notify } = require('../lib/notify');
 
 const router = express.Router();
 
@@ -39,6 +40,14 @@ router.post('/', auth, (req, res) => {
   db.prepare('INSERT INTO bookings (id, car_id, renter_id, start_date, end_date, total_price, message) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
     id, car_id, req.user.id, start_date, end_date, days * car.price_per_day, message || null
   );
+
+  /* Tell the owner/agency straight away. */
+  notify(req.app.get('io'), car.owner_id, {
+    type: 'booking',
+    title: 'Nouvelle réservation',
+    body: `${car.title} — du ${start_date} au ${end_date}`,
+    link: '/dashboard/owner',
+  });
 
   res.status(201).json(db.prepare('SELECT * FROM bookings WHERE id = ?').get(id));
 });
@@ -104,6 +113,17 @@ router.put('/:id/status', auth, (req, res) => {
   if (status === 'completed' && !isOwner) return res.status(403).json({ error: 'Seul le propriétaire peut marquer la réservation terminée.' });
 
   db.prepare('UPDATE bookings SET status = ? WHERE id = ?').run(status, req.params.id);
+
+  /* Notify the other party of the new state. */
+  const car = db.prepare('SELECT title FROM cars WHERE id = ?').get(booking.car_id);
+  const LABELS = { confirmed: 'Réservation confirmée', cancelled: 'Réservation annulée', completed: 'Location terminée' };
+  notify(req.app.get('io'), isOwner ? booking.renter_id : booking.owner_id, {
+    type: 'booking',
+    title: LABELS[status] || 'Réservation mise à jour',
+    body: car?.title || undefined,
+    link: isOwner ? '/dashboard' : '/dashboard/owner',
+  });
+
   res.json(db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id));
 });
 

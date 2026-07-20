@@ -8,6 +8,7 @@ const { makeUploader, uploadErrorHandler, CAR_UPLOAD_TYPES, DOC_FIELDS } = requi
 const { UPLOADS_ROOT, VEHICLES_DIR, CAR_DOCS_DIR } = require('../config/paths');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = require('../config/secret');
+const { notifyAdmins } = require('../lib/notify');
 
 const router = express.Router();
 
@@ -212,6 +213,14 @@ router.post('/', auth, carMedia, (req, res) => {
     numOrNull(weekly_price), numOrNull(monthly_price), video,
     registration_number || null, plate_image, carte_grise_image, insurance_image, unavailable_until || null
   );
+
+  /* New vehicle documents are waiting for review — tell the admins live. */
+  notifyAdmins(req.app.get('io'), {
+    type: 'documents',
+    title: 'Nouveaux documents véhicule',
+    body: `${title} — carte grise, assurance et plaque à vérifier`,
+    link: '/admin',
+  });
 
   res.status(201).json(parseCar(db.prepare('SELECT * FROM cars WHERE id = ?').get(id)));
 });

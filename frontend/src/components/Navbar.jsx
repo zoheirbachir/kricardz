@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 import { useTheme } from '../context/ThemeContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import LogoMark from './LogoMark';
@@ -84,6 +85,8 @@ export default function Navbar() {
             </motion.button>
 
             <LanguageSwitcher />
+
+            <NotificationBell />
 
             {user ? (
               <div className="relative">

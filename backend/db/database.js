@@ -243,6 +243,23 @@ db.exec(`
   );
 `);
 
+/* ── In-app notifications ──
+   Delivered live over Socket.io to the user's personal room and persisted so the
+   bell shows history + unread count across sessions. */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS notifications (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    type TEXT DEFAULT 'info',
+    title TEXT NOT NULL,
+    body TEXT,
+    link TEXT,
+    read INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read);
+`);
+
 /* Online signatures (griffes) drawn by each party — JSON:
    { agency: {image,name,signed_at}, client: {...}, kricar: {...} } (idempotent) */
 try { db.exec(`ALTER TABLE contracts ADD COLUMN signatures TEXT DEFAULT '{}'`); } catch {}

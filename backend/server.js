@@ -59,6 +59,12 @@ app.set('io', io);
    authorizes it (owner / active renter / admin). The token is passed via
    io(url, { auth: { token } }) on the client. */
 io.on('connection', (socket) => {
+  /* Join the user's personal room so we can push notifications to them. */
+  try {
+    const uid = jwt.verify(socket.handshake.auth?.token || '', JWT_SECRET).id;
+    if (uid) socket.join(`user:${uid}`);
+  } catch { /* anonymous socket — tracking only */ }
+
   socket.on('track:car', (carId) => {
     let userId = null;
     try { userId = jwt.verify(socket.handshake.auth?.token || '', JWT_SECRET).id; } catch { userId = null; }
@@ -81,6 +87,7 @@ app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/agencies', require('./routes/agencies'));
 app.use('/api/location', require('./routes/locations'));
 app.use('/api/contracts', require('./routes/contracts'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 app.get('/api/wilayas', (req, res) => {
   res.json([

@@ -4,6 +4,7 @@ const db = require('../db/database');
 const { adminAuth } = require('../middleware/auth');
 const backup = require('../lib/backup');
 const settings = require('../lib/settings');
+const { notify } = require('../lib/notify');
 
 const router = express.Router();
 
@@ -331,6 +332,12 @@ router.post('/users/:id/approve', adminAuth, (req, res) => {
   const u = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
   if (!u) return res.status(404).json({ error: 'Utilisateur introuvable' });
   db.prepare("UPDATE users SET approved = 1, approval_reason = NULL, approved_at = datetime('now') WHERE id = ?").run(req.params.id);
+  notify(req.app.get('io'), req.params.id, {
+    type: 'account',
+    title: 'Compte validé',
+    body: 'Votre compte a été validé. Vous pouvez maintenant réserver et publier.',
+    link: '/dashboard',
+  });
   res.json({ ok: true, approved: true });
 });
 

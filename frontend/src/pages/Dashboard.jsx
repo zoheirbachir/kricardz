@@ -7,6 +7,7 @@ import { useToast } from '../context/ToastContext';
 import api from '../api';
 import { Reveal, StaggerGroup, fadeUp } from '../lib/motion';
 import EmailVerifyBanner from '../components/EmailVerifyBanner';
+import BookingProgress from '../components/BookingProgress';
 
 const statusColors = {
   pending: 'bg-honey-50 text-honey-700',
@@ -174,6 +175,9 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-400 mt-0.5">
                   {new Date(b.start_date).toLocaleDateString('fr-DZ')} → {new Date(b.end_date).toLocaleDateString('fr-DZ')}
                 </p>
+                <div className="mt-2.5">
+                  <BookingProgress status={b.status} />
+                </div>
               </div>
               <div className="flex flex-col sm:items-end gap-2">
                 <span className={`badge ${statusColors[b.status] || 'bg-gray-100 text-gray-600'} text-xs`}>

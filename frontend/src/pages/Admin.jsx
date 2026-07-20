@@ -2,6 +2,19 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import { useToast } from '../context/ToastContext';
+import AuthDoc from '../components/AuthDoc';
+
+/* Vehicle + owner documents shown in the admin review modal. */
+const CAR_DOC_LABELS = [
+  ['plate_image', "Plaque d'immatriculation"],
+  ['carte_grise_image', 'Carte grise'],
+  ['insurance_image', 'Assurance'],
+];
+const OWNER_DOC_LABELS = [
+  ['front_image', "Pièce d'identité du propriétaire (recto)"],
+  ['back_image', "Pièce d'identité du propriétaire (verso)"],
+  ['agency_commercial_register', 'Registre de commerce'],
+];
 
 const TABS = [
   { key: 'overview', label: "Vue d'ensemble" },
@@ -51,6 +64,8 @@ export default function Admin() {
   const [cars, setCars] = useState([]);
   const [users, setUsers] = useState([]);
   const [usersPending, setUsersPending] = useState(0);
+  const [expiring, setExpiring] = useState(null);
+  const [docsCar, setDocsCar] = useState(null);   // car whose documents are being reviewed
   const [bookings, setBookings] = useState([]);
   const [contracts, setContracts] = useState([]);
   const [backups, setBackups] = useState([]);
@@ -75,6 +90,7 @@ export default function Admin() {
 
   useEffect(() => { setQ(''); load(tab); }, [tab, load]);
   useEffect(() => { loadStats(); }, [loadStats]);
+  useEffect(() => { api.get('/admin/expiring-docs').then(r => setExpiring(r.data)).catch(() => {}); }, []);
 
   const run = async (msg, fn, okMsg) => {
     if (!window.confirm(msg)) return;
@@ -150,6 +166,26 @@ export default function Admin() {
         ))}
       </div>
 
+      {/* Document-expiry alert */}
+      {tab === 'overview' && expiring && (expiring.expired > 0 || expiring.expiring_soon > 0) && (
+        <div className="mb-4 rounded-2xl border border-honey-200 dark:border-honey-500/30 bg-honey-50 dark:bg-honey-500/10 p-4">
+          <p className="font-semibold text-honey-800 dark:text-honey-200 flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M5.07 19h13.86a2 2 0 001.74-3l-6.93-12a2 2 0 00-3.48 0l-6.93 12a2 2 0 001.74 3z" /></svg>
+            Permis de conduire — {expiring.expired} expiré(s), {expiring.expiring_soon} expirant sous 30 jours
+          </p>
+          <div className="mt-2 divide-y divide-honey-100 dark:divide-honey-500/20 text-sm">
+            {expiring.items.slice(0, 8).map(u => (
+              <div key={u.id} className="flex items-center justify-between py-1.5">
+                <span className="text-gray-700 dark:text-gray-200">{u.name} <span className="text-gray-400">· {u.email}</span></span>
+                <span className={u.expired ? 'text-red-600 font-medium' : 'text-honey-700 dark:text-honey-300'}>
+                  {u.expired ? 'Expiré' : 'Expire'} le {new Date(u.expiry).toLocaleDateString('fr-FR')}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Overview */}
       {tab === 'overview' && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -175,7 +211,13 @@ export default function Admin() {
           className="input max-w-sm mb-4 text-sm" />
       )}
 
-      {loading && <p className="text-sm text-gray-500">Chargement…</p>}
+      {loading && (
+        <div className="space-y-2.5">
+          {tab === 'overview'
+            ? <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">{[...Array(4)].map((_, i) => <div key={i} className="card h-24 animate-pulse bg-gray-100 dark:bg-gray-800" />)}</div>
+            : <div className="card divide-y divide-gray-50 dark:divide-gray-800">{[...Array(6)].map((_, i) => <div key={i} className="h-14 animate-pulse bg-gray-50 dark:bg-gray-800/60" />)}</div>}
+        </div>
+      )}
 
       {/* Agencies */}
       {tab === 'agencies' && !loading && (
@@ -228,6 +270,8 @@ export default function Admin() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <Link to={`/cars/${c.id}`} className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">Voir</Link>
+                      <button onClick={() => setDocsCar(c)}
+                        className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-primary-100 text-primary-700 hover:bg-primary-200 dark:bg-primary-500/15 dark:text-primary-300">Documents</button>
                       <button onClick={() => run(`${c.available ? 'Rendre indisponible' : 'Rendre disponible'} « ${c.title} » ?`, () => api.post(`/admin/cars/${c.id}/availability`), 'Mis à jour.')}
                         className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-honey-100 text-honey-700 hover:bg-honey-200 dark:bg-honey-500/15 dark:text-honey-300">
                         {c.available ? 'Masquer' : 'Publier'}
@@ -443,6 +487,47 @@ export default function Admin() {
           <button onClick={saveSettings} disabled={busy} className="btn-primary text-sm">
             {busy ? 'Enregistrement…' : 'Enregistrer les paramètres'}
           </button>
+        </div>
+      )}
+
+      {/* Vehicle documents review */}
+      {docsCar && (
+        <div className="fixed inset-0 z-[110] bg-black/50 flex items-center justify-center p-4" onClick={() => setDocsCar(null)}>
+          <div className="card max-w-3xl w-full max-h-[85vh] overflow-y-auto p-5" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Documents — {docsCar.title}</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {docsCar.owner_name}
+                  {docsCar.registration_number ? ` · Immatriculation : ${docsCar.registration_number}` : ''}
+                </p>
+              </div>
+              <button onClick={() => setDocsCar(null)} aria-label="Fermer"
+                className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Documents du véhicule</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+              {CAR_DOC_LABELS.filter(([k]) => docsCar[k]).map(([k, label]) => (
+                <AuthDoc key={k} path={docsCar[k]} label={label} />
+              ))}
+              {CAR_DOC_LABELS.every(([k]) => !docsCar[k]) && (
+                <p className="text-sm text-gray-400 col-span-full">Aucun document de véhicule fourni.</p>
+              )}
+            </div>
+
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">Documents du propriétaire</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {OWNER_DOC_LABELS.filter(([k]) => docsCar.owner_docs?.[k]).map(([k, label]) => (
+                <AuthDoc key={k} path={docsCar.owner_docs[k]} label={label} />
+              ))}
+              {OWNER_DOC_LABELS.every(([k]) => !docsCar.owner_docs?.[k]) && (
+                <p className="text-sm text-gray-400 col-span-full">Aucun document du propriétaire.</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

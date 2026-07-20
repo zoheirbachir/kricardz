@@ -149,11 +149,18 @@ router.post('/users/:id/ban', adminAuth, (req, res) => {
 router.get('/cars', adminAuth, (req, res) => {
   const { search = '' } = req.query;
   let q = `SELECT c.id, c.title, c.brand, c.model, c.year, c.type, c.wilaya, c.price_per_day, c.available, c.created_at,
-    u.name AS owner_name FROM cars c JOIN users u ON c.owner_id = u.id WHERE 1=1`;
+    c.registration_number, c.plate_image, c.carte_grise_image, c.insurance_image,
+    u.name AS owner_name, u.kyc_docs AS owner_kyc_docs
+    FROM cars c JOIN users u ON c.owner_id = u.id WHERE 1=1`;
   const p = [];
   if (search) { q += ' AND (c.title LIKE ? OR c.brand LIKE ? OR u.name LIKE ?)'; const s = `%${search}%`; p.push(s, s, s); }
   q += ' ORDER BY c.created_at DESC';
-  res.json(db.prepare(q).all(...p).map(c => ({ ...c, available: Boolean(c.available) })));
+  res.json(db.prepare(q).all(...p).map(c => {
+    let owner_docs = {};
+    try { owner_docs = JSON.parse(c.owner_kyc_docs || '{}'); } catch { owner_docs = {}; }
+    const { owner_kyc_docs, ...rest } = c;
+    return { ...rest, available: Boolean(c.available), owner_docs };
+  }));
 });
 
 router.delete('/cars/:id', adminAuth, (req, res) => {
@@ -293,6 +300,27 @@ router.post('/reseed', adminAuth, async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: 'Échec du reseed : ' + e.message });
   }
+});
+
+/* ── Document-expiry alerts ──
+   Flags clients whose driving licence is expired or expires within 30 days,
+   computed from the stored expiry date (no OCR). */
+router.get('/expiring-docs', adminAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT id, name, email, phone, driving_license_number, driving_license_expiry_date AS expiry
+    FROM users
+    WHERE driving_license_expiry_date IS NOT NULL AND driving_license_expiry_date != ''
+      AND date(driving_license_expiry_date) <= date('now', '+30 days')
+      AND ${NOT_ADMIN}
+    ORDER BY driving_license_expiry_date ASC
+  `).all();
+  const today = new Date().toISOString().slice(0, 10);
+  const items = rows.map(u => ({ ...u, expired: u.expiry < today }));
+  res.json({
+    items,
+    expired: items.filter(i => i.expired).length,
+    expiring_soon: items.filter(i => !i.expired).length,
+  });
 });
 
 /* ── Account approval ──

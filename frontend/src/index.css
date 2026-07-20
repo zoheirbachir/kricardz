@@ -1,15 +1,15 @@
-/* Leaflet must be imported before Tailwind */
+﻿/* Leaflet must be imported before Tailwind */
 @import 'leaflet/dist/leaflet.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ════════════════════════════════════════════════════════════════
-   DzKricar · "Desert Premium" design tokens
-   Warm sand neutrals · clay/terracotta accent · pine trust accent
-   Fraunces (display) · Plus Jakarta Sans (UI) · IBM Plex Arabic (RTL)
-   ════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DzKricar Â· "Desert Premium" design tokens
+   Warm sand neutrals Â· clay/terracotta accent Â· pine trust accent
+   Fraunces (display) Â· Plus Jakarta Sans (UI) Â· IBM Plex Arabic (RTL)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 :root {
   --bg: #F7F1E7;          /* page                */
   --surface: #FFFDF8;     /* cards / raised      */
@@ -19,7 +19,7 @@
   --text: #211C16;        /* ink                 */
   --muted: #6B5F4E;       /* secondary text      */
   --faint: #9A8D78;       /* tertiary / hints    */
-  --accent: #B5471D;      /* clay                */
+  --accent: #FF5A0A;      /* DzKricar orange     */
 }
 .dark {
   --bg: #16130D;
@@ -57,7 +57,7 @@
 }
 
 @layer components {
-  /* ── Buttons ── */
+  /* â”€â”€ Buttons â”€â”€ */
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
     box-shadow: 0 8px 20px -8px rgba(181,71,29,0.55);
@@ -79,7 +79,7 @@
   }
   .btn-ghost:hover { @apply text-primary-600 bg-primary-50; }
 
-  /* ── Inputs ── */
+  /* â”€â”€ Inputs â”€â”€ */
   .input {
     @apply w-full rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400/60 focus:border-primary-400 transition-all;
     background: var(--surface);
@@ -88,7 +88,7 @@
   }
   .input::placeholder { color: var(--faint); }
 
-  /* ── Cards ── */
+  /* â”€â”€ Cards â”€â”€ */
   .card {
     @apply rounded-2xl overflow-hidden;
     background: var(--surface);
@@ -97,7 +97,7 @@
   }
   .dark .card { box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
 
-  /* ── Badges ── */
+  /* â”€â”€ Badges â”€â”€ */
   .badge {
     @apply inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full;
   }
@@ -105,11 +105,11 @@
   .badge-clay  { @apply badge bg-primary-50 text-primary-700; }
   .badge-honey { @apply badge bg-honey-50 text-honey-700; }
 
-  /* ── Section heading ── */
+  /* â”€â”€ Section heading â”€â”€ */
   .section-title { @apply font-display text-3xl md:text-4xl font-semibold tracking-tight; color: var(--text); }
   .eyebrow { @apply inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider; color: var(--accent); }
 
-  /* ── Shimmer skeleton ── */
+  /* â”€â”€ Shimmer skeleton â”€â”€ */
   .skeleton { @apply rounded-xl overflow-hidden relative; background: var(--surface-2); }
   .skeleton::after {
     content: '';
@@ -123,7 +123,7 @@
   }
 }
 
-/* ── Keyframe animations ── */
+/* â”€â”€ Keyframe animations â”€â”€ */
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
@@ -149,7 +149,7 @@
   80%, 100% { transform: scale(2); opacity: 0; }
 }
 
-/* ── Utility animation classes ── */
+/* â”€â”€ Utility animation classes â”€â”€ */
 .animate-slide-up   { animation: slideInUp   0.45s ease both; }
 .animate-slide-right{ animation: slideInRight 0.35s ease both; }
 .animate-fade-in    { animation: fadeIn      0.4s  ease both; }
@@ -174,7 +174,7 @@
 /* Page transition wrapper */
 .page-enter { animation: fadeIn 0.3s ease both; }
 
-/* ── Reduced motion: respect the user ── */
+/* â”€â”€ Reduced motion: respect the user â”€â”€ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -185,7 +185,7 @@
   .reveal, .reveal-left { opacity: 1 !important; transform: none !important; }
 }
 
-/* ── Dark-mode remaps for components that hardcode light utilities ──
+/* â”€â”€ Dark-mode remaps for components that hardcode light utilities â”€â”€
    (warm equivalents so the cold-gray Tailwind defaults never appear) */
 .dark .bg-white    { background: var(--surface) !important; }
 .dark .bg-gray-50  { background: var(--bg) !important; }
@@ -222,7 +222,7 @@ input[type=range]::-webkit-slider-thumb {
 /* Mobile bottom safe area */
 .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 
-/* ── Leaflet dark-mode protection ──
+/* â”€â”€ Leaflet dark-mode protection â”€â”€
    Global .dark overrides must not bleed into Leaflet's controls. */
 .leaflet-container, .leaflet-container * { box-sizing: border-box; }
 .dark .leaflet-bar a,

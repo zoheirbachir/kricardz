@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -17,7 +17,7 @@ const CAR_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" str
 const carIcon = L.divIcon({
   html: `<div style="
     width:36px;height:36px;border-radius:50%;
-    background:#B5471D;border:3px solid white;
+    background:#FF5A0A;border:3px solid white;
     box-shadow:0 4px 10px rgba(46,33,18,0.35);
     display:flex;align-items:center;justify-content:center;
   ">${CAR_SVG}</div>`,
@@ -37,7 +37,7 @@ const pulseIcon = L.divIcon({
     "></div>
     <div style="
       position:absolute;inset:6px;border-radius:50%;
-      background:#B5471D;border:3px solid white;
+      background:#FF5A0A;border:3px solid white;
       box-shadow:0 4px 10px rgba(46,33,18,0.4);
       display:flex;align-items:center;justify-content:center;
     ">${CAR_SVG}</div>

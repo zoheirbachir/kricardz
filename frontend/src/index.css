@@ -30,7 +30,7 @@
   --text: #F3ECE0;
   --muted: #B3A488;
   --faint: #8A7C66;
-  --accent: #D9703F;      /* clay brightened for dark surfaces */
+  --accent: #FF7A38;      /* DzKricar orange, brightened for dark surfaces */
 }
 
 @layer base {
@@ -42,6 +42,8 @@
     transition: background-color 0.3s ease, color 0.3s ease;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Safety net: no stray element may force the page to scroll sideways. */
+    overflow-x: hidden;
   }
   /* Editorial display face for hero + section headings */
   .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }

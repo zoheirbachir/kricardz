@@ -44,12 +44,12 @@ export default function Navbar() {
       ${scrolled ? 'shadow-md backdrop-blur-md bg-white/85 dark:bg-[#211C14]/90' : 'bg-white dark:bg-[#211C14]'}
       border-b border-gray-100 dark:border-gray-800`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 gap-1">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-            <LogoMark className="w-9 h-9 shadow-clay group-hover:rotate-3 group-hover:scale-105 transition-transform" />
-            <span className="font-display font-semibold text-2xl tracking-tight text-gray-900 dark:text-white leading-none">Dz<span className="text-primary-500">Kricar</span></span>
+          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 min-w-0 group">
+            <LogoMark className="w-9 h-9 shrink-0 group-hover:rotate-3 group-hover:scale-105 transition-transform" />
+            <span className="font-display font-semibold text-xl sm:text-2xl tracking-tight text-gray-900 dark:text-white leading-none truncate">Dz<span className="text-primary-500">Kricar</span></span>
           </Link>
 
           {/* Desktop nav */}
@@ -66,7 +66,7 @@ export default function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
             {/* Dark mode toggle */}
             <motion.button onClick={toggle} whileTap={{ scale: 0.82 }} whileHover={{ scale: 1.08 }}
               className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-500 dark:text-gray-300 overflow-hidden"

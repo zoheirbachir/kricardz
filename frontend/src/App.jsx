@@ -6,6 +6,7 @@ import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import FloatingButtons from './components/FloatingButtons';
+import TermsGate from './components/TermsGate';
 import { ScrollProgress } from './lib/motion';
 import { useNetwork } from './hooks/useNetwork';
 
@@ -98,6 +99,7 @@ export default function App() {
         <AuthProvider>
           <BrowserRouter>
             <OfflineBanner />
+            <TermsGate />
             <Routes>
               {/* Auth pages (no navbar/footer) */}
               <Route path="/login" element={<AuthLayout><Login /></AuthLayout>} />

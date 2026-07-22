@@ -187,6 +187,10 @@ router.post('/login', async (req, res) => {
   loginThrottleReset(ip); // successful login clears the counter for this IP
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
   const { password_hash, ...safeUser } = user;
+  /* Same re-acceptance signal as /me, so the prompt appears right after login. */
+  const currentTerms = legal.currentTerms();
+  safeUser.terms_current_version = currentTerms?.version || null;
+  safeUser.terms_reaccept_required = Boolean(currentTerms && safeUser.terms_version !== currentTerms.version);
   res.json({ token, user: safeUser });
 });
 

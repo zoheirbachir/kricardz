@@ -1,6 +1,8 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const db = require('../db/database');
+const { PRIVATE_UPLOADS_ROOT } = require('../config/paths');
 const { adminAuth } = require('../middleware/auth');
 const backup = require('../lib/backup');
 const settings = require('../lib/settings');
@@ -17,6 +19,10 @@ const DETAIL_COLS = `id, name, email, phone, role, verified, id_verified, kyc_st
 /* Exclude admin accounts from the review queue everywhere */
 const NOT_ADMIN = '(is_admin IS NULL OR is_admin = 0)';
 
+/* Same two locations the /kyc-file route serves from. */
+const KYC_DIR = path.join(PRIVATE_UPLOADS_ROOT, 'kyc');
+const LEGACY_KYC_DIR = path.join(__dirname, '../private_uploads/kyc');
+
 function kycCounts() {
   const counts = { pending: 0, approved: 0, rejected: 0 };
   for (const s of Object.keys(counts)) {
@@ -24,6 +30,48 @@ function kycCounts() {
   }
   return counts;
 }
+
+/* ── Which stored identity documents are actually still on disk? ──
+   Files uploaded before the persistent-storage fix were written inside the deploy
+   directory and destroyed on each redeploy, leaving the filename in the database
+   but no file. This reports exactly who has to re-upload. */
+router.get('/kyc/audit', adminAuth, (req, res) => {
+  const rows = db.prepare(
+    `SELECT id, name, email, phone, role, kyc_status, created_at, kyc_docs
+     FROM users WHERE kyc_docs IS NOT NULL AND kyc_docs != '{}' AND ${NOT_ADMIN}
+     ORDER BY created_at DESC`
+  ).all();
+
+  const affected = [];
+  let filesTotal = 0, filesMissing = 0;
+  for (const u of rows) {
+    let docs = {};
+    try { docs = JSON.parse(u.kyc_docs || '{}'); } catch { continue; }
+    const missing = [];
+    for (const [field, p] of Object.entries(docs)) {
+      if (!p) continue;
+      filesTotal++;
+      const name = String(p).split('/').pop();
+      const found = [path.join(KYC_DIR, name), path.join(LEGACY_KYC_DIR, name)].some(f => fs.existsSync(f));
+      if (!found) { missing.push(field); filesMissing++; }
+    }
+    if (missing.length) {
+      affected.push({
+        id: u.id, name: u.name, email: u.email, phone: u.phone, role: u.role,
+        kyc_status: u.kyc_status, created_at: u.created_at,
+        missing, total: Object.keys(docs).length,
+      });
+    }
+  }
+  res.json({
+    users_with_docs: rows.length,
+    files_total: filesTotal,
+    files_missing: filesMissing,
+    users_affected: affected.length,
+    storage_persistent: !KYC_DIR.includes(`${path.sep}backend${path.sep}`),
+    affected,
+  });
+});
 
 /* List KYC submissions, optionally filtered by status (?status=pending|approved|rejected|all) */
 router.get('/kyc', adminAuth, (req, res) => {

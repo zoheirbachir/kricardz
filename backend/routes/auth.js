@@ -11,6 +11,7 @@ const { sendMail, isDevMail } = require('../lib/mailer');
 const legal = require('../lib/legal');
 const { sendSms } = require('../lib/sms');
 const { makeUploader, uploadErrorHandler, DOC_TYPES } = require('../lib/uploads');
+const { PRIVATE_UPLOADS_ROOT } = require('../config/paths');
 
 const router = express.Router();
 const JWT_SECRET = require('../config/secret');
@@ -79,7 +80,32 @@ async function sendVerificationEmail(user, req) {
 /* ── KYC file uploads ──
    Identity docs go to a PRIVATE folder OUTSIDE ../uploads, so express.static never
    serves them. They're retrieved only through the authenticated /kyc-file route. */
-const KYC_DIR = path.join(__dirname, '../private_uploads/kyc');
+/* MUST hang off PRIVATE_UPLOADS_ROOT: on Hostinger the deploy replaces the whole
+   app folder, so anything written inside backend/ is destroyed on every deploy.
+   This used to be hardcoded to ../private_uploads/kyc and every redeploy silently
+   deleted every identity document ever uploaded. LEGACY_KYC_DIR is still read from
+   so any file that survived is still served. */
+const KYC_DIR = path.join(PRIVATE_UPLOADS_ROOT, 'kyc');
+const LEGACY_KYC_DIR = path.join(__dirname, '../private_uploads/kyc');
+try { fs.mkdirSync(KYC_DIR, { recursive: true }); } catch { /* ignore */ }
+
+/* Rescue anything still sitting in the old in-app folder (a restart without a
+   redeploy, or an upgrade on a host that doesn't wipe). Runs once at boot. */
+function migrateLegacyKyc() {
+  try {
+    if (KYC_DIR === LEGACY_KYC_DIR || !fs.existsSync(LEGACY_KYC_DIR)) return;
+    let moved = 0;
+    for (const f of fs.readdirSync(LEGACY_KYC_DIR)) {
+      const from = path.join(LEGACY_KYC_DIR, f);
+      const to = path.join(KYC_DIR, f);
+      if (fs.statSync(from).isFile() && !fs.existsSync(to)) { fs.copyFileSync(from, to); moved++; }
+    }
+    if (moved) console.log(`Migrated ${moved} KYC file(s) to the persistent folder.`);
+  } catch (e) {
+    console.error('KYC migration failed:', e.message);
+  }
+}
+migrateLegacyKyc();
 const upload = makeUploader({ dir: KYC_DIR, allow: DOC_TYPES, maxMB: 8 });
 const KYC_FIELDS = [
   { name: 'driving_license_front', maxCount: 1 },
@@ -238,8 +264,14 @@ router.get('/kyc-file/:name', (req, res) => {
   }
   if (!authorized) return res.status(403).json({ error: 'Accès refusé' });
 
-  const file = path.join(KYC_DIR, name);
-  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Fichier introuvable' });
+  /* Persistent folder first, then the pre-fix in-app folder. */
+  const file = [path.join(KYC_DIR, name), path.join(LEGACY_KYC_DIR, name)].find(p => fs.existsSync(p));
+  if (!file) {
+    return res.status(404).json({
+      error: "Document introuvable. Le fichier n'est plus sur le serveur — demandez à l'utilisateur de le téléverser à nouveau.",
+      code: 'file_missing',
+    });
+  }
   res.sendFile(file);
 });
 

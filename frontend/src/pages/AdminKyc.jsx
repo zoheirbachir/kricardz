@@ -63,6 +63,12 @@ export default function AdminKyc() {
 
   useEffect(() => { loadList(tab); }, [tab, loadList]);
 
+  /* Documents whose file no longer exists on the server (uploaded before the
+     storage fix, when every redeploy erased them). Tells the admin who to chase. */
+  const [audit, setAudit] = useState(null);
+  const [auditOpen, setAuditOpen] = useState(false);
+  useEffect(() => { api.get('/admin/kyc/audit').then(r => setAudit(r.data)).catch(() => {}); }, []);
+
   const openDetail = (id) => {
     setSelectedId(id);
     setRejecting(false);
@@ -123,6 +129,62 @@ export default function AdminKyc() {
         <h1 className="font-display text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">Vérification d'identité</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Examinez et validez les pièces justificatives soumises par les utilisateurs.</p>
       </div>
+
+      {/* Documents lost before the persistent-storage fix */}
+      {audit?.files_missing > 0 && (
+        <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 dark:bg-amber-500/10 dark:border-amber-500/30 p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center text-amber-700 dark:text-amber-200 shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z" /></svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                {audit.files_missing} document(s) introuvable(s) sur le serveur — {audit.users_affected} utilisateur(s) concerné(s)
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                Ces fichiers ont été téléversés avant la correction du stockage : ils étaient enregistrés dans le dossier
+                de l'application, que chaque redéploiement efface. Les fichiers sont définitivement perdus — il faut
+                demander aux personnes ci-dessous de renvoyer leurs pièces. Les nouveaux téléversements sont désormais
+                conservés en dehors du dossier de déploiement et survivent aux mises à jour.
+              </p>
+              <button onClick={() => setAuditOpen(o => !o)} className="text-sm font-semibold text-primary-600 mt-2">
+                {auditOpen ? 'Masquer la liste' : 'Voir qui doit renvoyer ses documents'}
+              </button>
+
+              {auditOpen && (
+                <div className="mt-3 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="text-left text-gray-500">
+                      <tr>
+                        <th className="py-2 pe-3 font-medium">Utilisateur</th>
+                        <th className="py-2 pe-3 font-medium">Contact</th>
+                        <th className="py-2 pe-3 font-medium">Statut</th>
+                        <th className="py-2 font-medium">Documents manquants</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {audit.affected.map(u => (
+                        <tr key={u.id} className="border-t border-amber-200/60 dark:border-amber-500/20 align-top">
+                          <td className="py-2.5 pe-3 text-gray-900 dark:text-white">{u.name}</td>
+                          <td className="py-2.5 pe-3 text-gray-600 dark:text-gray-300">
+                            <div>{u.email}</div>
+                            {u.phone && <div className="text-xs text-gray-500">{u.phone}</div>}
+                          </td>
+                          <td className="py-2.5 pe-3"><StatusBadge status={u.kyc_status} /></td>
+                          <td className="py-2.5 text-gray-600 dark:text-gray-300">
+                            {u.missing.map(m => DOC_ORDER.find(([k]) => k === m)?.[1] || m).join(', ')}
+                            <span className="text-xs text-gray-500"> ({u.missing.length}/{u.total})</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter tabs */}
       <div className="flex flex-wrap gap-2 mb-6">

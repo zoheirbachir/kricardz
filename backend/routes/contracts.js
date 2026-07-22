@@ -211,6 +211,23 @@ function serialize(c) {
     const r = db.prepare('SELECT kyc_docs FROM users WHERE id = ?').get(c.renter_id);
     if (r) { try { out.client_docs = JSON.parse(r.kyc_docs || '{}'); } catch { out.client_docs = {}; } }
   }
+  /* Legal: prove both parties accepted the terms, and under which version. */
+  const parties = [c.agency_owner_id, c.renter_id].filter(Boolean);
+  if (parties.length) {
+    const rows = db.prepare(
+      `SELECT user_id, terms_version, created_at FROM consents
+       WHERE user_id IN (${parties.map(() => '?').join(',')})
+       ${c.booking_id ? 'AND (booking_id = ? OR booking_id IS NULL)' : ''}
+       ORDER BY created_at DESC`
+    ).all(...parties, ...(c.booking_id ? [c.booking_id] : []));
+    const latest = {};
+    for (const r of rows) if (!latest[r.user_id]) latest[r.user_id] = r;
+    out.terms_acceptance = {
+      version: latest[c.renter_id]?.terms_version || latest[c.agency_owner_id]?.terms_version || null,
+      agency: latest[c.agency_owner_id] || null,
+      client: latest[c.renter_id] || null,
+    };
+  }
   return out;
 }
 

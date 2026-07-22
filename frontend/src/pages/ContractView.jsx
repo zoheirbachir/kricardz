@@ -256,6 +256,23 @@ export default function ContractView() {
           </div>
         )}
 
+        {/* Terms acceptance — proves both parties read and accepted the T&C */}
+        {c.terms_acceptance?.version && (
+          <div className="mt-6 border border-gray-200 rounded-xl p-4">
+            <p className="text-[10px] uppercase tracking-wider text-primary-600 font-bold mb-2">Acceptation des conditions générales</p>
+            <p className="text-[11px] text-gray-600 leading-relaxed">
+              Les parties reconnaissent avoir lu et accepté les conditions générales de DzKricar,
+              <span className="font-semibold text-gray-900"> version {c.terms_acceptance.version}</span>, annexées au présent contrat.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5 text-[11px]">
+              <Row label="Accepté par le loueur le"
+                value={c.terms_acceptance.agency ? new Date(c.terms_acceptance.agency.created_at.replace(' ', 'T') + 'Z').toLocaleString('fr-FR') : '—'} />
+              <Row label="Accepté par le client le"
+                value={c.terms_acceptance.client ? new Date(c.terms_acceptance.client.created_at.replace(' ', 'T') + 'Z').toLocaleString('fr-FR') : '—'} />
+            </div>
+          </div>
+        )}
+
         {/* Platform liability disclaimer */}
         {d.disclaimer && (
           <p className="text-[11px] text-gray-500 leading-relaxed mt-6 bg-gray-50 border border-gray-100 rounded-xl p-3">

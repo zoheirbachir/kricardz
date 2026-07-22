@@ -1,77 +1,85 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import api from '../api';
 
-const Section = ({ n, title, children }) => (
-  <section className="mb-8">
-    <h2 className="font-display text-xl font-semibold text-gray-900 dark:text-white mb-3">
-      <span className="text-primary-500">{n}.</span> {title}
-    </h2>
-    <div className="space-y-3 text-gray-600 dark:text-gray-300 leading-relaxed text-[15px]">{children}</div>
-  </section>
-);
+const LANGS = [
+  { code: 'fr', label: 'Français' },
+  { code: 'ar', label: 'العربية' },
+  { code: 'en', label: 'English' },
+];
+
+/* The terms are stored as light markdown (# / ## headings, - bullets) so an admin
+   can edit them from the dashboard without touching code. */
+function renderMarkdown(text) {
+  if (!text) return null;
+  const blocks = [];
+  let list = null;
+  text.split('\n').forEach((raw, i) => {
+    const line = raw.trim();
+    const flush = () => { if (list) { blocks.push(<ul key={`u${i}`} className="list-disc ps-6 space-y-1.5 text-gray-600 dark:text-gray-300">{list}</ul>); list = null; } };
+    if (!line) { flush(); return; }
+    if (line.startsWith('## ')) {
+      flush();
+      blocks.push(<h2 key={i} className="font-display text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-3">{line.slice(3)}</h2>);
+    } else if (line.startsWith('# ')) {
+      flush();
+      blocks.push(<h1 key={i} className="section-title mb-4">{line.slice(2)}</h1>);
+    } else if (line.startsWith('- ')) {
+      (list ||= []).push(<li key={i}>{line.slice(2)}</li>);
+    } else {
+      flush();
+      blocks.push(<p key={i} className="text-gray-600 dark:text-gray-300 leading-relaxed text-[15px] mb-3">{line}</p>);
+    }
+  });
+  if (list) blocks.push(<ul key="ul-last" className="list-disc ps-6 space-y-1.5 text-gray-600 dark:text-gray-300">{list}</ul>);
+  return blocks;
+}
 
 export default function Terms() {
+  const { i18n } = useTranslation();
+  const [terms, setTerms] = useState(null);
+  const [lang, setLang] = useState(() => (['fr', 'ar', 'en'].includes(i18n.language) ? i18n.language : 'fr'));
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.get('/terms/current')
+      .then(r => setTerms(r.data))
+      .catch(() => setError("Les conditions ne sont pas disponibles pour le moment."));
+  }, []);
+
+  const content = terms?.contents?.[lang] || terms?.contents?.fr;
+
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <p className="eyebrow mb-1.5">Mentions légales</p>
-      <h1 className="section-title mb-2">Conditions générales d'utilisation</h1>
-      <p className="text-sm text-gray-400 mb-8">Dernière mise à jour : 1 juillet 2026</p>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+        <div>
+          <p className="eyebrow mb-1.5">Mentions légales</p>
+          <h1 className="section-title">Conditions générales</h1>
+          {terms && (
+            <p className="text-sm text-gray-400 mt-1.5">
+              Version {terms.version}
+              {terms.published_at ? ` · publiée le ${new Date(terms.published_at).toLocaleDateString('fr-FR')}` : ''}
+            </p>
+          )}
+        </div>
+        <div className="flex gap-1.5">
+          {LANGS.map(l => (
+            <button key={l.code} type="button" onClick={() => setLang(l.code)}
+              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                lang === l.code
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'}`}>
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <Section n="1" title="Objet">
-        <p>Les présentes conditions régissent l'utilisation de la plateforme DzKricar, service algérien de mise en relation pour la location de véhicules entre particuliers et agences. En créant un compte, vous acceptez ces conditions.</p>
-      </Section>
-
-      <Section n="2" title="Définitions">
-        <ul className="list-disc pl-5 space-y-1">
-          <li><b>DzKricar</b> : la plateforme (site et application) qui met en relation les parties.</li>
-          <li><b>Propriétaire / Agence</b> : l'utilisateur qui propose un véhicule à la location.</li>
-          <li><b>Locataire</b> : l'utilisateur qui réserve un véhicule.</li>
-          <li><b>Contrat de location</b> : le contrat électronique conclu entre le locataire et le propriétaire / l'agence.</li>
-        </ul>
-      </Section>
-
-      <Section n="3" title="Inscription et vérification d'identité">
-        <p>L'inscription est gratuite. Chaque utilisateur doit fournir des informations exactes et confirmer son adresse email. La location exige une vérification d'identité (KYC) : pièce d'identité ou passeport, numéro d'identité nationale, selfie, et — pour les locataires — un permis de conduire valide (numéro et dates de validité). Toute fausse déclaration entraîne la suspension du compte.</p>
-      </Section>
-
-      <Section n="4" title="Rôle de DzKricar">
-        <p>DzKricar est un intermédiaire technique de mise en relation. DzKricar n'est pas partie au contrat de location conclu entre le locataire et le propriétaire / l'agence, et ne loue pas de véhicules en son nom propre. DzKricar fournit les outils (annonces, réservations, contrats électroniques, cachets, suivi GPS) mais la location relève de la responsabilité des parties.</p>
-      </Section>
-
-      <Section n="5" title="Obligations du propriétaire / de l'agence">
-        <p>Le propriétaire garantit être en droit de louer le véhicule, que celui-ci est en bon état, assuré et conforme à la réglementation algérienne. Les agences doivent fournir un registre de commerce valide. Les informations de l'annonce (état, prix, disponibilité) doivent être exactes.</p>
-      </Section>
-
-      <Section n="6" title="Obligations du locataire">
-        <p>Le locataire doit détenir un permis de conduire valide, utiliser le véhicule en bon père de famille, respecter le code de la route et restituer le véhicule dans l'état et les délais convenus. Toute infraction ou dommage relève de sa responsabilité.</p>
-      </Section>
-
-      <Section n="7" title="Contrats électroniques et cachets">
-        <p>À chaque location, un contrat électronique est généré automatiquement, scellé par les cachets électroniques de DzKricar et de l'agence. Chaque contrat porte un numéro unique et un QR code permettant de vérifier son authenticité. Un document ne portant pas ces cachets est considéré comme non valide.</p>
-      </Section>
-
-      <Section n="8" title="Réservations, prix et caution">
-        <p>Les prix sont affichés en dinars algériens (DA) et fixés par le propriétaire / l'agence. Une caution peut être exigée et restituée en l'absence de dommage. Les modalités de paiement sont convenues entre les parties.</p>
-      </Section>
-
-      <Section n="9" title="Programme partenaire fondateur">
-        <p>Les agences qui rejoignent la Plateforme durant la phase de lancement bénéficient de 3 mois d'utilisation gratuite et d'une réduction permanente de 30% à l'ouverture du paiement électronique. Ces avantages sont formalisés dans le contrat de partenariat électronique.</p>
-      </Section>
-
-      <Section n="10" title="Responsabilité">
-        <p>DzKricar ne saurait être tenu responsable des litiges, dommages ou manquements liés à l'exécution du contrat de location entre les parties. DzKricar met en œuvre des moyens raisonnables (vérification d'identité, contrats, support) pour sécuriser les transactions, sans garantie de résultat.</p>
-      </Section>
-
-      <Section n="11" title="Suspension et résiliation">
-        <p>DzKricar peut suspendre ou supprimer tout compte en cas de fraude, de fausse déclaration, de comportement abusif ou de violation des présentes conditions. Vous pouvez supprimer votre compte à tout moment.</p>
-      </Section>
-
-      <Section n="12" title="Données personnelles">
-        <p>Le traitement de vos données est décrit dans notre <Link to="/privacy" className="text-primary-600 hover:underline">Politique de confidentialité</Link>.</p>
-      </Section>
-
-      <Section n="13" title="Droit applicable">
-        <p>Les présentes conditions sont régies par le droit algérien. Tout litige relève de la compétence des juridictions algériennes. Pour toute question : <a href="mailto:Kricar.services@gmail.com" className="text-primary-600 hover:underline">Kricar.services@gmail.com</a>.</p>
-      </Section>
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {!terms && !error && (
+        <div className="space-y-3">{[...Array(8)].map((_, i) => <div key={i} className="h-4 rounded skeleton bg-gray-100 dark:bg-gray-800 animate-pulse" />)}</div>
+      )}
+      {content && <div className="mt-2">{renderMarkdown(content)}</div>}
     </div>
   );
 }

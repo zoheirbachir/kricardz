@@ -40,7 +40,7 @@ function resolveVideo(url) {
 
 export default function CarDetail() {
   const { id } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [car, setCar] = useState(null);
@@ -49,6 +49,7 @@ export default function CarDetail() {
   const [booking, setBooking] = useState({ start_date: '', end_date: '', message: '', pickup: '' });
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState('');
+  const [acceptBookingTerms, setAcceptBookingTerms] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [review, setReview] = useState({ rating: 5, comment: '' });
   const [reviewSuccess, setReviewSuccess] = useState(false);
@@ -72,11 +73,19 @@ export default function CarDetail() {
   const handleBook = async (e) => {
     e.preventDefault();
     if (!user) return navigate('/login');
+    /* Legal: consent is required before the booking can be created. */
+    if (!acceptBookingTerms) {
+      setBookingError('Vous devez accepter les conditions de location avant de confirmer.');
+      return;
+    }
     setBookingLoading(true); setBookingError('');
     try {
       const message = [booking.pickup ? `Lieu de prise en charge : ${booking.pickup}` : '', booking.message]
         .filter(Boolean).join('\n');
-      await api.post('/bookings', { car_id: id, start_date: booking.start_date, end_date: booking.end_date, message });
+      await api.post('/bookings', {
+        car_id: id, start_date: booking.start_date, end_date: booking.end_date, message,
+        accept_terms: true, lang: i18n.language || 'fr',
+      });
       setBookingSuccess(true);
       toast({ type: 'success', message: 'Demande de réservation envoyée avec succès !' });
     } catch (err) {
@@ -528,10 +537,31 @@ export default function CarDetail() {
                   </div>
                 )}
 
+                {/* Legal summary + mandatory consent, recorded against this booking */}
+                <div className="rounded-xl border border-[var(--border)] bg-gray-50 dark:bg-gray-800/50 p-3 space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">Conditions de location</p>
+                  <ul className="text-[11px] text-gray-600 dark:text-gray-300 space-y-1 list-disc ps-4">
+                    <li>Permis de conduire valide et pièce d'identité obligatoires.</li>
+                    <li>Véhicule à restituer à la date convenue, dans l'état de la livraison.</li>
+                    <li>Amendes et dommages durant la location à votre charge.</li>
+                    {car.caution != null && <li>Caution de {car.caution.toLocaleString()} DA, restituée sans dommage.</li>}
+                    <li>DzKricar est un intermédiaire : le contrat lie le loueur et vous.</li>
+                  </ul>
+                  <label className="flex items-start gap-2 cursor-pointer pt-0.5">
+                    <input type="checkbox" checked={acceptBookingTerms} onChange={(e) => setAcceptBookingTerms(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 accent-primary-500 shrink-0" />
+                    <span className="text-[11px] text-gray-600 dark:text-gray-300">
+                      J'accepte ces conditions et les{' '}
+                      <Link to="/terms" target="_blank" className="text-primary-600 underline underline-offset-2">conditions générales</Link>.
+                      <span className="text-red-500"> *</span>
+                    </span>
+                  </label>
+                </div>
+
                 {bookingError && <p className="text-red-600 text-xs bg-red-50 px-3 py-2 rounded-lg">{bookingError}</p>}
 
-                <button type="submit" disabled={bookingLoading || !car.available}
-                  className="btn-primary w-full text-sm">
+                <button type="submit" disabled={bookingLoading || !car.available || !acceptBookingTerms}
+                  className="btn-primary w-full text-sm disabled:opacity-60">
                   {bookingLoading ? t('common.loading') : car.available ? t('booking.confirm') : t('car.unavailable')}
                 </button>
 

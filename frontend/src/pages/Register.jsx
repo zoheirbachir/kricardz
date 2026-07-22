@@ -58,8 +58,9 @@ const Field = ({ label, Icon, children }) => (
 );
 
 export default function Register() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { register } = useAuth();
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultRole = searchParams.get('role') === 'owner' ? 'owner' : 'renter';
@@ -117,9 +118,14 @@ export default function Register() {
     const missing = need.filter((k) => !files[k]);
     if (missing.length) { setError('Veuillez téléverser les documents requis et prendre un selfie.'); return; }
 
+    /* Legal: the account cannot be created without accepting the terms. */
+    if (!acceptTerms) { setError('Vous devez lire et accepter les conditions générales pour créer un compte.'); return; }
+
     setLoading(true);
     try {
       const fd = new FormData();
+      fd.append('accept_terms', 'true');
+      fd.append('lang', i18n.language || 'fr');
       fd.append('name', form.name);
       fd.append('email', form.email);
       fd.append('password', form.password);
@@ -350,9 +356,22 @@ export default function Register() {
               </div>
             </div>
 
+            {/* Legal consent — required before an account can be created */}
+            <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3.5 cursor-pointer hover:border-primary-300 transition-colors">
+              <input type="checkbox" required checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="mt-0.5 w-4 h-4 accent-primary-500 shrink-0" />
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                J'ai lu et j'accepte les{' '}
+                <Link to="/terms" target="_blank" className="text-primary-600 font-medium underline underline-offset-2">
+                  conditions générales
+                </Link>{' '}
+                de DzKricar. <span className="text-red-500">*</span>
+              </span>
+            </label>
+
             {error && <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl">{error}</div>}
 
-            <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 text-base">
+            <button type="submit" disabled={loading || !acceptTerms} className="btn-primary w-full py-3.5 text-base disabled:opacity-60">
               {loading ? t('common.loading') : t('auth.register_title')}
               {!loading && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>}
             </button>

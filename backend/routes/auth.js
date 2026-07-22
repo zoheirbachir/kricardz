@@ -8,6 +8,7 @@ const path = require('path');
 const db = require('../db/database');
 const { auth } = require('../middleware/auth');
 const { sendMail, isDevMail } = require('../lib/mailer');
+const legal = require('../lib/legal');
 const { sendSms } = require('../lib/sms');
 const { makeUploader, uploadErrorHandler, DOC_TYPES } = require('../lib/uploads');
 
@@ -104,6 +105,11 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, mot de passe et nom requis' });
     }
+    /* Legal: the account cannot be created without accepting the terms in force. */
+    const acceptTerms = req.body.accept_terms;
+    if (!(acceptTerms === true || acceptTerms === 'true' || acceptTerms === '1' || acceptTerms === 1)) {
+      return res.status(400).json({ error: 'Vous devez lire et accepter les conditions générales pour créer un compte.' });
+    }
     if (String(password).length < 8) {
       return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 8 caractères.' });
     }
@@ -145,7 +151,10 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
       JSON.stringify(docs)
     );
 
-    const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, is_admin, approved FROM users WHERE id = ?').get(id);
+    /* Legal audit trail: who accepted which version, when, from where. */
+    legal.recordConsent(req, id, { context: 'signup' });
+
+    const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, is_admin, approved, terms_version FROM users WHERE id = ?').get(id);
 
     /* Fire off the email-confirmation message (dev mode returns the link to show on screen). */
     let dev_verify_link = null;
@@ -182,8 +191,12 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', auth, (req, res) => {
-  const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, kyc_rejection_reason, is_admin, approved, approval_reason, created_at FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, kyc_rejection_reason, is_admin, approved, approval_reason, terms_version, terms_accepted_at, created_at FROM users WHERE id = ?').get(req.user.id);
   if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
+  /* Signals the client to prompt for re-acceptance after a new version is published. */
+  const current = legal.currentTerms();
+  user.terms_current_version = current?.version || null;
+  user.terms_reaccept_required = Boolean(current && user.terms_version !== current.version);
   res.json(user);
 });
 

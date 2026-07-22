@@ -5,6 +5,7 @@ const { auth } = require('../middleware/auth');
 const { makeUploader, VIDEO_TYPES } = require('../lib/uploads');
 const { HANDOVER_DIR } = require('../config/paths');
 const { notify } = require('../lib/notify');
+const legal = require('../lib/legal');
 
 const router = express.Router();
 
@@ -20,6 +21,12 @@ router.post('/', auth, (req, res) => {
 
   const { car_id, start_date, end_date, message } = req.body;
   if (!car_id || !start_date || !end_date) return res.status(400).json({ error: 'Données manquantes' });
+
+  /* Legal: the renter must accept the terms before the booking is created. */
+  const acceptTerms = req.body.accept_terms;
+  if (!(acceptTerms === true || acceptTerms === 'true' || acceptTerms === '1' || acceptTerms === 1)) {
+    return res.status(400).json({ error: 'Vous devez accepter les conditions de location avant de confirmer la réservation.' });
+  }
 
   const car = db.prepare('SELECT * FROM cars WHERE id = ? AND available = 1').get(car_id);
   if (!car) return res.status(404).json({ error: 'Véhicule introuvable ou indisponible' });
@@ -40,6 +47,9 @@ router.post('/', auth, (req, res) => {
   db.prepare('INSERT INTO bookings (id, car_id, renter_id, start_date, end_date, total_price, message) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
     id, car_id, req.user.id, start_date, end_date, days * car.price_per_day, message || null
   );
+
+  /* Legal audit trail: consent tied to this specific booking. */
+  legal.recordConsent(req, req.user.id, { context: 'booking', booking_id: id });
 
   /* Tell the owner/agency straight away. */
   notify(req.app.get('io'), car.owner_id, {

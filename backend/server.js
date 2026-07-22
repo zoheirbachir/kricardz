@@ -88,6 +88,7 @@ app.use('/api/agencies', require('./routes/agencies'));
 app.use('/api/location', require('./routes/locations'));
 app.use('/api/contracts', require('./routes/contracts'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/terms', require('./routes/terms'));
 
 app.get('/api/wilayas', (req, res) => {
   res.json([
@@ -146,6 +147,8 @@ async function ensureSeeded() {
 
 (async () => {
   await ensureSeeded();
+  /* Always have terms in force so signup/booking consent can reference a version. */
+  try { require('./lib/legal').ensureSeeded(); } catch (e) { console.error('terms seed failed:', e.message); }
   server.listen(PORT, () => {
     console.log(`DzKricar API + Socket.io running on port ${PORT}`);
     /* Periodic + on-shutdown database snapshots (best-effort; never crashes the server). */

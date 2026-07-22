@@ -243,6 +243,45 @@ db.exec(`
   );
 `);
 
+/* ── Legal: versioned terms & conditions ──
+   One row per published version, holding the text in all three languages so the
+   exact wording a user accepted can always be reproduced. */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS terms_versions (
+    id TEXT PRIMARY KEY,
+    version TEXT UNIQUE NOT NULL,
+    content_fr TEXT,
+    content_ar TEXT,
+    content_en TEXT,
+    published INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    published_at TEXT
+  );
+`);
+
+/* ── Legal: consent audit trail ──
+   Every acceptance (signup, booking, re-acceptance after a new version) is kept
+   with the evidence needed in a dispute: who, which version, when, from where. */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS consents (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
+    terms_version TEXT NOT NULL,
+    context TEXT NOT NULL,
+    booking_id TEXT REFERENCES bookings(id),
+    ip TEXT,
+    user_agent TEXT,
+    lang TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_consents_user ON consents(user_id);
+  CREATE INDEX IF NOT EXISTS idx_consents_booking ON consents(booking_id);
+`);
+
+/* Which terms version each user has accepted (for forced re-acceptance). */
+try { db.exec(`ALTER TABLE users ADD COLUMN terms_version TEXT`); } catch {}
+try { db.exec(`ALTER TABLE users ADD COLUMN terms_accepted_at TEXT`); } catch {}
+
 /* ── In-app notifications ──
    Delivered live over Socket.io to the user's personal room and persisted so the
    bell shows history + unread count across sessions. */

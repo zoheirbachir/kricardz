@@ -165,13 +165,81 @@ export default function ContractView() {
                 <Row label="Immatriculation" value={d.vehicle?.registration_number} />
                 <Row label="Wilaya" value={d.vehicle?.wilaya} />
               </Section>
-              <Section title="Conditions de location">
+              <Section title="Location">
                 <Row label="Du" value={d.rental?.start_date} />
                 <Row label="Au" value={d.rental?.end_date} />
                 <Row label="Durée" value={`${d.rental?.days} jour(s)`} />
                 <Row label="Montant total" value={`${d.rental?.total_price?.toLocaleString()} ${d.rental?.currency}`} />
+                {d.rental?.caution > 0 && (
+                  <Row label="Caution" value={`${d.rental.caution.toLocaleString()} ${d.rental?.currency}`} />
+                )}
               </Section>
             </div>
+
+            {/* Mileage allowance + what an overrun costs */}
+            {d.mileage && (
+              <div className="mt-5">
+                <Section title="Kilométrage et frais de dépassement">
+                  <Row label="Inclus par jour" value={`${d.mileage.included_per_day.toLocaleString()} km`} />
+                  <Row label={`Inclus pour ${d.rental?.days} jour(s)`} value={`${d.mileage.included_total.toLocaleString()} km`} />
+                  <Row label="Prix du km supplémentaire"
+                    value={d.mileage.extra_km_price > 0
+                      ? `${d.mileage.extra_km_price.toLocaleString()} ${d.mileage.currency} / km`
+                      : 'Aucun frais'} />
+                  {d.mileage.extra_km_price > 0 && (
+                    <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                      Montant dû = (kilométrage de retour − kilométrage de livraison − {d.mileage.included_total.toLocaleString()} km)
+                      × {d.mileage.extra_km_price.toLocaleString()} {d.mileage.currency}. Réglé par le locataire au loueur à la restitution du véhicule.
+                    </p>
+                  )}
+                </Section>
+              </div>
+            )}
+
+            {/* The settled amount, once both odometer readings are recorded */}
+            {c.mileage_settlement && (
+              <div className={`mt-4 rounded-xl border p-4 ${c.mileage_settlement.extra_km > 0
+                ? 'border-amber-300 bg-amber-50' : 'border-pine-200 bg-pine-50'}`}>
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-600 mb-2">
+                  Décompte kilométrique au retour
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                  <div><div className="text-gray-500 text-xs">Parcouru</div><div className="font-semibold text-gray-900">{c.mileage_settlement.distance_km.toLocaleString()} km</div></div>
+                  <div><div className="text-gray-500 text-xs">Inclus</div><div className="font-semibold text-gray-900">{c.mileage_settlement.included_total.toLocaleString()} km</div></div>
+                  <div><div className="text-gray-500 text-xs">Dépassement</div><div className="font-semibold text-gray-900">{c.mileage_settlement.extra_km.toLocaleString()} km</div></div>
+                  <div>
+                    <div className="text-gray-500 text-xs">Montant dû par le locataire</div>
+                    <div className="font-display font-semibold text-lg text-gray-900">
+                      {c.mileage_settlement.amount_due.toLocaleString()} {c.mileage_settlement.currency}
+                    </div>
+                  </div>
+                </div>
+                {c.mileage_settlement.extra_km > 0 ? (
+                  <p className="text-xs text-gray-600 mt-2">
+                    {c.mileage_settlement.extra_km.toLocaleString()} km × {c.mileage_settlement.extra_km_price.toLocaleString()} {c.mileage_settlement.currency}
+                    {' '}= {c.mileage_settlement.amount_due.toLocaleString()} {c.mileage_settlement.currency} à régler au loueur.
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-600 mt-2">Kilométrage inclus respecté — aucun frais de dépassement.</p>
+                )}
+              </div>
+            )}
+
+            {/* Clauses agreed between the two parties */}
+            {d.conditions?.length > 0 && (
+              <div className="mt-5">
+                <Section title="Conditions convenues entre le loueur et le locataire">
+                  <ol className="space-y-2 mt-1">
+                    {d.conditions.map((cond, i) => (
+                      <li key={i} className="flex gap-2.5 text-sm text-gray-700 leading-relaxed">
+                        <span className="text-gray-400 font-medium shrink-0">{i + 1}.</span>
+                        <span>{cond}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </Section>
+              </div>
+            )}
           </>
         ) : (
           <Section title="Conditions du partenariat">

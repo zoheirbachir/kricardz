@@ -28,6 +28,45 @@ function newQrToken() {
 /* Platform liability disclaimer printed on every contract after the signatures. */
 const DISCLAIMER = "Après signature des deux parties, DzKricar agit uniquement comme intermédiaire technique de mise en relation et décline toute responsabilité concernant l'exécution de la location, l'état du véhicule, les paiements ou tout litige entre le loueur et le locataire. Chaque partie demeure seule responsable de ses obligations.";
 
+/* The clauses binding the renter and the lessor, written into the contract at
+   issue time so the signed document is self-contained — a reader never has to
+   look anything up elsewhere to know what was agreed. */
+function rentalConditions(booking, days) {
+  const fmt = (n) => Number(n).toLocaleString('fr-FR');
+  const list = [
+    "Le locataire déclare détenir un permis de conduire valide et avoir fourni des pièces d'identité authentiques, jointes au présent contrat.",
+    "Le véhicule est livré et restitué dans l'état documenté par les photos/vidéos et les relevés kilométriques de livraison et de retour annexés au contrat.",
+  ];
+
+  if (booking.km_per_day != null) {
+    const total = booking.km_per_day * days;
+    const rate = booking.extra_km_price ?? 0;
+    list.push(
+      `Kilométrage inclus : ${fmt(booking.km_per_day)} km par jour, soit ${fmt(total)} km pour les ${days} jour(s) de location.`
+    );
+    list.push(
+      rate > 0
+        ? `Dépassement du kilométrage : chaque kilomètre au-delà des ${fmt(total)} km inclus est facturé ${fmt(rate)} DA. Le montant dû est calculé au retour du véhicule : (kilométrage de retour − kilométrage de livraison − ${fmt(total)}) × ${fmt(rate)} DA, et réglé par le locataire au loueur.`
+        : `Kilométrage illimité au-delà de l'allocation incluse : aucun frais de dépassement n'est facturé.`
+    );
+  } else {
+    list.push('Kilométrage illimité : aucun frais de dépassement kilométrique n\'est facturé.');
+  }
+
+  if (booking.caution != null && booking.caution > 0) {
+    list.push(`Caution : ${fmt(booking.caution)} DA, remise au loueur à la livraison et restituée au retour du véhicule, déduction faite des éventuels frais de dépassement, amendes ou dommages.`);
+  }
+
+  list.push(
+    "Le locataire restitue le véhicule à la date et au lieu convenus. Tout retard non convenu peut être facturé par le loueur au tarif journalier.",
+    "Les amendes, contraventions et infractions commises pendant la période de location sont à la charge exclusive du locataire.",
+    "Les dommages causés au véhicule pendant la location, non couverts par l'assurance, sont à la charge du locataire.",
+    "Le véhicule ne peut être sous-loué, ni conduit par une personne non déclarée au loueur.",
+    "Le carburant est restitué au même niveau qu'à la livraison, sauf accord contraire entre les parties.",
+  );
+  return list;
+}
+
 /* Build the agency/owner identity block from the owner user record. */
 function agencyBlock(owner) {
   return {
@@ -87,7 +126,8 @@ router.post('/partnership', auth, (req, res) => {
 router.post('/rental/:bookingId', auth, (req, res) => {
   const booking = db.prepare(`
     SELECT b.*, c.owner_id, c.brand, c.model, c.year, c.type AS car_type,
-           c.registration_number, c.title AS car_title, c.wilaya AS car_wilaya
+           c.registration_number, c.title AS car_title, c.wilaya AS car_wilaya,
+           c.km_per_day, c.extra_km_price, c.caution
     FROM bookings b JOIN cars c ON b.car_id = c.id WHERE b.id = ?
   `).get(req.params.bookingId);
   if (!booking) return res.status(404).json({ error: 'Réservation introuvable' });
@@ -137,8 +177,18 @@ router.post('/rental/:bookingId', auth, (req, res) => {
       end_date: booking.end_date,
       days,
       total_price: booking.total_price,
+      caution: booking.caution ?? null,
       currency: 'DA',
     },
+    /* Mileage allowance and the excess rate, frozen at signature time so a later
+       edit to the listing can't change what the parties agreed. */
+    mileage: booking.km_per_day != null ? {
+      included_per_day: booking.km_per_day,
+      included_total: booking.km_per_day * days,
+      extra_km_price: booking.extra_km_price ?? 0,
+      currency: 'DA',
+    } : null,
+    conditions: rentalConditions(booking, days),
     disclaimer: DISCLAIMER,
     issued_at: new Date().toISOString(),
   };
@@ -203,6 +253,21 @@ function serialize(c) {
         ...b,
         distance_km: (b.checkin_km != null && b.checkout_km != null) ? (b.checkout_km - b.checkin_km) : null,
       };
+      /* What the renter owes for exceeding the mileage allowance. Computed from
+         the allowance stored IN THE CONTRACT, not from the listing, so editing
+         the car afterwards can't change an agreed settlement. */
+      const m = out.data.mileage;
+      if (m && out.handover.distance_km != null) {
+        const extraKm = Math.max(0, out.handover.distance_km - m.included_total);
+        out.mileage_settlement = {
+          included_total: m.included_total,
+          distance_km: out.handover.distance_km,
+          extra_km: extraKm,
+          extra_km_price: m.extra_km_price,
+          amount_due: extraKm * (m.extra_km_price || 0),
+          currency: m.currency || 'DA',
+        };
+      }
     }
   }
   /* Attach the client's identity documents (ID/passport, licence, selfie) to the

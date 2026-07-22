@@ -544,6 +544,14 @@ export default function CarDetail() {
                     <li>Permis de conduire valide et pièce d'identité obligatoires.</li>
                     <li>Véhicule à restituer à la date convenue, dans l'état de la livraison.</li>
                     <li>Amendes et dommages durant la location à votre charge.</li>
+                    {car.km_per_day != null && (
+                      <li>
+                        {car.km_per_day.toLocaleString()} km/jour inclus
+                        {car.extra_km_price > 0
+                          ? ` — chaque km au-delà est facturé ${car.extra_km_price.toLocaleString()} DA, à régler au loueur au retour.`
+                          : ' — aucun frais de dépassement.'}
+                      </li>
+                    )}
                     {car.caution != null && <li>Caution de {car.caution.toLocaleString()} DA, restituée sans dommage.</li>}
                     <li>DzKricar est un intermédiaire : le contrat lie le loueur et vous.</li>
                   </ul>

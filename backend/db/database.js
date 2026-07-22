@@ -303,4 +303,7 @@ db.exec(`
    { agency: {image,name,signed_at}, client: {...}, kricar: {...} } (idempotent) */
 try { db.exec(`ALTER TABLE contracts ADD COLUMN signatures TEXT DEFAULT '{}'`); } catch {}
 
+/* When the signed copy was emailed to both parties — also guards against sending twice. */
+try { db.exec(`ALTER TABLE contracts ADD COLUMN emailed_at TEXT`); } catch {}
+
 module.exports = db;

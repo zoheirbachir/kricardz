@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../db/database');
 const { auth } = require('../middleware/auth');
 const settings = require('../lib/settings');
+const { sendMail } = require('../lib/mailer');
 
 const router = express.Router();
 
@@ -245,6 +246,29 @@ function signatureSlotFor(contract, userId, isAdmin) {
   return null;
 }
 
+/* Send each party their copy of the fully-signed contract. Best-effort: a mail
+   failure must never block the signature itself, and it is only ever sent once. */
+async function emailContractToParties(contract) {
+  const url = `${process.env.PUBLIC_URL || 'https://kricar-dz.com'}/contracts/${contract.id}`;
+  const recipients = db.prepare(
+    'SELECT email, name FROM users WHERE id IN (?, ?) AND email IS NOT NULL'
+  ).all(contract.agency_owner_id, contract.renter_id || contract.agency_owner_id);
+
+  for (const r of recipients) {
+    await sendMail({
+      to: r.email,
+      subject: `Votre contrat DzKricar ${contract.contract_number}`,
+      text: `Bonjour ${r.name},\n\nVotre contrat ${contract.contract_number} a été signé par les deux parties.\nConsultez-le et téléchargez-le ici : ${url}\n\nCe contrat est horodaté et vérifiable par QR code.\n\nDzKricar`,
+      html: `<p>Bonjour ${r.name},</p>
+<p>Votre contrat <strong>${contract.contract_number}</strong> a été signé par les deux parties.</p>
+<p><a href="${url}" style="background:#FF5A0A;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;display:inline-block">Consulter le contrat</a></p>
+<p style="color:#666;font-size:13px">Ce contrat est horodaté et vérifiable par QR code.</p>
+<p style="color:#666;font-size:13px">DzKricar</p>`,
+    });
+  }
+  db.prepare("UPDATE contracts SET emailed_at = datetime('now') WHERE id = ?").run(contract.id);
+}
+
 /* ── Sign a contract online (finger-drawn signature, e.g. from a phone) ── */
 router.post('/:id/sign', auth, (req, res) => {
   const c = db.prepare('SELECT * FROM contracts WHERE id = ?').get(req.params.id);
@@ -265,7 +289,13 @@ router.post('/:id/sign', auth, (req, res) => {
   signatures[slot] = { image: signature, name: me?.name || null, signed_at: new Date().toISOString() };
   db.prepare('UPDATE contracts SET signatures = ? WHERE id = ?').run(JSON.stringify(signatures), c.id);
 
-  res.json(serialize(db.prepare('SELECT * FROM contracts WHERE id = ?').get(c.id)));
+  const fresh = db.prepare('SELECT * FROM contracts WHERE id = ?').get(c.id);
+  /* Once both parties have signed, each receives their copy by email (legal requirement). */
+  if (!c.emailed_at && signatures.agency && (c.type === 'partnership' ? signatures.kricar : signatures.client)) {
+    emailContractToParties(fresh).catch(e => console.error('contract email failed:', e.message));
+  }
+
+  res.json(serialize(fresh));
 });
 
 module.exports = router;

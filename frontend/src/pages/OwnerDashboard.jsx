@@ -96,12 +96,14 @@ export default function OwnerDashboard() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight text-gray-900">Tableau de bord propriétaire</h1>
+      {/* Stacks on phones — three side-by-side buttons used to push the page
+          wider than the viewport and get clipped at the right edge. */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="min-w-0">
+          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Tableau de bord propriétaire</h1>
           <p className="text-gray-500 text-sm mt-1">Gérez vos annonces et réservations</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 shrink-0">
           <button onClick={openPartnershipContract} disabled={contractBusy} className="btn-secondary text-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             {contractBusy ? '…' : 'Contrat de partenariat'}

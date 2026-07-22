@@ -49,7 +49,9 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 sm:gap-2.5 min-w-0 group">
             <LogoMark className="w-9 h-9 shrink-0 group-hover:rotate-3 group-hover:scale-105 transition-transform" />
-            <span className="font-display font-semibold text-xl sm:text-2xl tracking-tight text-gray-900 dark:text-white leading-none truncate">Dz<span className="text-primary-500">Kricar</span></span>
+            {/* Hidden on very narrow phones: the mark alone reads better there than
+                a wordmark truncated to "D…". */}
+            <span className="hidden min-[400px]:inline-block max-w-[45vw] truncate font-display font-semibold text-xl sm:text-2xl tracking-tight text-gray-900 dark:text-white leading-none">Dz<span className="text-primary-500">Kricar</span></span>
           </Link>
 
           {/* Desktop nav */}

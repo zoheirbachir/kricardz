@@ -12,6 +12,7 @@ const legal = require('../lib/legal');
 const { sendSms } = require('../lib/sms');
 const { makeUploader, uploadErrorHandler, DOC_TYPES } = require('../lib/uploads');
 const { PRIVATE_UPLOADS_ROOT } = require('../config/paths');
+const { notifyAdmins } = require('../lib/notify');
 
 const router = express.Router();
 const JWT_SECRET = require('../config/secret');
@@ -117,6 +118,58 @@ const KYC_FIELDS = [
   { name: 'selfie_image', maxCount: 1 },
   { name: 'agency_commercial_register', maxCount: 1 },
 ];
+
+/* Which of a user's stored documents no longer exist on disk. Files uploaded
+   before the storage fix were wiped by each redeploy, so the database still
+   points at files that are gone — the owner must send them again. */
+function missingKycFiles(kycDocsJson) {
+  let docs = {};
+  try { docs = JSON.parse(kycDocsJson || '{}'); } catch { return []; }
+  return Object.entries(docs)
+    .filter(([, p]) => {
+      if (!p) return false;
+      const name = String(p).split('/').pop();
+      return ![path.join(KYC_DIR, name), path.join(LEGACY_KYC_DIR, name)].some(f => fs.existsSync(f));
+    })
+    .map(([field]) => field);
+}
+
+/* ── Re-upload identity documents ──
+   Documents could previously only be sent at registration, so a user whose files
+   were lost had no way to restore their account. Any authenticated user can now
+   replace them; doing so puts the file back under review. */
+router.post('/kyc-documents', auth, upload.fields(KYC_FIELDS), (req, res) => {
+  const me = db.prepare('SELECT kyc_docs, kyc_status FROM users WHERE id = ?').get(req.user.id);
+  if (!me) return res.status(404).json({ error: 'Utilisateur introuvable' });
+
+  const files = req.files || {};
+  const incoming = {};
+  for (const f of KYC_FIELDS) {
+    if (files[f.name]?.[0]) incoming[f.name] = `/api/auth/kyc-file/${files[f.name][0].filename}`;
+  }
+  if (!Object.keys(incoming).length) {
+    return res.status(400).json({ error: 'Aucun document envoyé.' });
+  }
+
+  let current = {};
+  try { current = JSON.parse(me.kyc_docs || '{}'); } catch { current = {}; }
+  const merged = { ...current, ...incoming };
+
+  db.prepare(`UPDATE users SET kyc_docs = ?, kyc_status = 'pending',
+              kyc_rejection_reason = NULL, kyc_reviewed_at = NULL WHERE id = ?`)
+    .run(JSON.stringify(merged), req.user.id);
+
+  /* Put it back in the admin review queue. */
+  const who = db.prepare('SELECT name FROM users WHERE id = ?').get(req.user.id)?.name;
+  notifyAdmins(req.app.get('io'), {
+    type: 'kyc',
+    title: 'Documents à vérifier',
+    body: `${who || 'Un utilisateur'} a envoyé de nouveaux documents d'identité.`,
+    link: '/admin/kyc',
+  });
+
+  res.json({ ok: true, uploaded: Object.keys(incoming), kyc_status: 'pending', missing: missingKycFiles(JSON.stringify(merged)) });
+});
 
 /* Accepts JSON (basic) or multipart/form-data (with KYC documents). */
 router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
@@ -227,6 +280,10 @@ router.get('/me', auth, (req, res) => {
   const current = legal.currentTerms();
   user.terms_current_version = current?.version || null;
   user.terms_reaccept_required = Boolean(current && user.terms_version !== current.version);
+  /* Documents whose file was destroyed by a pre-fix redeploy — the client shows
+     a banner asking the user to send them again. */
+  const docs = db.prepare('SELECT kyc_docs FROM users WHERE id = ?').get(req.user.id)?.kyc_docs;
+  user.kyc_files_missing = missingKycFiles(docs);
   res.json(user);
 });
 

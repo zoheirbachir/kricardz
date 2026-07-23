@@ -247,7 +247,7 @@ function serialize(c) {
      the contract always reflects the latest state even if it was documented after
      the contract was generated. Distance = checkout_km - checkin_km. */
   if (c.type === 'rental' && c.booking_id) {
-    const b = db.prepare('SELECT checkin_video, checkin_km, checkin_at, checkout_video, checkout_km, checkout_at FROM bookings WHERE id = ?').get(c.booking_id);
+    const b = db.prepare('SELECT checkin_video, checkin_km, checkin_at, checkin_gps, checkout_video, checkout_km, checkout_at, checkout_gps FROM bookings WHERE id = ?').get(c.booking_id);
     if (b && (b.checkin_at || b.checkout_at)) {
       out.handover = {
         ...b,

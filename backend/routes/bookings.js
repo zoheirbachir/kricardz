@@ -154,28 +154,45 @@ function loadOwnedBooking(req, res) {
   return booking;
 }
 
+/* "lat,lng" from the browser's geolocation, or null. Kept as evidence of place. */
+function parseGps(body) {
+  const lat = Number(body.lat), lng = Number(body.lng);
+  if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+  return `${lat.toFixed(6)},${lng.toFixed(6)}`;
+}
+
 router.post('/:id/checkin', auth, handoverUpload.single('checkin_video'), (req, res) => {
   const booking = loadOwnedBooking(req, res);
   if (!booking) return;
+  /* Immutable once recorded: the handover video is dispute evidence and must not
+     be replaced or deleted after the fact. */
+  if (booking.checkin_video) {
+    return res.status(409).json({ error: 'La remise de départ a déjà été enregistrée et ne peut plus être modifiée.' });
+  }
   const km = req.body.checkin_km;
   if (km === undefined || km === '' || isNaN(Number(km))) return res.status(400).json({ error: 'Le kilométrage de départ est requis.' });
-  const video = req.file ? `/uploads/handover/${req.file.filename}` : booking.checkin_video;
-  db.prepare('UPDATE bookings SET checkin_video = ?, checkin_km = ?, checkin_at = datetime(\'now\') WHERE id = ?')
-    .run(video, Number(km), req.params.id);
+  if (!req.file) return res.status(400).json({ error: 'La vidéo de la remise de départ est requise.' });
+  const video = `/uploads/handover/${req.file.filename}`;
+  db.prepare("UPDATE bookings SET checkin_video = ?, checkin_km = ?, checkin_gps = ?, checkin_at = datetime('now') WHERE id = ?")
+    .run(video, Number(km), parseGps(req.body), req.params.id);
   res.json(db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id));
 });
 
 router.post('/:id/checkout', auth, handoverUpload.single('checkout_video'), (req, res) => {
   const booking = loadOwnedBooking(req, res);
   if (!booking) return;
+  if (booking.checkout_video) {
+    return res.status(409).json({ error: 'La remise de retour a déjà été enregistrée et ne peut plus être modifiée.' });
+  }
   const km = req.body.checkout_km;
   if (km === undefined || km === '' || isNaN(Number(km))) return res.status(400).json({ error: 'Le kilométrage de retour est requis.' });
   if (booking.checkin_km != null && Number(km) < booking.checkin_km) {
     return res.status(400).json({ error: 'Le kilométrage de retour doit être supérieur ou égal à celui de départ.' });
   }
-  const video = req.file ? `/uploads/handover/${req.file.filename}` : booking.checkout_video;
-  db.prepare('UPDATE bookings SET checkout_video = ?, checkout_km = ?, checkout_at = datetime(\'now\') WHERE id = ?')
-    .run(video, Number(km), req.params.id);
+  if (!req.file) return res.status(400).json({ error: 'La vidéo de la remise de retour est requise.' });
+  const video = `/uploads/handover/${req.file.filename}`;
+  db.prepare("UPDATE bookings SET checkout_video = ?, checkout_km = ?, checkout_gps = ?, checkout_at = datetime('now') WHERE id = ?")
+    .run(video, Number(km), parseGps(req.body), req.params.id);
   res.json(db.prepare('SELECT * FROM bookings WHERE id = ?').get(req.params.id));
 });
 

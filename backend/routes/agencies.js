@@ -6,6 +6,7 @@ const db = require('../db/database');
 const { auth } = require('../middleware/auth');
 const { makeUploader, IMAGE_TYPES } = require('../lib/uploads');
 const { AGENCIES_DIR, UPLOADS_ROOT } = require('../config/paths');
+const { parseServiceTypes } = require('../lib/serviceTypes');
 
 const router = express.Router();
 
@@ -28,8 +29,11 @@ function removeGalleryFile(publicPath) {
 const AGENCY_SELECT = `SELECT a.*,
   (SELECT COUNT(*) FROM cars c WHERE c.owner_id = a.owner_id) AS vehicle_count,
   (SELECT ROUND(AVG(r.rating), 1) FROM reviews r JOIN cars c ON r.car_id = c.id WHERE c.owner_id = a.owner_id) AS rating_avg,
-  (SELECT COUNT(*) FROM reviews r JOIN cars c ON r.car_id = c.id WHERE c.owner_id = a.owner_id) AS rating_count
+  (SELECT COUNT(*) FROM reviews r JOIN cars c ON r.car_id = c.id WHERE c.owner_id = a.owner_id) AS rating_count,
+  (SELECT u.service_types FROM users u WHERE u.id = a.owner_id) AS service_types
   FROM agencies a`;
+
+const withServices = (a) => ({ ...a, service_types: parseServiceTypes(a?.service_types) });
 
 const SORTS = {
   recent: 'a.created_at DESC',
@@ -44,15 +48,20 @@ router.get('/', (req, res) => {
   if (wilaya) { query += ' AND a.wilaya = ?'; params.push(wilaya); }
   if (type) { query += ' AND a.agency_type = ?'; params.push(type); }
   if (search) { query += ' AND a.name LIKE ?'; params.push(`%${search}%`); }
+  /* Filter by a declared activity (service type) when asked. */
+  if (req.query.service && parseServiceTypes([req.query.service]).length) {
+    query += ` AND EXISTS (SELECT 1 FROM users u WHERE u.id = a.owner_id AND u.service_types LIKE ?)`;
+    params.push(`%"${req.query.service}"%`);
+  }
   query += ` ORDER BY ${SORTS[sort] || SORTS.vehicles}`;
-  res.json(db.prepare(query).all(...params));
+  res.json(db.prepare(query).all(...params).map(withServices));
 });
 
 /* The signed-in owner's own agency — used by the dashboard to manage the gallery. */
 router.get('/mine', auth, (req, res) => {
   const agency = db.prepare(AGENCY_SELECT + ' WHERE a.owner_id = ?').get(req.user.id);
   if (!agency) return res.status(404).json({ error: 'Aucune agence' });
-  res.json({ ...agency, gallery: parseGallery(agency) });
+  res.json({ ...withServices(agency), gallery: parseGallery(agency) });
 });
 
 router.get('/:id', (req, res) => {
@@ -63,7 +72,7 @@ router.get('/:id', (req, res) => {
   agency.cars = cars.map(c => ({ ...c, features: JSON.parse(c.features || '[]'), images: JSON.parse(c.images || '[]') }));
   agency.gallery = parseGallery(agency);
 
-  res.json(agency);
+  res.json(withServices(agency));
 });
 
 router.post('/', auth, (req, res) => {

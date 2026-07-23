@@ -9,6 +9,7 @@ import { StaggerGroup, fadeUp } from '../lib/motion';
 import HandoverControls from '../components/HandoverControls';
 import AuthDoc from '../components/AuthDoc';
 import AgencyGallery from '../components/AgencyGallery';
+import ServiceTypesCard from '../components/ServiceTypesCard';
 
 /* Labels for the client documents an agency may see on a booking. */
 const RENTER_DOC_LABELS = {
@@ -146,6 +147,9 @@ export default function OwnerDashboard() {
           </button>
         </div>
       </div>
+
+      {/* Activities offered — declared at registration, editable here */}
+      <ServiceTypesCard />
 
       {/* Agency photo gallery (only shown if this account has an agency profile) */}
       <AgencyGallery />

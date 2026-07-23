@@ -109,6 +109,10 @@ try { db.exec(`ALTER TABLE cars ADD COLUMN color TEXT`); } catch {}
 /* ── KYC / identity-verification columns on users (idempotent) ── */
 try { db.exec(`ALTER TABLE users ADD COLUMN kyc_status TEXT DEFAULT 'none'`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN lessor_type TEXT`); } catch {}
+/* Activities an agency/owner offers — JSON array of service_type keys (economy,
+   luxury, wedding, with_driver, taxi, airport_transfer, bus, truck, moto, quad,
+   jet_ski, boat, camping_car, other). Drives badges, filters and the dashboard. */
+try { db.exec(`ALTER TABLE users ADD COLUMN service_types TEXT DEFAULT '[]'`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN document_type TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN document_number TEXT`); } catch {}
 try { db.exec(`ALTER TABLE users ADD COLUMN driving_license_number TEXT`); } catch {}
@@ -212,6 +216,10 @@ try { db.exec(`ALTER TABLE bookings ADD COLUMN checkin_at TEXT`); } catch {}
 try { db.exec(`ALTER TABLE bookings ADD COLUMN checkout_video TEXT`); } catch {}
 try { db.exec(`ALTER TABLE bookings ADD COLUMN checkout_km INTEGER`); } catch {}
 try { db.exec(`ALTER TABLE bookings ADD COLUMN checkout_at TEXT`); } catch {}
+/* GPS position where the handover video was recorded (proof of place, client
+   requirement). Stored as "lat,lng" strings; null when the device denied it. */
+try { db.exec(`ALTER TABLE bookings ADD COLUMN checkin_gps TEXT`); } catch {}
+try { db.exec(`ALTER TABLE bookings ADD COLUMN checkout_gps TEXT`); } catch {}
 
 /* ── App settings (key/value) ──
    Admin-editable values that must change without a code deploy — e.g. KriCar's own

@@ -60,6 +60,15 @@ export default function AgencyDetail() {
             {agency.description && (
               <p className="text-gray-600 dark:text-gray-300 text-sm mt-3 leading-relaxed">{agency.description}</p>
             )}
+            {agency.service_types?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {agency.service_types.map(s => (
+                  <span key={s} className="text-xs font-medium px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300">
+                    {t(`services.${s}`)}
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-sm text-gray-500 dark:text-gray-400">
               {agency.phone && (
                 <a href={`tel:${agency.phone}`} className="flex items-center gap-1.5 hover:text-primary-600 transition-colors">

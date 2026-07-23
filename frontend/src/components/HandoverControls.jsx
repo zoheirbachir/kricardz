@@ -14,18 +14,37 @@ export default function HandoverControls({ booking: b, onUpdated }) {
   const [inVideo, setInVideo] = useState(null);
   const [outVideo, setOutVideo] = useState(null);
 
+  /* Best-effort device position, recorded as proof of place. Resolves to null if
+     the user denies it or the browser has no geolocation. */
+  const getPosition = () => new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  });
+
   const submit = async (phase) => {
     const km = phase === 'checkin' ? inKm : outKm;
     if (km === '' || isNaN(Number(km))) { toast({ type: 'error', message: 'Indiquez le kilométrage.' }); return; }
+    const file = phase === 'checkin' ? inVideo : outVideo;
+    /* The video is the dispute evidence and is required; it can't be added later
+       because the record is locked once saved. */
+    if (!file) { toast({ type: 'error', message: 'La vidéo du véhicule est obligatoire.' }); return; }
     setBusy(phase);
     try {
+      const pos = await getPosition();
       const fd = new FormData();
       fd.append(`${phase}_km`, km);
-      const file = phase === 'checkin' ? inVideo : outVideo;
-      if (file) fd.append(`${phase}_video`, file);
+      fd.append(`${phase}_video`, file);
+      if (pos) { fd.append('lat', pos.lat); fd.append('lng', pos.lng); }
       const r = await api.post(`/bookings/${b.id}/${phase}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       onUpdated?.(r.data);
-      toast({ type: 'success', message: phase === 'checkin' ? 'Livraison enregistrée.' : 'Retour enregistré.' });
+      toast({
+        type: 'success',
+        message: (phase === 'checkin' ? 'Livraison enregistrée.' : 'Retour enregistré.') + (pos ? '' : ' (position GPS indisponible)'),
+      });
     } catch (e) {
       toast({ type: 'error', message: e.response?.data?.error || 'Échec de l\'enregistrement.' });
     } finally { setBusy(''); }
@@ -46,20 +65,30 @@ export default function HandoverControls({ booking: b, onUpdated }) {
             { phase: 'checkout', title: 'Au retour', km: outKm, setKm: setOutKm, setVideo: setOutVideo, done: b.checkout_at, video: b.checkout_video },
           ].map((p) => (
             <div key={p.phase} className="space-y-1.5">
-              <p className="text-xs font-semibold text-gray-700">{p.title} {p.done && <span className="text-pine-600 font-normal">✓ enregistré</span>}</p>
-              <div className="flex items-center gap-2">
-                <input type="number" min={0} className="input text-xs py-1.5 flex-1" placeholder="Kilométrage"
-                  value={p.km} onChange={e => p.setKm(e.target.value)} />
-                <label className="text-xs text-primary-600 cursor-pointer whitespace-nowrap">
-                  🎬 Vidéo
-                  <input type="file" accept="video/mp4,video/quicktime,video/webm" className="hidden"
-                    onChange={e => p.setVideo(e.target.files[0] || null)} />
-                </label>
-                <button type="button" disabled={busy === p.phase} onClick={() => submit(p.phase)}
-                  className="btn-primary text-xs py-1.5 px-2.5">{busy === p.phase ? '…' : 'Enregistrer'}</button>
-              </div>
-              {p.video && (
-                <a href={API_ORIGIN + p.video} target="_blank" rel="noopener noreferrer" className="text-[11px] text-gray-500 hover:text-primary-600">Voir la vidéo</a>
+              <p className="text-xs font-semibold text-gray-700">{p.title} {p.done && <span className="text-pine-600 font-normal">✓ enregistré · verrouillé</span>}</p>
+              {p.done ? (
+                /* Locked: an immutable record can't be re-recorded. */
+                <div className="text-[11px] text-gray-500 space-y-0.5">
+                  {p.km != null && <div>Kilométrage : <span className="font-medium text-gray-700">{p.km} km</span></div>}
+                  {p.video && (
+                    <a href={API_ORIGIN + p.video} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-primary-600">🎬 Voir la vidéo</a>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <input type="number" min={0} className="input text-xs py-1.5 flex-1" placeholder="Kilométrage"
+                      value={p.km} onChange={e => p.setKm(e.target.value)} />
+                    <label className={`text-xs cursor-pointer whitespace-nowrap ${(p.phase === 'checkin' ? inVideo : outVideo) ? 'text-pine-600' : 'text-primary-600'}`}>
+                      🎬 {(p.phase === 'checkin' ? inVideo : outVideo) ? 'Vidéo ✓' : 'Vidéo *'}
+                      <input type="file" accept="video/mp4,video/quicktime,video/webm" className="hidden"
+                        onChange={e => p.setVideo(e.target.files[0] || null)} />
+                    </label>
+                    <button type="button" disabled={busy === p.phase} onClick={() => submit(p.phase)}
+                      className="btn-primary text-xs py-1.5 px-2.5">{busy === p.phase ? '…' : 'Enregistrer'}</button>
+                  </div>
+                  <p className="text-[10px] text-gray-400">Vidéo obligatoire · position GPS enregistrée · non modifiable après enregistrement.</p>
+                </>
               )}
             </div>
           ))}

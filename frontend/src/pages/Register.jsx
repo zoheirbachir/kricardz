@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { softSpring } from '../lib/motion';
 import FileDrop from '../components/FileDrop';
 import SelfieCapture from '../components/SelfieCapture';
+import ServiceTypePicker from '../components/ServiceTypePicker';
 
 /* ── Inline icons ── */
 const IcUser  = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
@@ -72,6 +73,7 @@ export default function Register() {
     agency_legal_name: '', agency_commercial_reg_number: '', agency_address: '', national_id_number: '',
   });
   const [lessorType, setLessorType] = useState('individual');
+  const [serviceTypes, setServiceTypes] = useState([]);
   const [documentType, setDocumentType] = useState('id_card');
   const [secondaryDocType, setSecondaryDocType] = useState('id_card');
   const [files, setFiles] = useState({});
@@ -141,6 +143,7 @@ export default function Register() {
       } else {
         fd.append('lessor_type', lessorType);
         fd.append('document_type', documentType);
+        fd.append('service_types', JSON.stringify(serviceTypes));
         if (isAgency) {
           fd.append('agency_legal_name', form.agency_legal_name || '');
           fd.append('agency_commercial_reg_number', form.agency_commercial_reg_number || '');
@@ -232,6 +235,12 @@ export default function Register() {
                         { val: 'individual', label: 'Particulier', Icon: IcUser },
                         { val: 'agency', label: 'Agence', Icon: IcBuilding },
                       ]} />
+                    </div>
+                    {/* Activities the agency/owner offers (multi-select) */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">{t('services.label')}</label>
+                      <p className="text-xs text-gray-500 mb-2">{t('services.hint')}</p>
+                      <ServiceTypePicker value={serviceTypes} onChange={setServiceTypes} />
                     </div>
                     {isAgency && (
                       <div className="space-y-3 pt-1">

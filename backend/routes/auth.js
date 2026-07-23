@@ -13,6 +13,7 @@ const { sendSms } = require('../lib/sms');
 const { makeUploader, uploadErrorHandler, DOC_TYPES } = require('../lib/uploads');
 const { PRIVATE_UPLOADS_ROOT } = require('../config/paths');
 const { notifyAdmins } = require('../lib/notify');
+const { parseServiceTypes } = require('../lib/serviceTypes');
 
 const router = express.Router();
 const JWT_SECRET = require('../config/secret');
@@ -206,14 +207,16 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
     const id = uuidv4();
     const safeRole = (role === 'owner' || role === 'lessor') ? 'owner' : 'renter';
     const submittedKyc = Object.keys(docs).length > 0;
+    /* Activities the agency offers — only meaningful for owners. */
+    const serviceTypes = safeRole === 'owner' ? parseServiceTypes(req.body.service_types) : [];
 
     db.prepare(`
       INSERT INTO users
         (id, email, password_hash, name, phone, role,
          kyc_status, lessor_type, document_type, document_number,
          driving_license_number, driving_license_issued_date, driving_license_expiry_date,
-         agency_legal_name, agency_commercial_reg_number, agency_address, national_id_number, kyc_docs)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         agency_legal_name, agency_commercial_reg_number, agency_address, national_id_number, kyc_docs, service_types)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, email, hash, name, phone || null, safeRole,
       submittedKyc ? 'pending' : 'none',
@@ -227,7 +230,8 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
       agency_commercial_reg_number || null,
       agency_address || null,
       national_id_number || null,
-      JSON.stringify(docs)
+      JSON.stringify(docs),
+      JSON.stringify(serviceTypes)
     );
 
     /* Legal audit trail: who accepted which version, when, from where. */
@@ -274,8 +278,9 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', auth, (req, res) => {
-  const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, kyc_rejection_reason, is_admin, approved, approval_reason, terms_version, terms_accepted_at, created_at FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, id_verified, email_verified, kyc_status, kyc_rejection_reason, is_admin, approved, approval_reason, terms_version, terms_accepted_at, lessor_type, service_types, created_at FROM users WHERE id = ?').get(req.user.id);
   if (!user) return res.status(404).json({ error: 'Utilisateur introuvable' });
+  user.service_types = parseServiceTypes(user.service_types);
   /* Signals the client to prompt for re-acceptance after a new version is published. */
   const current = legal.currentTerms();
   user.terms_current_version = current?.version || null;
@@ -466,14 +471,20 @@ router.post('/reset-password-sms', async (req, res) => {
 });
 
 router.put('/me', auth, (req, res) => {
-  const current = db.prepare('SELECT name, phone FROM users WHERE id = ?').get(req.user.id);
+  const current = db.prepare('SELECT name, phone, role FROM users WHERE id = ?').get(req.user.id);
   const { name, phone } = req.body;
   db.prepare('UPDATE users SET name = ?, phone = ? WHERE id = ?').run(
     name || current.name,
     phone !== undefined ? (phone || null) : current.phone,
     req.user.id
   );
-  const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified FROM users WHERE id = ?').get(req.user.id);
+  /* Owners can update the activities they offer. */
+  if (current.role === 'owner' && req.body.service_types !== undefined) {
+    db.prepare('UPDATE users SET service_types = ? WHERE id = ?')
+      .run(JSON.stringify(parseServiceTypes(req.body.service_types)), req.user.id);
+  }
+  const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, service_types FROM users WHERE id = ?').get(req.user.id);
+  user.service_types = parseServiceTypes(user.service_types);
   res.json(user);
 });
 

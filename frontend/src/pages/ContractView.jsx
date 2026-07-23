@@ -305,6 +305,11 @@ export default function ContractView() {
                 <p className="font-semibold text-gray-700 mb-1">À la livraison</p>
                 <Row label="Kilométrage" value={c.handover.checkin_km != null ? `${c.handover.checkin_km} km` : '—'} />
                 <Row label="Date" value={c.handover.checkin_at ? new Date(c.handover.checkin_at).toLocaleString('fr-FR') : '—'} />
+                {c.handover.checkin_gps && (
+                  <Row label="Position GPS" value={
+                    <a href={`https://maps.google.com/?q=${c.handover.checkin_gps}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">{c.handover.checkin_gps}</a>
+                  } />
+                )}
                 {c.handover.checkin_video && (
                   <a href={API_ORIGIN + c.handover.checkin_video} target="_blank" rel="noopener noreferrer" className="text-primary-600 text-xs print:hidden">🎬 Voir la vidéo de livraison</a>
                 )}
@@ -313,6 +318,11 @@ export default function ContractView() {
                 <p className="font-semibold text-gray-700 mb-1">Au retour</p>
                 <Row label="Kilométrage" value={c.handover.checkout_km != null ? `${c.handover.checkout_km} km` : '—'} />
                 <Row label="Date" value={c.handover.checkout_at ? new Date(c.handover.checkout_at).toLocaleString('fr-FR') : '—'} />
+                {c.handover.checkout_gps && (
+                  <Row label="Position GPS" value={
+                    <a href={`https://maps.google.com/?q=${c.handover.checkout_gps}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">{c.handover.checkout_gps}</a>
+                  } />
+                )}
                 {c.handover.checkout_video && (
                   <a href={API_ORIGIN + c.handover.checkout_video} target="_blank" rel="noopener noreferrer" className="text-primary-600 text-xs print:hidden">🎬 Voir la vidéo de retour</a>
                 )}

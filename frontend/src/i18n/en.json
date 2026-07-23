@@ -138,6 +138,24 @@
     "sport": "Sport",
     "4x4": "4x4"
   },
+  "services": {
+    "label": "Services offered",
+    "hint": "Select every activity you offer.",
+    "economy": "Economy cars",
+    "luxury": "Luxury cars",
+    "wedding": "Wedding cars",
+    "with_driver": "Chauffeur-driven rental",
+    "taxi": "Taxi",
+    "airport_transfer": "Airport transfer",
+    "bus": "Minibus & bus",
+    "truck": "Trucks",
+    "moto": "Motorcycles",
+    "quad": "Quad",
+    "jet_ski": "Jet Ski",
+    "boat": "Boats & yachts",
+    "camping_car": "Camping cars",
+    "other": "Other services"
+  },
   "booking": {
     "title": "Book this vehicle",
     "start": "Start date",

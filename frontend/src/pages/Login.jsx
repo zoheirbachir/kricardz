@@ -31,7 +31,7 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5">
-            <LogoMark className="w-10 h-10 shadow-clay" />
+            <LogoMark className="w-10 h-10" />
             <span className="font-display font-semibold text-2xl text-gray-900">Dz<span className="text-primary-500">Kricar</span></span>
           </Link>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-gray-900 mt-6">{t('auth.login_title')}</h1>

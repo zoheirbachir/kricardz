@@ -13,7 +13,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2.5 mb-3">
-              <LogoMark className="w-9 h-9 shadow-clay" />
+              <LogoMark className="w-9 h-9" />
               <span className="font-display font-semibold text-2xl text-white">Dz<span className="text-primary-400">Kricar</span></span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">{t('footer.tagline')}</p>

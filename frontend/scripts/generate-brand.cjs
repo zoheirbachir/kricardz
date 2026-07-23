@@ -35,9 +35,16 @@ const gradient = (id = 'g') => `<linearGradient id="${id}" x1="0" y1="0" x2="1" 
     <stop offset="1" stop-color="${ORANGE_DEEP}"/>
   </linearGradient>`;
 
-const markBody = (id = 'g') => `<circle cx="${DISC.cx}" cy="${DISC.cy}" r="${DISC.r}" fill="url(#${id})"/>
-  <path d="${CAR_PATH}" fill="none" stroke="#FFFFFF" stroke-width="${STROKE}"
-        stroke-linecap="round" stroke-linejoin="round"/>`;
+/* The car is CUT OUT of the disc (a knockout): the mask keeps the disc white and
+   removes the car stroke, so whatever is behind the mark shows through the car —
+   dark on a dark background, light on a light one. `mid` keeps mask ids unique
+   when several marks share one SVG document. */
+const markBody = (id = 'g', mid = 'cut') => `<mask id="${mid}">
+    <circle cx="${DISC.cx}" cy="${DISC.cy}" r="${DISC.r}" fill="#fff"/>
+    <path d="${CAR_PATH}" fill="none" stroke="#000" stroke-width="${STROKE}"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </mask>
+  <circle cx="${DISC.cx}" cy="${DISC.cy}" r="${DISC.r}" fill="url(#${id})" mask="url(#${mid})"/>`;
 
 /* Standalone mark, transparent background. */
 const markSvg = () => `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">

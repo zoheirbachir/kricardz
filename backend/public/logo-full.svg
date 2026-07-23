@@ -7,9 +7,12 @@
   <rect width="1200" height="320" fill="#FFFFFF"/>
   <!-- disc scaled to r=94 and centred at (168,160), clearing the wordmark at x=330 -->
   <g transform="translate(36 30) scale(0.257)">
-    <circle cx="512" cy="506" r="366" fill="url(#g)"/>
-  <path d="M 452 576 L 216 576 C 300 470 390 388 486 374 C 578 360 634 424 676 472 C 700 500 736 486 780 500 C 818 514 832 550 826 592" fill="none" stroke="#FFFFFF" stroke-width="46"
-        stroke-linecap="round" stroke-linejoin="round"/>
+    <mask id="cut">
+    <circle cx="512" cy="506" r="366" fill="#fff"/>
+    <path d="M 452 576 L 216 576 C 300 470 390 388 486 374 C 578 360 634 424 676 472 C 700 500 736 486 780 500 C 818 514 832 550 826 592" fill="none" stroke="#000" stroke-width="46"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </mask>
+  <circle cx="512" cy="506" r="366" fill="url(#g)" mask="url(#cut)"/>
   </g>
   <text x="330" y="205" font-family="Arial, Helvetica, sans-serif"
         font-size="142" font-weight="700" letter-spacing="-4">

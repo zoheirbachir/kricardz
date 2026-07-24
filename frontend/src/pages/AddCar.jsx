@@ -5,6 +5,9 @@ import api from '../api';
 import { useToast } from '../context/ToastContext';
 
 const TYPES = ['sedan','suv','van','sport','4x4'];
+/* Vehicle class the owner picks per listing — kept in sync with the backend
+   (lib/serviceTypes.js VEHICLE_CATEGORIES). Changeable anytime from EditCar. */
+const CATEGORIES = ['car','moto','quad','jet_ski','boat','bus','truck','camping_car','other'];
 const FEATURES_LIST = ['Climatisation','GPS','Bluetooth','USB','Caméra recul','4x4','Toit ouvrant','Cuir','Siège bébé'];
 
 export default function AddCar() {
@@ -15,7 +18,7 @@ export default function AddCar() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({
-    title: '', brand: '', model: '', year: new Date().getFullYear(), type: 'sedan',
+    title: '', brand: '', model: '', year: new Date().getFullYear(), type: 'sedan', category: 'car',
     wilaya: '', city: '', price_per_day: '', price_per_hour: '', rent_mode: 'daily', description: '',
     seats: 5, transmission: 'manual', fuel: 'essence', features: [],
     caution: '', km_per_day: '', extra_km_price: '', with_driver: false,
@@ -87,6 +90,12 @@ export default function AddCar() {
         {/* Basic info */}
         <div className="card p-5 space-y-4">
           <h2 className="font-semibold text-gray-900">Informations de base</h2>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('vehicleCategory.label')}</label>
+            <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{t(`vehicleCategory.${c}`)}</option>)}
+            </select>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Titre de l'annonce</label>
             <input className="input" required placeholder="Ex: Renault Logan 2022 — Alger" value={form.title} onChange={e => set('title', e.target.value)} />

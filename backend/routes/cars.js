@@ -9,6 +9,7 @@ const { UPLOADS_ROOT, VEHICLES_DIR, CAR_DOCS_DIR } = require('../config/paths');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = require('../config/secret');
 const { notifyAdmins } = require('../lib/notify');
+const { cleanCategory } = require('../lib/serviceTypes');
 
 const router = express.Router();
 
@@ -90,7 +91,7 @@ function shouldCountView(ip, carId) {
 }
 
 router.get('/', optionalAuth, (req, res) => {
-  const { wilaya, type, min_price, max_price, search, include_unavailable, limit = 20, offset = 0 } = req.query;
+  const { wilaya, type, category, min_price, max_price, search, include_unavailable, limit = 20, offset = 0 } = req.query;
   /* The public catalog (like kricar-dz.com/search) lists unavailable cars too, with a badge.
      Other callers (e.g. the homepage) omit this flag and only get available cars. */
   const showAll = include_unavailable === '1' || include_unavailable === 'true';
@@ -101,6 +102,7 @@ router.get('/', optionalAuth, (req, res) => {
   const whereParams = [];
   if (wilaya) { conditions.push('c.wilaya = ?'); whereParams.push(wilaya); }
   if (type) { conditions.push('c.type = ?'); whereParams.push(type); }
+  if (category) { conditions.push('c.category = ?'); whereParams.push(category); }
   if (min_price) { conditions.push('c.price_per_day >= ?'); whereParams.push(Number(min_price)); }
   if (max_price) { conditions.push('c.price_per_day <= ?'); whereParams.push(Number(max_price)); }
   if (search) { conditions.push('(c.title LIKE ? OR c.brand LIKE ? OR c.model LIKE ?)'); const s = `%${search}%`; whereParams.push(s, s, s); }
@@ -169,7 +171,7 @@ router.post('/', auth, carMedia, (req, res) => {
 
   const { title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode,
     description, features, seats, transmission, fuel, registration_number, unavailable_until,
-    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url, color } = req.body;
+    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url, color, category } = req.body;
   const mode = cleanRentMode(rent_mode);
   /* Daily price is required unless the vehicle is hourly-only. */
   if (!title || !brand || !model || !year || !type || !wilaya || (mode !== 'hourly' && !price_per_day)) {
@@ -199,11 +201,11 @@ router.post('/', auth, carMedia, (req, res) => {
   const video = videoFile ? `/uploads/vehicles/${videoFile.filename}` : (video_url || null);
   const id = uuidv4();
 
-  db.prepare(`INSERT INTO cars (id, owner_id, title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode, description, features, images, seats, transmission, fuel, color,
+  db.prepare(`INSERT INTO cars (id, owner_id, title, brand, model, year, type, category, wilaya, city, price_per_day, price_per_hour, rent_mode, description, features, images, seats, transmission, fuel, color,
     caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url,
     registration_number, plate_image, carte_grise_image, insurance_image, unavailable_until)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    id, req.user.id, title, brand, model, Number(year), type, wilaya, city || null,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+    id, req.user.id, title, brand, model, Number(year), type, cleanCategory(category), wilaya, city || null,
     mode === 'hourly' ? null : Number(price_per_day), numOrNull(price_per_hour), mode, description || null,
     JSON.stringify(features ? (Array.isArray(features) ? features : [features]) : []),
     JSON.stringify(images),
@@ -232,7 +234,7 @@ router.put('/:id', auth, carMedia, (req, res) => {
 
   const { title, brand, model, year, type, wilaya, city, price_per_day, price_per_hour, rent_mode,
     description, features, available, seats, transmission, fuel, registration_number, unavailable_until,
-    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url, remove_video, color } = req.body;
+    caution, km_per_day, extra_km_price, with_driver, weekly_price, monthly_price, video_url, remove_video, color, category } = req.body;
 
   /* ── Photo management ──
      `existing_images` (JSON array) is the list of previously-uploaded photos the
@@ -277,11 +279,13 @@ router.put('/:id', auth, carMedia, (req, res) => {
   const keepNum = (v, cur) => (v === undefined || v === '' ? cur : Number(v));
   const mode = rent_mode !== undefined ? cleanRentMode(rent_mode) : car.rent_mode;
 
-  db.prepare(`UPDATE cars SET title=?, brand=?, model=?, year=?, type=?, wilaya=?, city=?, price_per_day=?, price_per_hour=?, rent_mode=?, description=?, features=?, images=?, available=?, seats=?, transmission=?, fuel=?, color=?,
+  db.prepare(`UPDATE cars SET title=?, brand=?, model=?, year=?, type=?, category=?, wilaya=?, city=?, price_per_day=?, price_per_hour=?, rent_mode=?, description=?, features=?, images=?, available=?, seats=?, transmission=?, fuel=?, color=?,
     caution=?, km_per_day=?, extra_km_price=?, with_driver=?, weekly_price=?, monthly_price=?, video_url=?,
     registration_number=?, plate_image=?, carte_grise_image=?, insurance_image=?, unavailable_until=? WHERE id=?`).run(
     title || car.title, brand || car.brand, model || car.model, Number(year) || car.year,
-    type || car.type, wilaya || car.wilaya, city || car.city,
+    type || car.type,
+    category !== undefined ? cleanCategory(category) : (car.category || 'car'),
+    wilaya || car.wilaya, city || car.city,
     price_per_day !== undefined ? (price_per_day === '' ? null : Number(price_per_day)) : car.price_per_day,
     price_per_hour !== undefined ? (price_per_hour === '' ? null : Number(price_per_hour)) : car.price_per_hour,
     mode, description || car.description,

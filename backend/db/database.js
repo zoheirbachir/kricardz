@@ -164,6 +164,11 @@ db.exec(`
   );
 `);
 
+/* Vehicle category / class the owner chooses per listing — car, moto, quad,
+   jet_ski, boat, bus, truck, camping_car, other. Editable anytime. Defaults to
+   'car' so existing listings keep working. */
+try { db.exec(`ALTER TABLE cars ADD COLUMN category TEXT DEFAULT 'car'`); } catch {}
+
 /* ── Rental-terms columns on cars (idempotent) ── */
 try { db.exec(`ALTER TABLE cars ADD COLUMN caution INTEGER`); } catch {}           // security deposit (DA), refunded if no damage
 try { db.exec(`ALTER TABLE cars ADD COLUMN km_per_day INTEGER`); } catch {}        // mileage allowance per day

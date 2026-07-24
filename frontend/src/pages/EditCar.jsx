@@ -5,6 +5,7 @@ import api, { API_ORIGIN } from '../api';
 import { useToast } from '../context/ToastContext';
 
 const TYPES = ['sedan', 'suv', 'van', 'sport', '4x4', 'citadine', 'coupe', 'minivan'];
+const CATEGORIES = ['car', 'moto', 'quad', 'jet_ski', 'boat', 'bus', 'truck', 'camping_car', 'other'];
 const FEATURES_LIST = ['Climatisation', 'GPS', 'Bluetooth', 'USB', 'Caméra recul', '4x4', 'Toit ouvrant', 'Cuir', 'Siège bébé'];
 const mediaUrl = (p) => (p && p.startsWith('/') ? API_ORIGIN + p : p);
 const isUploadedVideo = (v) => v && v.startsWith('/uploads/');
@@ -41,7 +42,7 @@ export default function EditCar() {
       const c = r.data;
       setForm({
         title: c.title || '', brand: c.brand || '', model: c.model || '', year: c.year || new Date().getFullYear(),
-        type: c.type || 'sedan', wilaya: c.wilaya || '', city: c.city || '',
+        type: c.type || 'sedan', category: c.category || 'car', wilaya: c.wilaya || '', city: c.city || '',
         price_per_day: c.price_per_day ?? '', price_per_hour: c.price_per_hour ?? '', rent_mode: c.rent_mode || 'daily',
         description: c.description || '', seats: c.seats || 5, transmission: c.transmission || 'manual',
         fuel: c.fuel || 'essence', features: c.features || [], caution: c.caution ?? '',
@@ -139,6 +140,10 @@ export default function EditCar() {
                 {TYPES.map(tp => <option key={tp} value={tp}>{t(`types.${tp}`)}</option>)}
               </select></div>
           </div>
+          <div><label className="block text-sm font-medium text-gray-700 mb-1.5">{t('vehicleCategory.label')}</label>
+            <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{t(`vehicleCategory.${c}`)}</option>)}
+            </select></div>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={form.available} onChange={e => set('available', e.target.checked)} className="w-4 h-4" />
             Disponible à la location

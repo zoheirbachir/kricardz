@@ -127,6 +127,18 @@
     "per_week": "/ semaine",
     "per_month": "/ mois"
   },
+  "vehicleCategory": {
+    "label": "Type de véhicule",
+    "car": "Voiture",
+    "moto": "Moto",
+    "quad": "Quad",
+    "jet_ski": "Jet Ski",
+    "boat": "Bateau / Yacht",
+    "bus": "Minibus / Bus",
+    "truck": "Camion",
+    "camping_car": "Camping-car",
+    "other": "Autre"
+  },
   "types": {
     "all": "Tous",
     "citadine": "Citadine",

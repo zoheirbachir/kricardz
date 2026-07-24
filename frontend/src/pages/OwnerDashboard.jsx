@@ -40,12 +40,21 @@ export default function OwnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState(null); // carId pending deletion
   const [gpsToken, setGpsToken] = useState(null); // { carId, token } to show
+  const [partnership, setPartnership] = useState(null); // the agency's partnership contract, if any
 
   useEffect(() => {
     Promise.all([api.get('/cars/my'), api.get('/bookings/owner')])
       .then(([c, b]) => { setCars(c.data); setBookings(b.data); })
       .finally(() => setLoading(false));
+    /* Find the partnership contract so the "Activer mon partenariat" button can
+       reflect its state (generated / signed) instead of always inviting again. */
+    api.get('/contracts/mine')
+      .then(r => setPartnership((r.data || []).find(c => c.type === 'partnership') || null))
+      .catch(() => {});
   }, []);
+
+  /* Activated once the agency has drawn its signature on the partnership contract. */
+  const partnershipSigned = Boolean(partnership?.signatures?.agency);
 
   const deleteCar = async (id) => {
     setDeleteConfirm(null);
@@ -130,23 +139,42 @@ export default function OwnerDashboard() {
         </div>
       )}
 
-      {/* Founding-partner offer (CRICAR 2.0 — lock in agency perks before e-payment launches) */}
-      <div className="mb-8 rounded-2xl border border-primary-200 dark:border-primary-500/30 bg-gradient-to-br from-primary-50 to-honey-50 dark:from-primary-500/10 dark:to-honey-500/10 p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary-500 text-white flex items-center justify-center shrink-0">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+      {/* Founding-partner offer (CRICAR 2.0 — lock in agency perks before e-payment launches).
+          Once the agency signs the partnership contract, the card flips to an
+          "activated" state instead of inviting them to activate again. */}
+      {partnershipSigned ? (
+        <div className="mb-8 rounded-2xl border border-pine-200 dark:border-pine-500/30 bg-pine-50 dark:bg-pine-500/10 p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-pine-600 text-white flex items-center justify-center shrink-0">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-display font-semibold text-pine-800 dark:text-pine-200">Partenariat activé</p>
+              <p className="text-sm text-pine-700/90 dark:text-pine-200/80 mt-0.5">
+                Votre contrat de partenariat est signé. Vous bénéficiez de <span className="font-semibold">3 mois gratuits</span> et d'une <span className="font-semibold">réduction permanente de 30%</span> à l'ouverture du paiement électronique.
+              </p>
+            </div>
+            <Link to={`/contracts/${partnership.id}`} className="btn-secondary text-sm shrink-0">Voir le contrat</Link>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-display font-semibold text-gray-900 dark:text-white">Offre partenaire fondateur</p>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
-              <span className="font-semibold text-primary-700 dark:text-primary-300">3 mois 100% gratuits</span> + une <span className="font-semibold text-primary-700 dark:text-primary-300">réduction permanente de 30%</span> à l'ouverture du paiement électronique. Générez votre contrat de partenariat pour activer ces avantages.
-            </p>
-          </div>
-          <button onClick={openPartnershipContract} disabled={contractBusy} className="btn-primary text-sm shrink-0">
-            {contractBusy ? '…' : 'Activer mon partenariat'}
-          </button>
         </div>
-      </div>
+      ) : (
+        <div className="mb-8 rounded-2xl border border-primary-200 dark:border-primary-500/30 bg-gradient-to-br from-primary-50 to-honey-50 dark:from-primary-500/10 dark:to-honey-500/10 p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary-500 text-white flex items-center justify-center shrink-0">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-display font-semibold text-gray-900 dark:text-white">Offre partenaire fondateur</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">
+                <span className="font-semibold text-primary-700 dark:text-primary-300">3 mois 100% gratuits</span> + une <span className="font-semibold text-primary-700 dark:text-primary-300">réduction permanente de 30%</span> à l'ouverture du paiement électronique. {partnership ? 'Signez votre contrat de partenariat pour activer ces avantages.' : 'Générez votre contrat de partenariat pour activer ces avantages.'}
+              </p>
+            </div>
+            <button onClick={openPartnershipContract} disabled={contractBusy} className="btn-primary text-sm shrink-0">
+              {contractBusy ? '…' : partnership ? 'Signer mon partenariat' : 'Activer mon partenariat'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Activities offered — declared at registration, editable here */}
       <ServiceTypesCard />

@@ -31,4 +31,10 @@ function parseServiceTypes(value) {
   return [...new Set(arr.filter(v => SET.has(v)))];
 }
 
-module.exports = { SERVICE_TYPES, parseServiceTypes };
+/* Vehicle classes an owner can tag a listing with. A subset of SERVICE_TYPES
+   plus 'car' — these are physical vehicle kinds, not commercial offerings. */
+const VEHICLE_CATEGORIES = ['car', 'moto', 'quad', 'jet_ski', 'boat', 'bus', 'truck', 'camping_car', 'other'];
+const CAT_SET = new Set(VEHICLE_CATEGORIES);
+const cleanCategory = (v) => (CAT_SET.has(v) ? v : 'car');
+
+module.exports = { SERVICE_TYPES, parseServiceTypes, VEHICLE_CATEGORIES, cleanCategory };

@@ -5,6 +5,7 @@ import EStamp from '../components/EStamp';
 import LogoMark from '../components/LogoMark';
 import SignaturePad from '../components/SignaturePad';
 import AuthDoc from '../components/AuthDoc';
+import QRCode from '../components/QRCode';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -30,6 +31,24 @@ const Row = ({ label, value }) => (
     <span className="font-medium text-gray-900 text-right">{value || '—'}</span>
   </div>
 );
+
+/* A handover video reference. The link is screen-only, but the QR code prints —
+   so a paper contract still leads to the footage (insurer, expert, court). */
+const HandoverVideo = ({ path, label }) => {
+  if (!path) return null;
+  const url = `${VERIFY_BASE}${path}`;
+  return (
+    <div className="flex items-center gap-2.5 mt-2">
+      <QRCode value={url} size={56} className="shrink-0 border border-gray-200 rounded" />
+      <div className="min-w-0">
+        <a href={url} target="_blank" rel="noopener noreferrer"
+          className="text-primary-600 text-xs font-medium print:hidden">🎬 {label}</a>
+        <p className="hidden print:block text-[10px] font-medium text-gray-700">{label}</p>
+        <p className="text-[9px] text-gray-500 leading-tight mt-0.5">Scannez pour visionner la vidéo</p>
+      </div>
+    </div>
+  );
+};
 
 const Section = ({ title, children }) => (
   <div className="mb-5">
@@ -310,9 +329,7 @@ export default function ContractView() {
                     <a href={`https://maps.google.com/?q=${c.handover.checkin_gps}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">{c.handover.checkin_gps}</a>
                   } />
                 )}
-                {c.handover.checkin_video && (
-                  <a href={API_ORIGIN + c.handover.checkin_video} target="_blank" rel="noopener noreferrer" className="text-primary-600 text-xs print:hidden">🎬 Voir la vidéo de livraison</a>
-                )}
+                <HandoverVideo path={c.handover.checkin_video} label="Vidéo de livraison" />
               </div>
               <div>
                 <p className="font-semibold text-gray-700 mb-1">Au retour</p>
@@ -323,9 +340,7 @@ export default function ContractView() {
                     <a href={`https://maps.google.com/?q=${c.handover.checkout_gps}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 underline">{c.handover.checkout_gps}</a>
                   } />
                 )}
-                {c.handover.checkout_video && (
-                  <a href={API_ORIGIN + c.handover.checkout_video} target="_blank" rel="noopener noreferrer" className="text-primary-600 text-xs print:hidden">🎬 Voir la vidéo de retour</a>
-                )}
+                <HandoverVideo path={c.handover.checkout_video} label="Vidéo de retour" />
               </div>
             </div>
             {c.handover.distance_km != null && (

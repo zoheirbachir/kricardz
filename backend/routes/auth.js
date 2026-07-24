@@ -10,8 +10,8 @@ const { auth } = require('../middleware/auth');
 const { sendMail, isDevMail } = require('../lib/mailer');
 const legal = require('../lib/legal');
 const { sendSms } = require('../lib/sms');
-const { makeUploader, uploadErrorHandler, DOC_TYPES } = require('../lib/uploads');
-const { PRIVATE_UPLOADS_ROOT } = require('../config/paths');
+const { makeUploader, uploadErrorHandler, DOC_TYPES, IMAGE_TYPES } = require('../lib/uploads');
+const { PRIVATE_UPLOADS_ROOT, AVATARS_DIR } = require('../config/paths');
 const { notifyAdmins } = require('../lib/notify');
 const { parseServiceTypes } = require('../lib/serviceTypes');
 
@@ -486,6 +486,32 @@ router.put('/me', auth, (req, res) => {
   const user = db.prepare('SELECT id, email, name, phone, avatar, role, verified, service_types FROM users WHERE id = ?').get(req.user.id);
   user.service_types = parseServiceTypes(user.service_types);
   res.json(user);
+});
+
+/* ── Profile picture (avatar) ──
+   Available to every account. The image is public (shown on listings and reviews),
+   so it lives under /uploads/avatars/. Uploading replaces any previous one. */
+const avatarUpload = makeUploader({ dir: AVATARS_DIR, allow: IMAGE_TYPES, maxMB: 5 });
+
+router.post('/avatar', auth, avatarUpload.single('avatar'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Aucune image envoyée.' });
+  const current = db.prepare('SELECT avatar FROM users WHERE id = ?').get(req.user.id);
+  const avatar = `/uploads/avatars/${req.file.filename}`;
+  db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(avatar, req.user.id);
+  /* Best-effort delete of the previous file so avatars don't pile up. */
+  if (current?.avatar?.startsWith('/uploads/avatars/')) {
+    try { fs.unlinkSync(path.join(AVATARS_DIR, path.basename(current.avatar))); } catch { /* ignore */ }
+  }
+  res.json({ avatar });
+});
+
+router.delete('/avatar', auth, (req, res) => {
+  const current = db.prepare('SELECT avatar FROM users WHERE id = ?').get(req.user.id);
+  db.prepare('UPDATE users SET avatar = NULL WHERE id = ?').run(req.user.id);
+  if (current?.avatar?.startsWith('/uploads/avatars/')) {
+    try { fs.unlinkSync(path.join(AVATARS_DIR, path.basename(current.avatar))); } catch { /* ignore */ }
+  }
+  res.json({ ok: true });
 });
 
 /* Turn rejected/oversized KYC uploads into a clean 400 */

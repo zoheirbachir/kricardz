@@ -19,6 +19,8 @@ const VEHICLES_DIR = path.join(UPLOADS_ROOT, 'vehicles');
 const HANDOVER_DIR = path.join(UPLOADS_ROOT, 'handover');
 /* Agency gallery photos — public path /uploads/agencies/... */
 const AGENCIES_DIR = path.join(UPLOADS_ROOT, 'agencies');
+/* Profile pictures (avatars) — public path /uploads/avatars/... */
+const AVATARS_DIR = path.join(UPLOADS_ROOT, 'avatars');
 
 /* Private docs (KYC, car papers) are served through auth-gated routes, never
    statically. They must ALSO survive redeploys, so when UPLOADS_ROOT points at a
@@ -44,8 +46,8 @@ const DB_PATH = process.env.DB_PATH
       : path.join(__dirname, '..', 'db', 'kricar.db'));
 
 /* Make sure the directories exist so a freshly-pointed UPLOADS_ROOT works. */
-for (const dir of [VEHICLES_DIR, HANDOVER_DIR, AGENCIES_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR, path.dirname(DB_PATH)]) {
+for (const dir of [VEHICLES_DIR, HANDOVER_DIR, AGENCIES_DIR, AVATARS_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR, path.dirname(DB_PATH)]) {
   try { fs.mkdirSync(dir, { recursive: true }); } catch { /* ignore */ }
 }
 
-module.exports = { UPLOADS_ROOT, VEHICLES_DIR, HANDOVER_DIR, AGENCIES_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR, DB_PATH };
+module.exports = { UPLOADS_ROOT, VEHICLES_DIR, HANDOVER_DIR, AGENCIES_DIR, AVATARS_DIR, PRIVATE_UPLOADS_ROOT, CAR_DOCS_DIR, DB_PATH };

@@ -9,6 +9,7 @@ import { Reveal, StaggerGroup, fadeUp } from '../lib/motion';
 import EmailVerifyBanner from '../components/EmailVerifyBanner';
 import BookingProgress from '../components/BookingProgress';
 import KycReupload from '../components/KycReupload';
+import AvatarUpload from '../components/AvatarUpload';
 
 const statusColors = {
   pending: 'bg-honey-50 text-honey-700',
@@ -153,9 +154,7 @@ export default function Dashboard() {
 
       {/* Profile card */}
       <div className="card p-5 mb-6 flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300 font-display font-semibold text-2xl">
-          {user?.name?.[0]?.toUpperCase()}
-        </div>
+        <AvatarUpload />
         <div>
           <p className="font-semibold text-gray-900">{user?.name}</p>
           <p className="text-sm text-gray-500">{user?.email}</p>

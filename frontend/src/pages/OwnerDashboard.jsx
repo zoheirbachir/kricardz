@@ -10,6 +10,7 @@ import HandoverControls from '../components/HandoverControls';
 import AuthDoc from '../components/AuthDoc';
 import AgencyGallery from '../components/AgencyGallery';
 import ServiceTypesCard from '../components/ServiceTypesCard';
+import AvatarUpload from '../components/AvatarUpload';
 
 /* Labels for the client documents an agency may see on a booking. */
 const RENTER_DOC_LABELS = {
@@ -109,9 +110,12 @@ export default function OwnerDashboard() {
       {/* Stacks on phones — three side-by-side buttons used to push the page
           wider than the viewport and get clipped at the right edge. */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Tableau de bord propriétaire</h1>
-          <p className="text-gray-500 text-sm mt-1">Gérez vos annonces et réservations</p>
+        <div className="flex items-center gap-4 min-w-0">
+          <AvatarUpload />
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Tableau de bord propriétaire</h1>
+            <p className="text-gray-500 text-sm mt-1">Gérez vos annonces et réservations</p>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 shrink-0">
           <button onClick={openPartnershipContract} disabled={contractBusy} className="btn-secondary text-sm">

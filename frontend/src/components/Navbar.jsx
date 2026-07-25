@@ -3,10 +3,15 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { API_ORIGIN } from '../api';
 import NotificationBell from './NotificationBell';
 import { useTheme } from '../context/ThemeContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import LogoMark from './LogoMark';
+
+/* Uploaded avatars live at /uploads/... — prefix with the API origin (empty on
+   web, the backend URL in the mobile app). */
+const avatarUrl = (p) => (p && p.startsWith('/') ? API_ORIGIN + p : p);
 
 export default function Navbar() {
   const { t } = useTranslation();
@@ -49,9 +54,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 sm:gap-2.5 min-w-0 group">
             <LogoMark className="w-9 h-9 shrink-0 group-hover:rotate-3 group-hover:scale-105 transition-transform" />
-            {/* Always shown. No truncate — the wordmark must never render as "D…";
-                the right-side controls shrink instead (see gap-0.5 + whitespace-nowrap). */}
-            <span className="whitespace-nowrap font-display font-semibold text-lg sm:text-2xl tracking-tight text-gray-900 dark:text-white leading-none">Dz<span className="text-primary-500">Kricar</span></span>
+            {/* Logged out: always shown (the home page needs the brand name).
+                Logged in: the row also carries the bell + avatar + menu, so on
+                phones/tablets the wordmark is hidden to avoid crowding and only
+                returns on desktop (lg+) where there's room. Never truncates. */}
+            <span className={`whitespace-nowrap font-display font-semibold text-lg sm:text-2xl tracking-tight text-gray-900 dark:text-white leading-none ${user ? 'hidden lg:inline-block' : 'inline-block'}`}>Dz<span className="text-primary-500">Kricar</span></span>
           </Link>
 
           {/* Desktop nav */}
@@ -94,8 +101,10 @@ export default function Navbar() {
               <div className="relative">
                 <button onClick={() => setProfileOpen(!profileOpen)}
                   className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm">
-                    {user.name?.[0]?.toUpperCase()}
+                  <div className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold text-sm shadow-sm overflow-hidden">
+                    {user.avatar
+                      ? <img src={avatarUrl(user.avatar)} alt={user.name} className="w-full h-full object-cover" />
+                      : user.name?.[0]?.toUpperCase()}
                   </div>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-200 hidden sm:block">{user.name?.split(' ')[0]}</span>
                   <svg className={`w-4 h-4 text-gray-400 transition-transform ${profileOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>

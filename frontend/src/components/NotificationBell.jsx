@@ -85,7 +85,10 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[90vw] card p-0 overflow-hidden shadow-lg z-50">
+        /* On phones the bell sits mid-row, so anchoring the panel to its right edge
+           pushed it off-screen. Pin it to the viewport below the navbar on mobile,
+           and anchor to the bell only from sm up where there's room. */
+        <div className="fixed left-2 right-2 top-[4.25rem] w-auto sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80 card p-0 overflow-hidden shadow-lg z-50">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border)]">
             <span className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</span>
             {unread > 0 && (

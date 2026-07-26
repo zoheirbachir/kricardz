@@ -234,6 +234,20 @@ router.post('/register', upload.fields(KYC_FIELDS), async (req, res) => {
       JSON.stringify(serviceTypes)
     );
 
+    /* An agency needs a row in the `agencies` table to appear in the partner
+       network and the admin Agences list — registration used to create the user
+       only, so agencies never showed up. Individuals list cars without an agency
+       profile, so this is agency-only. */
+    if (lessor_type === 'agency') {
+      try {
+        const agWilaya = (req.body.agency_wilaya || '').toString().trim() || '—';
+        const agCity = (req.body.agency_city || '').toString().trim() || null;
+        db.prepare(`INSERT INTO agencies (id, owner_id, name, description, wilaya, city, phone, email)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
+          uuidv4(), id, agency_legal_name || name, agency_address || null, agWilaya, agCity, phone || null, email);
+      } catch (e) { console.error('agency row create failed:', e.message); }
+    }
+
     /* Legal audit trail: who accepted which version, when, from where. */
     legal.recordConsent(req, id, { context: 'signup' });
 

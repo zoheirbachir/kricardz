@@ -363,4 +363,27 @@ try {
   }
 } catch (e) { console.error('category seed failed:', e.message); }
 
+/* Backfill: agencies that registered before the app created their `agencies` row
+   would never appear in the network or the admin list. Create a row for every
+   agency-account (lessor_type = 'agency') that is missing one. Wilaya is required,
+   so fall back to the address or a placeholder the owner/admin can correct. */
+try {
+  const { randomUUID } = require('node:crypto');
+  const orphans = db.prepare(`
+    SELECT u.id, u.name, u.phone, u.email, u.agency_legal_name, u.agency_address
+    FROM users u
+    WHERE u.lessor_type = 'agency'
+      AND NOT EXISTS (SELECT 1 FROM agencies a WHERE a.owner_id = u.id)
+  `).all();
+  if (orphans.length) {
+    const ins = db.prepare(`INSERT INTO agencies (id, owner_id, name, description, wilaya, city, phone, email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
+    for (const u of orphans) {
+      ins.run(randomUUID(), u.id, u.agency_legal_name || u.name || 'Agence',
+        u.agency_address || null, '—', null, u.phone || null, u.email || null);
+    }
+    console.log(`Backfilled ${orphans.length} missing agency row(s)`);
+  }
+} catch (e) { console.error('agency backfill failed:', e.message); }
+
 module.exports = db;

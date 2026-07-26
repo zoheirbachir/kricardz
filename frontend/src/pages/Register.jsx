@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import api from '../api';
 import { softSpring } from '../lib/motion';
 import FileDrop from '../components/FileDrop';
 import SelfieCapture from '../components/SelfieCapture';
@@ -71,8 +72,11 @@ export default function Register() {
     document_number: '', driving_license_number: '',
     driving_license_issued_date: '', driving_license_expiry_date: '',
     agency_legal_name: '', agency_commercial_reg_number: '', agency_address: '', national_id_number: '',
+    agency_wilaya: '', agency_city: '',
   });
   const [lessorType, setLessorType] = useState('individual');
+  const [wilayas, setWilayas] = useState([]);
+  useEffect(() => { api.get('/wilayas').then(r => setWilayas(r.data)).catch(() => {}); }, []);
   const [serviceTypes, setServiceTypes] = useState([]);
   const [documentType, setDocumentType] = useState('id_card');
   const [secondaryDocType, setSecondaryDocType] = useState('id_card');
@@ -113,6 +117,9 @@ export default function Register() {
       if (to < todayStr) { setError('Votre permis de conduire est expiré. Une licence valide est requise.'); return; }
     }
 
+    // Agency: a wilaya is required so the agency appears (and is filterable) in the network
+    if (isAgency && !form.agency_wilaya) { setError("Veuillez choisir la wilaya de votre agence."); return; }
+
     // Light required-document validation
     const need = isRenter
       ? ['driving_license_front', 'secondary_front_image', 'selfie_image']
@@ -148,6 +155,8 @@ export default function Register() {
           fd.append('agency_legal_name', form.agency_legal_name || '');
           fd.append('agency_commercial_reg_number', form.agency_commercial_reg_number || '');
           fd.append('agency_address', form.agency_address || '');
+          fd.append('agency_wilaya', form.agency_wilaya || '');
+          fd.append('agency_city', form.agency_city || '');
           fd.append('national_id_number', form.national_id_number || '');
         }
       }
@@ -256,6 +265,20 @@ export default function Register() {
                           <input type="text" className="input" placeholder="Raison sociale"
                             value={form.agency_legal_name} onChange={(e) => set('agency_legal_name', e.target.value)} />
                           <p className="text-xs text-gray-500 mt-1">Utilisé dans les contrats électroniques au nom de l'agence.</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Wilaya <span className="text-red-500">*</span></label>
+                            <select className="input" value={form.agency_wilaya} onChange={(e) => set('agency_wilaya', e.target.value)}>
+                              <option value="">Choisir…</option>
+                              {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Ville / Commune</label>
+                            <input type="text" className="input" placeholder="Ex: Bab Ezzouar"
+                              value={form.agency_city} onChange={(e) => set('agency_city', e.target.value)} />
+                          </div>
                         </div>
                         <div>
                           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Adresse de l'agence</label>

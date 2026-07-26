@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import api from '../api';
-import { AGENCY_CATEGORIES } from '../lib/agencyTypes';
+import { useCategories } from '../lib/useCategories';
 
 function Stars({ rating = 0 }) {
   return (
@@ -19,6 +19,7 @@ function Stars({ rating = 0 }) {
 
 export default function Agencies() {
   const { t } = useTranslation();
+  const { categories, label: catLabel } = useCategories();
   const [searchParams] = useSearchParams();
   const [agencies, setAgencies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +28,7 @@ export default function Agencies() {
   const [f, setF] = useState({
     search: searchParams.get('search') || '',
     wilaya: searchParams.get('wilaya') || '',
-    type: searchParams.get('type') || '',
+    service: searchParams.get('service') || '',
     sort: 'vehicles',
   });
 
@@ -45,7 +46,7 @@ export default function Agencies() {
     let list = agencies.filter(a =>
       (!f.search || a.name.toLowerCase().includes(f.search.toLowerCase())) &&
       (!f.wilaya || a.wilaya === f.wilaya) &&
-      (!f.type || (a.agency_type || 'classic') === f.type)
+      (!f.service || (a.service_types || []).includes(f.service))
     );
     const by = {
       recent: (a, b) => new Date(b.created_at) - new Date(a.created_at),
@@ -83,9 +84,9 @@ export default function Agencies() {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">{t('agency.type_label')}</label>
-            <select className="input text-sm" value={f.type} onChange={e => set('type', e.target.value)}>
+            <select className="input text-sm" value={f.service} onChange={e => set('service', e.target.value)}>
               <option value="">{t('agency.all_types')}</option>
-              {AGENCY_CATEGORIES.map(c => <option key={c.key} value={c.key}>{t(`agency_types.${c.key}`)}</option>)}
+              {categories.map(c => <option key={c.slug} value={c.slug}>{catLabel(c)}</option>)}
             </select>
           </div>
           <div>
@@ -168,10 +169,17 @@ export default function Agencies() {
                     <span className="text-xs text-gray-400">({agency.rating_count || 0})</span>
                   </div>
 
-                  {/* Type badge */}
-                  <span className="badge bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 mt-3">
-                    {t(`agency_types.${agency.agency_type || 'classic'}`)}
-                  </span>
+                  {/* Activity badges (the agency's declared categories) */}
+                  {agency.service_types?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {agency.service_types.slice(0, 3).map(s => (
+                        <span key={s} className="badge bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">{catLabel(s)}</span>
+                      ))}
+                      {agency.service_types.length > 3 && (
+                        <span className="badge bg-gray-100 dark:bg-gray-800 text-gray-500">+{agency.service_types.length - 3}</span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Footer */}
                   <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">

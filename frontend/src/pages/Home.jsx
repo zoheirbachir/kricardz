@@ -9,7 +9,7 @@ import BgVideo from '../components/BgVideo';
 import { useCountUp } from '../hooks/useCountUp';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { AnimatedHeading, fadeUp, staggerContainer, softSpring, StaggerGroup, Reveal } from '../lib/motion';
-import { AGENCY_CATEGORIES } from '../lib/agencyTypes';
+import { useCategories } from '../lib/useCategories';
 
 const CAR_TYPES = ['sedan','suv','van','sport','4x4'];
 const CAT_VIDEOS = {
@@ -76,12 +76,13 @@ const ARROW = 'M14 5l7 7m0 0l-7 7m7-7H3';
 export default function Home() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { categories, label: catLabel } = useCategories();
   const [wilayas, setWilayas] = useState([]);
   const [featuredCars, setFeaturedCars] = useState([]);
   const [agencies, setAgencies] = useState([]);
   const [search, setSearch] = useState({ wilaya: '', type: '', max_price: '' });
   const [searchMode, setSearchMode] = useState('car');   // 'car' | 'agency' — hero search tabs
-  const [agencySearch, setAgencySearch] = useState({ search: '', wilaya: '', type: '' });
+  const [agencySearch, setAgencySearch] = useState({ search: '', wilaya: '', service: '' });
   const [statsStarted, setStatsStarted] = useState(false);
   const statsRef = useRef(null);
   const [whyRef, whyVisible] = useScrollReveal();
@@ -114,7 +115,7 @@ export default function Home() {
     const params = new URLSearchParams();
     if (agencySearch.search) params.set('search', agencySearch.search);
     if (agencySearch.wilaya) params.set('wilaya', agencySearch.wilaya);
-    if (agencySearch.type) params.set('type', agencySearch.type);
+    if (agencySearch.service) params.set('service', agencySearch.service);
     navigate(`/agencies?${params.toString()}`);
   };
 
@@ -248,9 +249,9 @@ export default function Home() {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5">{t('home.agency_type_label')}</label>
-                    <select className="input text-sm" value={agencySearch.type} onChange={e => setAgencySearch({ ...agencySearch, type: e.target.value })}>
+                    <select className="input text-sm" value={agencySearch.service} onChange={e => setAgencySearch({ ...agencySearch, service: e.target.value })}>
                       <option value="">{t('home.all_agency_types')}</option>
-                      {AGENCY_CATEGORIES.map(c => <option key={c.key} value={c.key}>{t(`agency_types.${c.key}`)}</option>)}
+                      {categories.map(c => <option key={c.slug} value={c.slug}>{catLabel(c)}</option>)}
                     </select>
                   </div>
                 </div>

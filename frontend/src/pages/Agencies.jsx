@@ -32,21 +32,26 @@ export default function Agencies() {
     sort: 'vehicles',
   });
 
+  /* The category filter is applied server-side: the backend matches the raw
+     declared service_types (so it stays correct even if a category is later
+     disabled), which is more reliable than filtering the parsed list here. */
   useEffect(() => {
-    api.get('/agencies')
+    setLoading(true);
+    const qs = f.service ? `?service=${encodeURIComponent(f.service)}` : '';
+    api.get(`/agencies${qs}`)
       .then(r => setAgencies(r.data))
       .catch(() => setError('Impossible de contacter le serveur. Vérifiez votre connexion.'))
       .finally(() => setLoading(false));
-    api.get('/wilayas').then(r => setWilayas(r.data));
-  }, []);
+  }, [f.service]);
+
+  useEffect(() => { api.get('/wilayas').then(r => setWilayas(r.data)); }, []);
 
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
 
   const filtered = useMemo(() => {
     let list = agencies.filter(a =>
       (!f.search || a.name.toLowerCase().includes(f.search.toLowerCase())) &&
-      (!f.wilaya || a.wilaya === f.wilaya) &&
-      (!f.service || (a.service_types || []).includes(f.service))
+      (!f.wilaya || a.wilaya === f.wilaya)
     );
     const by = {
       recent: (a, b) => new Date(b.created_at) - new Date(a.created_at),

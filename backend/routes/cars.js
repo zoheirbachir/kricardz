@@ -284,7 +284,7 @@ router.put('/:id', auth, carMedia, (req, res) => {
     registration_number=?, plate_image=?, carte_grise_image=?, insurance_image=?, unavailable_until=? WHERE id=?`).run(
     title || car.title, brand || car.brand, model || car.model, Number(year) || car.year,
     type || car.type,
-    category !== undefined ? cleanCategory(category) : (car.category || 'car'),
+    category !== undefined ? cleanCategory(category, { current: car.category }) : (car.category || cleanCategory(null)),
     wilaya || car.wilaya, city || car.city,
     price_per_day !== undefined ? (price_per_day === '' ? null : Number(price_per_day)) : car.price_per_day,
     price_per_hour !== undefined ? (price_per_hour === '' ? null : Number(price_per_hour)) : car.price_per_hour,

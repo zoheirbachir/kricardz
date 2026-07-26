@@ -319,4 +319,48 @@ try { db.exec(`ALTER TABLE contracts ADD COLUMN signatures TEXT DEFAULT '{}'`); 
 /* When the signed copy was emailed to both parties — also guards against sending twice. */
 try { db.exec(`ALTER TABLE contracts ADD COLUMN emailed_at TEXT`); } catch {}
 
+/* ── Vehicle/activity categories, managed from the admin panel ──
+   The single dynamic taxonomy: agencies pick one or more, each car is tagged with
+   one. Editable from Admin (add/rename/disable/reorder) so new services can be
+   added without a code change. Seeded once from the previous hard-coded list. */
+db.exec(`
+  CREATE TABLE IF NOT EXISTS categories (
+    id TEXT PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    label_fr TEXT NOT NULL,
+    label_ar TEXT,
+    label_en TEXT,
+    sort_order INTEGER DEFAULT 0,
+    active INTEGER DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+`);
+try {
+  const { randomUUID } = require('node:crypto');
+  const n = db.prepare('SELECT COUNT(*) AS c FROM categories').get().c;
+  if (n === 0) {
+    /* slug, fr, ar, en — mirrors the former SERVICE_TYPES + a general "car". */
+    const SEED = [
+      ['car', 'Voiture', 'سيارة', 'Car'],
+      ['economy', 'Voitures économiques', 'سيارات اقتصادية', 'Economy cars'],
+      ['luxury', 'Voitures de luxe', 'سيارات فاخرة', 'Luxury cars'],
+      ['wedding', 'Voitures de mariage', 'سيارات الأعراس', 'Wedding cars'],
+      ['with_driver', 'Location avec chauffeur', 'كراء مع سائق', 'Chauffeur-driven rental'],
+      ['taxi', 'Taxi', 'سيارة أجرة', 'Taxi'],
+      ['airport_transfer', 'Transfert aéroport', 'النقل من وإلى المطار', 'Airport transfer'],
+      ['bus', 'Minibus et bus', 'حافلات', 'Minibus & bus'],
+      ['truck', 'Camions', 'شاحنات', 'Trucks'],
+      ['moto', 'Motos', 'دراجات نارية', 'Motorcycles'],
+      ['quad', 'Quad', 'Quad', 'Quad'],
+      ['jet_ski', 'Jet Ski', 'Jet Ski', 'Jet Ski'],
+      ['boat', 'Bateaux et yachts', 'قوارب ويخوت', 'Boats & yachts'],
+      ['camping_car', 'Camping-cars', 'كرفانات', 'Camping cars'],
+      ['other', 'Autres services', 'خدمات أخرى', 'Other services'],
+    ];
+    const ins = db.prepare('INSERT INTO categories (id, slug, label_fr, label_ar, label_en, sort_order) VALUES (?, ?, ?, ?, ?, ?)');
+    SEED.forEach((c, i) => ins.run(randomUUID(), c[0], c[1], c[2], c[3], i));
+    console.log(`Seeded ${SEED.length} categories`);
+  }
+} catch (e) { console.error('category seed failed:', e.message); }
+
 module.exports = db;

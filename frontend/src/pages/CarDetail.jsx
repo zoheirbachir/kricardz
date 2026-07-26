@@ -6,6 +6,7 @@ import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Lightbox from '../components/Lightbox';
+import { useCategories } from '../lib/useCategories';
 
 const MapView = lazy(() => import('../components/MapView'));
 
@@ -41,6 +42,7 @@ function resolveVideo(url) {
 export default function CarDetail() {
   const { id } = useParams();
   const { t, i18n } = useTranslation();
+  const { label: catLabel } = useCategories();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [car, setCar] = useState(null);
@@ -246,6 +248,7 @@ export default function CarDetail() {
             <h2 className="font-semibold text-gray-900 mb-4">{t('car.details')}</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[
+                car.category ? { label: t('vehicleCategory.label'), value: catLabel(car.category) } : null,
                 { label: t('car.carrosserie'), value: t(`types.${car.type}`) },
                 { label: t('car.year'), value: car.year },
                 { label: t('car.seats'), value: `${car.seats} ${t('car.seats')}` },

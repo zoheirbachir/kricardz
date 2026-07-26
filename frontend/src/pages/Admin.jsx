@@ -4,6 +4,7 @@ import api from '../api';
 import { useToast } from '../context/ToastContext';
 import AuthDoc from '../components/AuthDoc';
 import AdminTerms from '../components/AdminTerms';
+import AdminCategories from '../components/AdminCategories';
 
 /* Vehicle + owner documents shown in the admin review modal. */
 const CAR_DOC_LABELS = [
@@ -25,6 +26,7 @@ const TABS = [
   { key: 'bookings', label: 'Réservations' },
   { key: 'contracts', label: 'Contrats' },
   { key: 'backups', label: 'Sauvegardes' },
+  { key: 'categories', label: 'Catégories' },
   { key: 'terms', label: 'Conditions' },
   { key: 'settings', label: 'Paramètres' },
 ];
@@ -81,6 +83,7 @@ export default function Admin() {
   const load = useCallback((which) => {
     if (which === 'overview') { setLoading(true); loadStats().finally(() => setLoading(false)); return; }
     if (which === 'terms') { setLoading(false); return; }   // AdminTerms loads itself from /terms
+    if (which === 'categories') { setLoading(false); return; }   // AdminCategories loads itself
     const map = { agencies: setAgencies, cars: setCars, users: setUsers, bookings: setBookings, contracts: setContracts, backups: setBackups, settings: setSettings };
     setLoading(true);
     api.get(`/admin/${which}`).then(r => {
@@ -209,7 +212,7 @@ export default function Admin() {
       )}
 
       {/* Search bar for list tabs */}
-      {!['overview', 'bookings', 'backups', 'settings', 'terms'].includes(tab) && (
+      {!['overview', 'bookings', 'backups', 'settings', 'terms', 'categories'].includes(tab) && (
         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher…"
           className="input max-w-sm mb-4 text-sm" />
       )}
@@ -473,6 +476,9 @@ export default function Admin() {
           </div>
         </div>
       )}
+
+      {/* Dynamic vehicle/activity categories */}
+      {tab === 'categories' && <AdminCategories />}
 
       {/* Terms & conditions: editing, versioning, consent log */}
       {tab === 'terms' && <AdminTerms />}

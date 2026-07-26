@@ -3,17 +3,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api';
 import { useToast } from '../context/ToastContext';
+import { useCategories } from '../lib/useCategories';
 
 const TYPES = ['sedan','suv','van','sport','4x4'];
-/* Vehicle class the owner picks per listing — kept in sync with the backend
-   (lib/serviceTypes.js VEHICLE_CATEGORIES). Changeable anytime from EditCar. */
-const CATEGORIES = ['car','moto','quad','jet_ski','boat','bus','truck','camping_car','other'];
 const FEATURES_LIST = ['Climatisation','GPS','Bluetooth','USB','Caméra recul','4x4','Toit ouvrant','Cuir','Siège bébé'];
 
 export default function AddCar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const toast = useToast();
+  const { categories, label: catLabel } = useCategories();
   const [wilayas, setWilayas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -93,7 +92,7 @@ export default function AddCar() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('vehicleCategory.label')}</label>
             <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{t(`vehicleCategory.${c}`)}</option>)}
+              {categories.map(c => <option key={c.slug} value={c.slug}>{catLabel(c)}</option>)}
             </select>
           </div>
           <div>

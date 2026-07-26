@@ -3,9 +3,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api, { API_ORIGIN } from '../api';
 import { useToast } from '../context/ToastContext';
+import { useCategories } from '../lib/useCategories';
 
 const TYPES = ['sedan', 'suv', 'van', 'sport', '4x4', 'citadine', 'coupe', 'minivan'];
-const CATEGORIES = ['car', 'moto', 'quad', 'jet_ski', 'boat', 'bus', 'truck', 'camping_car', 'other'];
 const FEATURES_LIST = ['Climatisation', 'GPS', 'Bluetooth', 'USB', 'Caméra recul', '4x4', 'Toit ouvrant', 'Cuir', 'Siège bébé'];
 const mediaUrl = (p) => (p && p.startsWith('/') ? API_ORIGIN + p : p);
 const isUploadedVideo = (v) => v && v.startsWith('/uploads/');
@@ -15,6 +15,7 @@ export default function EditCar() {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { categories, label: catLabel } = useCategories();
   const [wilayas, setWilayas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -142,7 +143,7 @@ export default function EditCar() {
           </div>
           <div><label className="block text-sm font-medium text-gray-700 mb-1.5">{t('vehicleCategory.label')}</label>
             <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{t(`vehicleCategory.${c}`)}</option>)}
+              {categories.map(c => <option key={c.slug} value={c.slug}>{catLabel(c)}</option>)}
             </select></div>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={form.available} onChange={e => set('available', e.target.checked)} className="w-4 h-4" />

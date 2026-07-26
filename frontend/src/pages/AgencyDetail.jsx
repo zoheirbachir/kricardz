@@ -3,10 +3,12 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api';
 import CarCard from '../components/CarCard';
+import { useCategories } from '../lib/useCategories';
 
 export default function AgencyDetail() {
   const { id } = useParams();
   const { t } = useTranslation();
+  const { label: catLabel } = useCategories();
   const navigate = useNavigate();
   const [agency, setAgency] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ export default function AgencyDetail() {
               <div className="flex flex-wrap gap-1.5 mt-3">
                 {agency.service_types.map(s => (
                   <span key={s} className="text-xs font-medium px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300">
-                    {t(`services.${s}`)}
+                    {catLabel(s)}
                   </span>
                 ))}
               </div>

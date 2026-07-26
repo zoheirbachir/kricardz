@@ -1,40 +1,15 @@
-/* The activities an agency/owner can declare. The key is stored; the client
-   renders the label from its i18n files (services.<key>). Keep this list in sync
-   with frontend/src/i18n/*.json → "services". */
-const SERVICE_TYPES = [
-  'economy',         // voitures économiques
-  'luxury',          // voitures de luxe
-  'wedding',         // voitures de mariage
-  'with_driver',     // location avec chauffeur
-  'taxi',            // taxi
-  'airport_transfer',// transfert aéroport
-  'bus',             // minibus et bus
-  'truck',           // camions
-  'moto',            // motos
-  'quad',            // quad
-  'jet_ski',         // jet ski
-  'boat',            // bateaux et yachts
-  'camping_car',     // camping-cars
-  'other',           // autres services
-];
+/* Backwards-compatible shim.
 
-const SET = new Set(SERVICE_TYPES);
+   Categories used to be a hard-coded list here. They are now a dynamic taxonomy
+   managed from the admin panel (see lib/categories.js and the `categories` table).
+   These wrappers keep the old call sites (auth, agencies, cars) working while
+   validating against the live, admin-managed list instead of a frozen array. */
+const categories = require('./categories');
 
-/* Normalise arbitrary input (array or JSON string) into a clean, de-duplicated,
-   validated array of known keys. Returns [] for anything unusable. */
-function parseServiceTypes(value) {
-  let arr = value;
-  if (typeof value === 'string') {
-    try { arr = JSON.parse(value); } catch { arr = value.split(',').map(s => s.trim()); }
-  }
-  if (!Array.isArray(arr)) return [];
-  return [...new Set(arr.filter(v => SET.has(v)))];
-}
+/* An agency's declared activities — keep only known, active category slugs. */
+const parseServiceTypes = (value) => categories.parseCategories(value);
 
-/* Vehicle classes an owner can tag a listing with. A subset of SERVICE_TYPES
-   plus 'car' — these are physical vehicle kinds, not commercial offerings. */
-const VEHICLE_CATEGORIES = ['car', 'moto', 'quad', 'jet_ski', 'boat', 'bus', 'truck', 'camping_car', 'other'];
-const CAT_SET = new Set(VEHICLE_CATEGORIES);
-const cleanCategory = (v) => (CAT_SET.has(v) ? v : 'car');
+/* A car's single category — validated against the active list, with a safe fallback. */
+const cleanCategory = (value, opts) => categories.cleanCategory(value, opts);
 
-module.exports = { SERVICE_TYPES, parseServiceTypes, VEHICLE_CATEGORIES, cleanCategory };
+module.exports = { parseServiceTypes, cleanCategory };

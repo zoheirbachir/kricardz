@@ -89,6 +89,7 @@ app.use('/api/location', require('./routes/locations'));
 app.use('/api/contracts', require('./routes/contracts'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/terms', require('./routes/terms'));
+app.use('/api/categories', require('./routes/categories'));
 
 app.get('/api/wilayas', (req, res) => {
   res.json([

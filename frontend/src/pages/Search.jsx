@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import api from '../api';
 import CarCard from '../components/CarCard';
 import PriceSlider from '../components/PriceSlider';
+import { useCategories } from '../lib/useCategories';
 
 const MapView = lazy(() => import('../components/MapView'));
 const TYPES = ['citadine','sedan','coupe','minivan','sport'];
 
 /* FiltersPanel defined OUTSIDE Search so React doesn't treat it as a
    new component type on every render (which would remount PriceSlider). */
-function FiltersPanel({ t, filters, wilayas, update, reset }) {
+function FiltersPanel({ t, filters, wilayas, update, reset, categories, catLabel }) {
   return (
     <div className="space-y-5">
       <div>
@@ -20,6 +21,15 @@ function FiltersPanel({ t, filters, wilayas, update, reset }) {
           {wilayas.map(w => <option key={w} value={w}>{w}</option>)}
         </select>
       </div>
+      {categories.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('vehicleCategory.label')}</label>
+          <select className="input text-sm" value={filters.category} onChange={e => update('category', e.target.value)}>
+            <option value="">{t('types.all')}</option>
+            {categories.map(c => <option key={c.slug} value={c.slug}>{catLabel(c)}</option>)}
+          </select>
+        </div>
+      )}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('home.type_label')}</label>
         <div className="grid grid-cols-2 gap-2">
@@ -55,9 +65,11 @@ export default function Search() {
   const [mapKey, setMapKey] = useState(0);   // increment to force Leaflet remount
   const [mapCars, setMapCars] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { categories, label: catLabel } = useCategories();
   const [filters, setFilters] = useState({
     wilaya: searchParams.get('wilaya') || '',
     type: searchParams.get('type') || '',
+    category: searchParams.get('category') || '',
     min_price: searchParams.get('min_price') || '',
     max_price: searchParams.get('max_price') || '',
     search: searchParams.get('search') || '',
@@ -84,7 +96,7 @@ export default function Search() {
   }, [viewMode]);
 
   const update = (key, val) => setFilters(f => ({ ...f, [key]: val }));
-  const reset = () => setFilters({ wilaya: '', type: '', min_price: '', max_price: '', search: '' });
+  const reset = () => setFilters({ wilaya: '', type: '', category: '', min_price: '', max_price: '', search: '' });
 
   const switchToMap = () => {
     setMapKey(k => k + 1);   // force fresh Leaflet init each time
@@ -125,7 +137,7 @@ export default function Search() {
         <aside className={`${sidebarOpen ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0`}>
           <div className="card p-5 sticky top-20">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-4">{t('search.filters')}</h3>
-            <FiltersPanel t={t} filters={filters} wilayas={wilayas} update={update} reset={reset} />
+            <FiltersPanel t={t} filters={filters} wilayas={wilayas} update={update} reset={reset} categories={categories} catLabel={catLabel} />
           </div>
         </aside>
 

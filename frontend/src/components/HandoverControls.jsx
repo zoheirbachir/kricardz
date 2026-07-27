@@ -76,17 +76,34 @@ export default function HandoverControls({ booking: b, onUpdated }) {
                 </div>
               ) : (
                 <>
-                  <div className="flex items-center gap-2">
-                    <input type="number" min={0} className="input text-xs py-1.5 flex-1" placeholder="Kilométrage"
-                      value={p.km} onChange={e => p.setKm(e.target.value)} />
-                    <label className={`text-xs cursor-pointer whitespace-nowrap ${(p.phase === 'checkin' ? inVideo : outVideo) ? 'text-pine-600' : 'text-primary-600'}`}>
-                      🎬 {(p.phase === 'checkin' ? inVideo : outVideo) ? 'Vidéo ✓' : 'Vidéo *'}
-                      <input type="file" accept="video/mp4,video/quicktime,video/webm" className="hidden"
-                        onChange={e => p.setVideo(e.target.files[0] || null)} />
-                    </label>
-                    <button type="button" disabled={busy === p.phase} onClick={() => submit(p.phase)}
-                      className="btn-primary text-xs py-1.5 px-2.5">{busy === p.phase ? '…' : 'Enregistrer'}</button>
-                  </div>
+                  <input type="number" min={0} className="input text-xs py-1.5 w-full" placeholder="Kilométrage (km)"
+                    value={p.km} onChange={e => p.setKm(e.target.value)} />
+
+                  {/* Clear, obvious upload button. Turns green with the file name once a video is chosen. */}
+                  {(() => {
+                    const file = p.phase === 'checkin' ? inVideo : outVideo;
+                    return (
+                      <label className={`flex items-center gap-2 w-full cursor-pointer rounded-lg border-2 border-dashed px-3 py-2.5 transition-colors ${
+                        file
+                          ? 'border-pine-400 bg-pine-50 text-pine-700 dark:bg-pine-500/10'
+                          : 'border-primary-300 bg-primary-50/60 text-primary-700 hover:border-primary-500 hover:bg-primary-50 dark:bg-primary-500/10 dark:text-primary-300'}`}>
+                        {file ? (
+                          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        ) : (
+                          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        )}
+                        <span className="text-xs font-medium truncate">
+                          {file ? file.name : 'Ajouter une vidéo du véhicule'}
+                        </span>
+                        {!file && <span className="text-[10px] text-primary-500/80 ms-auto shrink-0">Appuyez ici</span>}
+                        <input type="file" accept="video/mp4,video/quicktime,video/webm,video/*" capture="environment" className="hidden"
+                          onChange={e => p.setVideo(e.target.files[0] || null)} />
+                      </label>
+                    );
+                  })()}
+
+                  <button type="button" disabled={busy === p.phase} onClick={() => submit(p.phase)}
+                    className="btn-primary text-xs py-2 w-full justify-center">{busy === p.phase ? 'Enregistrement…' : 'Enregistrer'}</button>
                   <p className="text-[10px] text-gray-400">Vidéo obligatoire · position GPS enregistrée · non modifiable après enregistrement.</p>
                 </>
               )}

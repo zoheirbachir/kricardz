@@ -30,10 +30,15 @@ const AGENCY_SELECT = `SELECT a.*,
   (SELECT COUNT(*) FROM cars c WHERE c.owner_id = a.owner_id) AS vehicle_count,
   (SELECT ROUND(AVG(r.rating), 1) FROM reviews r JOIN cars c ON r.car_id = c.id WHERE c.owner_id = a.owner_id) AS rating_avg,
   (SELECT COUNT(*) FROM reviews r JOIN cars c ON r.car_id = c.id WHERE c.owner_id = a.owner_id) AS rating_count,
-  (SELECT u.service_types FROM users u WHERE u.id = a.owner_id) AS service_types
+  (SELECT u.service_types FROM users u WHERE u.id = a.owner_id) AS service_types,
+  (SELECT u.avatar FROM users u WHERE u.id = a.owner_id) AS owner_avatar
   FROM agencies a`;
 
-const withServices = (a) => ({ ...a, service_types: parseServiceTypes(a?.service_types) });
+/* The photo that represents an agency everywhere: its uploaded logo if set,
+   otherwise the owner's profile picture (chosen via the dashboard avatar). */
+const agencyPhoto = (a) => a?.logo || a?.owner_avatar || null;
+
+const withServices = (a) => ({ ...a, service_types: parseServiceTypes(a?.service_types), photo: agencyPhoto(a) });
 
 const SORTS = {
   recent: 'a.created_at DESC',

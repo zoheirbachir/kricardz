@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import api from '../api';
+import api, { API_ORIGIN } from '../api';
 import CarCard from '../components/CarCard';
 import { useCategories } from '../lib/useCategories';
 
@@ -42,8 +42,10 @@ export default function AgencyDetail() {
       {/* Agency header */}
       <div className="card p-6 mb-8">
         <div className="flex items-start gap-5">
-          <div className="w-20 h-20 rounded-2xl bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300 font-display font-semibold text-3xl shrink-0">
-            {agency.name[0]}
+          <div className="w-20 h-20 rounded-2xl overflow-hidden bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300 font-display font-semibold text-3xl shrink-0">
+            {agency.photo
+              ? <img src={agency.photo.startsWith('/') ? API_ORIGIN + agency.photo : agency.photo} alt={agency.name} className="w-full h-full object-cover" />
+              : agency.name[0]}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">

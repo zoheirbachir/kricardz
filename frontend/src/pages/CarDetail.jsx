@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../api';
+import api, { API_ORIGIN } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import Lightbox from '../components/Lightbox';
@@ -387,29 +387,50 @@ export default function CarDetail() {
           {/* Owner */}
           <div className="card p-5">
             <h2 className="font-semibold text-gray-900 mb-4">Propriétaire</h2>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300 font-display font-semibold text-xl">
-                {car.owner_name?.[0]?.toUpperCase()}
-              </div>
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-semibold text-gray-900">{car.owner_name}</p>
-                  {car.owner_verified && (
-                    <span className="badge-pine">
-                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                      {t('car.verified_owner')}
-                    </span>
-                  )}
-                  {car.owner_id_verified && (
-                    <span className="badge-clay">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3m-3 3h3m-6 4h6a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v7a2 2 0 002 2h2m1-4a2 2 0 11-4 0 2 2 0 014 0zm-2 2a4 4 0 00-3.464 2" /></svg>
-                      {t('car.verified_id')}
-                    </span>
-                  )}
+            {(() => {
+              /* When the owner is an agency, the photo + name link to its public
+                 profile — the same one under "Agences". Individuals stay static.
+                 The avatar shows the agency's real profile picture when it exists. */
+              const avatarUrl = car.owner_avatar
+                ? (car.owner_avatar.startsWith('/') ? API_ORIGIN + car.owner_avatar : car.owner_avatar)
+                : null;
+              const nameCls = `font-semibold text-gray-900${car.agency_id ? ' group-hover:text-primary-600 transition-colors' : ''}`;
+              const avatar = (
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300 font-display font-semibold text-xl shrink-0">
+                  {avatarUrl
+                    ? <img src={avatarUrl} alt={car.owner_name} className="w-full h-full object-cover" />
+                    : car.owner_name?.[0]?.toUpperCase()}
                 </div>
-                <p className="text-sm text-gray-500 mt-0.5">Membre depuis {new Date(car.created_at).getFullYear()}</p>
-              </div>
-            </div>
+              );
+              const name = <p className={nameCls}>{car.owner_name}</p>;
+              return (
+                <div className="flex items-center gap-4">
+                  {car.agency_id
+                    ? <Link to={`/agencies/${car.agency_id}`} className="group shrink-0" aria-label={`Profil de ${car.owner_name}`}>{avatar}</Link>
+                    : avatar}
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {car.agency_id
+                        ? <Link to={`/agencies/${car.agency_id}`} className="group">{name}</Link>
+                        : name}
+                      {car.owner_verified && (
+                        <span className="badge-pine">
+                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                          {t('car.verified_owner')}
+                        </span>
+                      )}
+                      {car.owner_id_verified && (
+                        <span className="badge-clay">
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M15 9h3m-3 3h3m-6 4h6a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v7a2 2 0 002 2h2m1-4a2 2 0 11-4 0 2 2 0 014 0zm-2 2a4 4 0 00-3.464 2" /></svg>
+                          {t('car.verified_id')}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 mt-0.5">Membre depuis {new Date(car.created_at).getFullYear()}</p>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Contact buttons */}
             {car.owner_phone && (

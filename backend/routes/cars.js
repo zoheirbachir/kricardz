@@ -131,7 +131,10 @@ router.get('/my', auth, (req, res) => {
 });
 
 router.get('/:id', optionalAuth, (req, res) => {
-  const car = db.prepare('SELECT c.*, u.name as owner_name, u.avatar as owner_avatar, u.phone as owner_phone, u.verified as owner_verified, u.id_verified as owner_id_verified FROM cars c JOIN users u ON c.owner_id = u.id WHERE c.id = ?').get(req.params.id);
+  const car = db.prepare(`SELECT c.*, u.name as owner_name, u.avatar as owner_avatar, u.phone as owner_phone,
+      u.verified as owner_verified, u.id_verified as owner_id_verified,
+      (SELECT a.id FROM agencies a WHERE a.owner_id = u.id LIMIT 1) AS agency_id
+    FROM cars c JOIN users u ON c.owner_id = u.id WHERE c.id = ?`).get(req.params.id);
   if (!car) return res.status(404).json({ error: 'Véhicule introuvable' });
 
   /* Increment the view counter — skip the owner's own visits and de-dupe per IP

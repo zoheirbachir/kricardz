@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import api from '../api';
+import api, { API_ORIGIN } from '../api';
 import { useCategories } from '../lib/useCategories';
 
 function Stars({ rating = 0 }) {
@@ -149,10 +149,10 @@ export default function Agencies() {
                       {t('agency.verified')}
                     </span>
                   )}
-                  {/* Logo / initial */}
+                  {/* Photo / initial */}
                   <div className="absolute -bottom-6 left-5 w-16 h-16 rounded-2xl bg-white dark:bg-gray-900 shadow-md flex items-center justify-center overflow-hidden ring-1 ring-black/5">
-                    {agency.logo ? (
-                      <img src={agency.logo} alt={agency.name} className="w-full h-full object-cover" />
+                    {agency.photo ? (
+                      <img src={agency.photo.startsWith('/') ? API_ORIGIN + agency.photo : agency.photo} alt={agency.name} className="w-full h-full object-cover" />
                     ) : (
                       <span className="font-display font-semibold text-2xl text-primary-600 dark:text-primary-300">{agency.name[0]}</span>
                     )}

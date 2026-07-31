@@ -139,9 +139,10 @@ export default function Agencies() {
               transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3), ease: [0.22, 1, 0.36, 1] }}>
               <Link to={`/agencies/${agency.id}`}
                 className="card overflow-hidden group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 block h-full">
-                {/* Cover banner */}
-                <div className="relative h-28 bg-gradient-to-br from-primary-500 to-honey-500 overflow-hidden">
-                  {agency.cover && <img src={agency.cover} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+                {/* Cover banner — no overflow-hidden here, or the avatar badge that
+                    dips below it (-bottom-6) gets clipped. The card rounds the corners. */}
+                <div className="relative h-28 bg-gradient-to-br from-primary-500 to-honey-500">
+                  {agency.cover && <img src={agency.cover.startsWith('/') ? API_ORIGIN + agency.cover : agency.cover} alt="" className="absolute inset-0 w-full h-full object-cover" />}
                   <div className="absolute inset-0 bg-black/10" />
                   {agency.verified && (
                     <span className="absolute top-3 right-3 badge bg-white/90 text-pine-700 text-xs">

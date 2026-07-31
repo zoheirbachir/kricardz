@@ -9,6 +9,7 @@ import { StaggerGroup, fadeUp } from '../lib/motion';
 import HandoverControls from '../components/HandoverControls';
 import AuthDoc from '../components/AuthDoc';
 import AgencyGallery from '../components/AgencyGallery';
+import AgencyCover from '../components/AgencyCover';
 import ServiceTypesCard from '../components/ServiceTypesCard';
 import AvatarUpload from '../components/AvatarUpload';
 
@@ -182,6 +183,9 @@ export default function OwnerDashboard() {
 
       {/* Activities offered — declared at registration, editable here */}
       <ServiceTypesCard />
+
+      {/* Agency cover photo (only shown if this account has an agency profile) */}
+      <AgencyCover />
 
       {/* Agency photo gallery (only shown if this account has an agency profile) */}
       <AgencyGallery />

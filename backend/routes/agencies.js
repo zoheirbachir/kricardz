@@ -131,4 +131,23 @@ router.delete('/:id/gallery', auth, (req, res) => {
   res.json({ gallery });
 });
 
+/* ── Cover photo (the large banner above the profile picture) ── */
+router.post('/:id/cover', auth, galleryUpload.single('cover'), (req, res) => {
+  const agency = loadOwnAgency(req, res);
+  if (!agency) return;
+  if (!req.file) return res.status(400).json({ error: 'Aucune image reçue.' });
+  const cover = `/uploads/agencies/${req.file.filename}`;
+  removeGalleryFile(agency.cover);   // best-effort delete of the previous cover
+  db.prepare('UPDATE agencies SET cover = ? WHERE id = ?').run(cover, agency.id);
+  res.json({ cover });
+});
+
+router.delete('/:id/cover', auth, (req, res) => {
+  const agency = loadOwnAgency(req, res);
+  if (!agency) return;
+  removeGalleryFile(agency.cover);
+  db.prepare('UPDATE agencies SET cover = NULL WHERE id = ?').run(agency.id);
+  res.json({ cover: null });
+});
+
 module.exports = router;

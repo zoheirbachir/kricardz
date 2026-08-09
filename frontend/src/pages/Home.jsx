@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import api from '../api';
+import api, { API_ORIGIN } from '../api';
 import CarCard from '../components/CarCard';
 import HowItWorksTutorial from '../components/HowItWorksTutorial';
 import BgVideo from '../components/BgVideo';
@@ -305,7 +305,7 @@ export default function Home() {
                   onMouseLeave={(e) => { const v = e.currentTarget.querySelector('video'); if (v) { v.pause(); v.currentTime = 0; } }}
                 >
                   <div className="relative h-28 overflow-hidden bg-gray-900">
-                    <video className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105" muted loop playsInline preload="metadata" src={CAT_VIDEOS[tp]} />
+                    <video className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105" muted loop playsInline preload="metadata" src={API_ORIGIN + CAT_VIDEOS[tp]} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
                     <span className="absolute bottom-2 left-3 text-white font-semibold text-sm drop-shadow">{t(`types.${tp}`)}</span>
                   </div>

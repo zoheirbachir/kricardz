@@ -45,7 +45,7 @@ export default function Navbar() {
   const isActive = (path) => path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
 
   return (
-    <nav className={`sticky top-0 z-50 transition-all duration-300
+    <nav className={`sticky top-0 z-50 transition-all duration-300 safe-top safe-x
       ${scrolled ? 'shadow-md backdrop-blur-md bg-white/85 dark:bg-[#211C14]/90' : 'bg-white dark:bg-[#211C14]'}
       border-b border-gray-100 dark:border-gray-800`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

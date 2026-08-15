@@ -46,12 +46,14 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>KriCar utilise l'appareil photo pour la vérification d'identité (selfie et photos de vos documents).</string>
+	<string>DzKricar utilise l'appareil photo pour la vérification d'identité (selfie et photos de vos documents) et l'état des lieux du véhicule.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>L'accès au micro peut être requis lors de la capture vidéo de vérification.</string>
+	<string>DzKricar utilise le micro lors de la capture vidéo de l'état des lieux du véhicule.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>KriCar accède à vos photos pour téléverser vos documents d'identité et de véhicule.</string>
+	<string>DzKricar accède à vos photos pour téléverser vos documents d'identité et de véhicule.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>KriCar peut enregistrer des documents ou contrats dans votre galerie.</string>
+	<string>DzKricar peut enregistrer des documents ou contrats dans votre galerie.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>DzKricar enregistre la position lors de l'état des lieux du véhicule (remise et retour) comme preuve en cas de litige.</string>
 </dict>
 </plist>

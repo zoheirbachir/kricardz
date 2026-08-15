@@ -85,7 +85,7 @@ function OfflineBanner() {
   const online = useNetwork();
   if (online) return null;
   return (
-    <div className="fixed bottom-0 inset-x-0 z-[9999] bg-red-600 text-white text-sm text-center py-2 px-4 shadow-lg">
+    <div className="fixed bottom-0 inset-x-0 z-[9999] bg-red-600 text-white text-sm text-center py-2 px-4 shadow-lg offline-safe">
       Pas de connexion internet — vérifiez votre réseau.
     </div>
   );

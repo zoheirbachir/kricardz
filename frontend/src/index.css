@@ -45,6 +45,18 @@
     /* Safety net: no stray element may force the page to scroll sideways. */
     overflow-x: hidden;
   }
+  /* ── iOS safe areas ──
+     The app runs edge-to-edge (viewport-fit=cover), so on every notch / Dynamic
+     Island / home-indicator iPhone these insets are non-zero and content stays
+     clear of the hardware. On devices without a notch (SE, older) they are 0, so
+     the same layout works everywhere with no branching. */
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+
   /* Editorial display face for hero + section headings */
   .font-display { font-family: 'Fraunces', Georgia, serif; font-optical-sizing: auto; }
 
@@ -223,6 +235,16 @@ input[type=range]::-webkit-slider-thumb {
 
 /* Mobile bottom safe area */
 .pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+
+/* ── iOS safe-area helpers ──
+   env() is used directly (not through a custom property) so the value survives
+   the build untouched. safe-top pads a sticky header below the notch/status bar
+   (its background then fills the strip); safe-x guards the landscape notch. */
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+.safe-x { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
+/* Fixed overlays that must clear the home indicator + landscape notch. */
+.fixed-bottom-safe { bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)); right: calc(1.25rem + env(safe-area-inset-right, 0px)); }
+.offline-safe { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)); }
 
 /* â”€â”€ Leaflet dark-mode protection â”€â”€
    Global .dark overrides must not bleed into Leaflet's controls. */

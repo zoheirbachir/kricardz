@@ -11,7 +11,7 @@ export default function FloatingButtons() {
   }, []);
 
   return (
-    <div className="fixed bottom-6 right-5 z-50 flex flex-col items-end gap-3">
+    <div className="fixed fixed-bottom-safe z-50 flex flex-col items-end gap-3">
       {/* WhatsApp */}
       <motion.a href="https://wa.me/213673590224" target="_blank" rel="noopener noreferrer"
         whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}

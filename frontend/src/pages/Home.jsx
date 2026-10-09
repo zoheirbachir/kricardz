@@ -12,12 +12,14 @@ import { AnimatedHeading, fadeUp, staggerContainer, softSpring, StaggerGroup, Re
 import { useCategories } from '../lib/useCategories';
 
 const CAR_TYPES = ['sedan','suv','van','sport','4x4'];
-const CAT_VIDEOS = {
-  sedan: '/hero/cat-sedan.mp4',
-  suv:   '/hero/cat-suv.mp4',
-  van:   '/hero/cat-van.mp4',
-  sport: '/hero/cat-sport.mp4',
-  '4x4': '/hero/cat-4x4.mp4',
+/* Category thumbnails: lightweight WebP stills (~10 KB each) instead of the old
+   6–9 MB videos, so the homepage loads fast on low-bandwidth connections. */
+const CAT_IMAGES = {
+  sedan: '/hero/cat-sedan.webp',
+  suv:   '/hero/cat-suv.webp',
+  van:   '/hero/cat-van.webp',
+  sport: '/hero/cat-sport.webp',
+  '4x4': '/hero/cat-4x4.webp',
 };
 
 /* Animated stat item */
@@ -301,11 +303,9 @@ export default function Home() {
                 <Link
                   to={`/search?type=${tp}`}
                   className="card group block overflow-hidden hover:shadow-lg"
-                  onMouseEnter={(e) => { const v = e.currentTarget.querySelector('video'); if (v) v.play().catch(() => {}); }}
-                  onMouseLeave={(e) => { const v = e.currentTarget.querySelector('video'); if (v) { v.pause(); v.currentTime = 0; } }}
                 >
                   <div className="relative h-28 overflow-hidden bg-gray-900">
-                    <video className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105" muted loop playsInline preload="metadata" src={API_ORIGIN + CAT_VIDEOS[tp]} />
+                    <img className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105" decoding="async" alt="" src={API_ORIGIN + CAT_IMAGES[tp]} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
                     <span className="absolute bottom-2 left-3 text-white font-semibold text-sm drop-shadow">{t(`types.${tp}`)}</span>
                   </div>

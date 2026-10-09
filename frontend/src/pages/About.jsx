@@ -6,15 +6,9 @@ const IcFlag = (p) => <svg {...p} fill="none" viewBox="0 0 24 24" stroke="curren
 
 export default function About() {
   const stats = [
-    { title: '2023', desc: 'Année de création de DzKricar', Icon: IcCalendar },
-    { title: '58', desc: 'Wilayas couvertes à travers l\'Algérie', Icon: IcMap },
+    { title: '2025', desc: 'Année de création de DzKricar', Icon: IcCalendar },
+    { title: '69', desc: 'Wilayas couvertes à travers l\'Algérie', Icon: IcMap },
     { title: '100%', desc: 'Algérien, fait par et pour des Algériens', Icon: IcFlag },
-  ];
-  const team = [
-    { name: 'Amine B.', role: 'CEO & Co-fondateur' },
-    { name: 'Meriem K.', role: 'CTO & Co-fondatrice' },
-    { name: 'Yacine A.', role: 'Responsable produit' },
-    { name: 'Sara M.', role: 'Responsable confiance' },
   ];
 
   return (
@@ -51,16 +45,19 @@ export default function About() {
 
       <div className="card p-8 mb-8">
         <h2 className="font-display text-2xl font-semibold tracking-tight text-gray-900 mb-6">Notre équipe</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {team.map(m => (
-            <div key={m.name} className="text-center">
-              <div className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300 font-display font-semibold text-xl mx-auto mb-2">
-                {m.name[0]}
-              </div>
-              <p className="font-semibold text-gray-900 text-sm">{m.name}</p>
-              <p className="text-xs text-gray-500">{m.role}</p>
-            </div>
-          ))}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+          <div className="w-20 h-20 rounded-full bg-primary-100 dark:bg-primary-500/15 flex items-center justify-center text-primary-600 dark:text-primary-300 font-display font-semibold text-3xl shrink-0">
+            I
+          </div>
+          <div>
+            <p className="font-semibold text-gray-900 text-lg">Islem Badidi</p>
+            <p className="text-sm text-gray-500 mb-3">Fondateur</p>
+            <a href="tel:+213673590224"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+              +213 673 59 02 24
+            </a>
+          </div>
         </div>
       </div>
 

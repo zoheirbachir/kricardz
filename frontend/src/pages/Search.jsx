@@ -109,10 +109,11 @@ export default function Search() {
         <p className="eyebrow mb-1.5">{t('search.catalog')}</p>
         <h1 className="section-title">{t('search.title')}</h1>
       </div>
-      {/* Search bar + controls */}
-      <div className="mb-6 flex gap-3">
-        <input type="text" placeholder={t('home.search_placeholder')} className="input flex-1"
+      {/* Search bar + controls — input full-width on phones, controls wrap below */}
+      <div className="mb-6 flex flex-col sm:flex-row gap-3">
+        <input type="text" placeholder={t('home.search_placeholder')} className="input w-full sm:flex-1"
           value={filters.search} onChange={e => update('search', e.target.value)} />
+        <div className="flex gap-2 sm:gap-3">
         {/* Grid / Map toggle */}
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl shrink-0">
           <button onClick={() => setViewMode('grid')}
@@ -126,10 +127,11 @@ export default function Search() {
             {t('search.map')}
           </button>
         </div>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden btn-secondary flex items-center gap-2 shrink-0">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" /></svg>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden btn-secondary flex items-center justify-center gap-2 flex-1 sm:flex-none">
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" /></svg>
           {t('search.filters')}
         </button>
+        </div>
       </div>
 
       <div className="flex gap-6">
